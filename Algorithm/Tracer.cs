@@ -1,0 +1,6 @@
+﻿namespace Algorithm
+{
+    class Tracer
+    {
+    }
+}

@@ -1,0 +1,5 @@
+﻿namespace Algorithm {
+    class Settings {
+
+    }
+}
