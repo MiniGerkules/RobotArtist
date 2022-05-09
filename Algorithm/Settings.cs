@@ -1,5 +1,7 @@
-﻿namespace Algorithm {
-    class Settings {
+﻿namespace Algorithm
+{
+    public class Settings
+    {
 
     }
 }
