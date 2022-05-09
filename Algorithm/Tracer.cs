@@ -1,6 +1,6 @@
 ﻿namespace Algorithm
 {
-    public class Tracer
+    class Tracer
     {
     }
 }
