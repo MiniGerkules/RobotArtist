@@ -7,41 +7,43 @@
         mc:Ignorable="d"
         Title="RobotArtist" Height="450" Width="800">
     <Grid x:Name="mainGrid">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="2*"/>
-            <ColumnDefinition/>
-            <ColumnDefinition/>
-        </Grid.ColumnDefinitions>
+        <Grid x:Name="prepareGrid" Grid.Row="0" Grid.Column="0" Visibility="Visible">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
 
-        <Grid.RowDefinitions>
-            <RowDefinition/>
-            <RowDefinition/>
-            <RowDefinition/>
-            <RowDefinition/>
-            <RowDefinition/>
-        </Grid.RowDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
 
-        <Image x:Name="outputImage" Grid.Row="0" Grid.Column="0" Grid.RowSpan="4"/>
+            <Image x:Name="outputImage" Grid.Row="0" Grid.Column="0" Grid.RowSpan="4"/>
 
-        <TextBlock Grid.Row="0" Grid.Column="1" Text="Погрешность задания цвета холста" 
-               VerticalAlignment="Center" Margin="10" TextAlignment="Right" FontSize="16" TextWrapping="Wrap"/>
-        <TextBlock Grid.Row="1" Grid.Column="1" Text="Кол-во итераций с малым перекрытием" 
-               VerticalAlignment="Center" Margin="10" TextAlignment="Right" FontSize="16" TextWrapping="Wrap"/>
-        <TextBlock Grid.Row="2" Grid.Column="1" Text="Начальный макс. коэффициент перекрытия" 
-               VerticalAlignment="Center" Margin="10" TextAlignment="Right" FontSize="16" TextWrapping="Wrap"/>
-        <TextBlock Grid.Row="3" Grid.Column="1" Text="Погрешность, при которой мазок безоговорочно принят" 
-               VerticalAlignment="Center" Margin="10" TextAlignment="Right" FontSize="16" TextWrapping="Wrap"/>
+            <TextBlock Grid.Row="0" Grid.Column="1" Text="Погрешность задания цвета холста" 
+                   VerticalAlignment="Center" Margin="10" TextAlignment="Right" FontSize="16" TextWrapping="Wrap"/>
+            <TextBlock Grid.Row="1" Grid.Column="1" Text="Кол-во итераций с малым перекрытием" 
+                   VerticalAlignment="Center" Margin="10" TextAlignment="Right" FontSize="16" TextWrapping="Wrap"/>
+            <TextBlock Grid.Row="2" Grid.Column="1" Text="Начальный макс. коэффициент перекрытия" 
+                   VerticalAlignment="Center" Margin="10" TextAlignment="Right" FontSize="16" TextWrapping="Wrap"/>
+            <TextBlock Grid.Row="3" Grid.Column="1" Text="Погрешность, при которой мазок безоговорочно принят" 
+                   VerticalAlignment="Center" Margin="10" TextAlignment="Right" FontSize="16" TextWrapping="Wrap"/>
 
-        <TextBox Grid.Row="0" Grid.Column="2" Text="2"
-               VerticalAlignment="Center" Margin="10" TextAlignment="Left" FontSize="16" TextWrapping="Wrap"/>
-        <TextBox Grid.Row="1" Grid.Column="2" Text="1" 
-               VerticalAlignment="Center" Margin="10" TextAlignment="Left" FontSize="16" TextWrapping="Wrap"/>
-        <TextBox Grid.Row="2" Grid.Column="2" Text="0.6" 
-               VerticalAlignment="Center" Margin="10" TextAlignment="Left" FontSize="16" TextWrapping="Wrap"/>
-        <TextBox Grid.Row="3" Grid.Column="2" Text="4" 
-               VerticalAlignment="Center" Margin="10" TextAlignment="Left" FontSize="16" TextWrapping="Wrap"/>
+            <TextBox Grid.Row="0" Grid.Column="2" Text="2"
+                   VerticalAlignment="Center" Margin="10" TextAlignment="Left" FontSize="16" TextWrapping="Wrap"/>
+            <TextBox Grid.Row="1" Grid.Column="2" Text="1" 
+                   VerticalAlignment="Center" Margin="10" TextAlignment="Left" FontSize="16" TextWrapping="Wrap"/>
+            <TextBox Grid.Row="2" Grid.Column="2" Text="0.6" 
+                   VerticalAlignment="Center" Margin="10" TextAlignment="Left" FontSize="16" TextWrapping="Wrap"/>
+            <TextBox Grid.Row="3" Grid.Column="2" Text="4" 
+                   VerticalAlignment="Center" Margin="10" TextAlignment="Left" FontSize="16" TextWrapping="Wrap"/>
 
-        <Button Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3" Content="Принять настройки"
-               Margin="10, 20" FontSize="16" Background="AliceBlue" Click="Button_Click"/>
+            <Button x:Name="setSettings" Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3" Content="Принять настройки"
+                   Margin="10, 20" FontSize="16" Background="AliceBlue" Click="SetSettingsClick"/>
+        </Grid>
     </Grid>
 </Window>
