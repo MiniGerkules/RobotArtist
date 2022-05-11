@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31515.178
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GUI", "GUI\GUI.csproj", "{AE8CB19A-1217-4B5D-97F2-F3C17639FFEA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GUI", "GUI\GUI.csproj", "{AE8CB19A-1217-4B5D-97F2-F3C17639FFEA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Algorithm", "Algorithm\Algorithm.csproj", "{124A43E0-C862-4E6D-9894-E26DB4B1F318}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Algorithm", "Algorithm\Algorithm.csproj", "{D9E945A4-F7F4-4383-8BDB-3B2DF0465BBD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,10 +17,10 @@ Global
 		{AE8CB19A-1217-4B5D-97F2-F3C17639FFEA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AE8CB19A-1217-4B5D-97F2-F3C17639FFEA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AE8CB19A-1217-4B5D-97F2-F3C17639FFEA}.Release|Any CPU.Build.0 = Release|Any CPU
-		{124A43E0-C862-4E6D-9894-E26DB4B1F318}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{124A43E0-C862-4E6D-9894-E26DB4B1F318}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{124A43E0-C862-4E6D-9894-E26DB4B1F318}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{124A43E0-C862-4E6D-9894-E26DB4B1F318}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D9E945A4-F7F4-4383-8BDB-3B2DF0465BBD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D9E945A4-F7F4-4383-8BDB-3B2DF0465BBD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D9E945A4-F7F4-4383-8BDB-3B2DF0465BBD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D9E945A4-F7F4-4383-8BDB-3B2DF0465BBD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
