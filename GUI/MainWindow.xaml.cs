@@ -14,6 +14,9 @@ namespace GUI
         private Algorithm.Settings settings;
         private Algorithm.Tracer tracer;
 
+        private readonly List<Vector> gradients = new();
+        private readonly List<Vector> strokes = new();
+
         private BitmapImage image;
         public MainWindow()
         {
@@ -37,6 +40,16 @@ namespace GUI
             // Unpack object settings into the fields
         }
 
+        private void SetSettingsClick(object sender, RoutedEventArgs e)
+        {
+            // Pack settings
+
+            prepareGrid.Visibility = Visibility.Collapsed;
+            drawingGrid.Visibility = Visibility.Visible;
+
+            //tracer.run();
+        }
+
         /// <summary>
         /// Event handler for the process of adding new strokes to the map
         /// </summary>
@@ -47,20 +60,22 @@ namespace GUI
             if (vectors == null || vectors.Count == 0)
                 return;
 
-            // Resume work
+            strokes.AddRange(vectors);
+            // Paint new vectors
         }
 
         /// <summary>
         /// Event handler for the process of adding new gradients to the map
         /// </summary>
         /// <param name="sender"> The object sending new gradients </param>
-        /// <param name="gradients"> New gradients to add to the map. </param>
-        private void AddNewGradients(object sender, List<Vector> gradients)
+        /// <param name="vectors"> New gradients to add to the map </param>
+        private void AddNewGradients(object sender, List<Vector> vectors)
         {
-            if (gradients == null || gradients.Count == 0)
+            if (vectors == null || vectors.Count == 0)
                 return;
 
-            // Resume work
+            gradients.AddRange(vectors);
+            // Paint new vectors
         }
     }
 }

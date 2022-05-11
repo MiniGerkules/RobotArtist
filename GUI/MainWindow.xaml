@@ -45,5 +45,31 @@
             <Button x:Name="setSettings" Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="3" Content="Принять настройки"
                    Margin="10, 20" FontSize="16" Background="AliceBlue" Click="SetSettingsClick"/>
         </Grid>
+
+        <Grid x:Name="drawingGrid" Grid.Row="0" Grid.Column="0" Visibility="Collapsed">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="10*"/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+
+            <Image x:Name="gradientsImage" Source="/filler.jpg" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Margin="10, 10"/>
+            <Label Grid.Row="1" Grid.Column="0" Content="Кол-во градиентов" 
+                   VerticalAlignment="Center" FontSize="16" HorizontalContentAlignment="Right"/>
+            <TextBox Grid.Row="1" Grid.Column="1" Text="0" 
+                     VerticalAlignment="Center" FontSize="16" HorizontalContentAlignment="Left"/>
+
+            <Image x:Name="strokesImage" Source="/filler.jpg" Grid.Row="0" Grid.Column="2" Grid.ColumnSpan="2" Margin="10, 10"/>
+            <Label Grid.Row="1" Grid.Column="2" Content="Кол-во мазков" 
+                   VerticalAlignment="Center" FontSize="16" HorizontalContentAlignment="Right"/>
+            <TextBox Grid.Row="1" Grid.Column="3" Text="0" 
+                     VerticalAlignment="Center" FontSize="16" HorizontalContentAlignment="Left"/>
+        </Grid>
     </Grid>
 </Window>
