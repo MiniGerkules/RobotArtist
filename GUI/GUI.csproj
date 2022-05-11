@@ -7,7 +7,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="filler.jpg" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Algorithm\Algorithm.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="filler.jpg" />
   </ItemGroup>
 
 </Project>
