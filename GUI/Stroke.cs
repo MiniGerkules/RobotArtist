@@ -4,11 +4,11 @@ namespace GUI
 {
     class Stroke
     {
-        private readonly Vector<uint> start;
-        private readonly Vector<uint> end;
+        private readonly Point2D start;
+        private readonly Point2D end;
         private readonly Color color;
 
-        public Stroke(Vector<uint> start, Vector<uint> end, Color color)
+        public Stroke(Point2D start, Point2D end, Color color)
         {
             this.start = start;
             this.end = end;
