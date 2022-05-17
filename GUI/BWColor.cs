@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Windows.Media;
 
 namespace GUI
 {
@@ -11,5 +7,17 @@ namespace GUI
     /// </summary>
     class BWColor
     {
+        private readonly byte brightness;
+
+        public BWColor(byte brightness)
+        {
+            this.brightness = brightness;
+        }
+
+        public static explicit operator Brush(BWColor color)
+        {
+            Color gray = Color.FromRgb(color.brightness, color.brightness, color.brightness);
+            return new SolidColorBrush(gray);
+        }
     }
 }
