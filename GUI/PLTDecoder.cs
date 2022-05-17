@@ -10,9 +10,14 @@ namespace GUI
     /// </summary>
     class PLTDecoder
     {
+        public readonly static uint numTicksInMM = 40;
+
         private List<Stroke> decodedPlt = new();
         private Point2D? lastPoint = null;
-        private Color curColor = null;
+        private CMYBWColor curColor = null;
+
+        public uint MaxX { get; private set; }
+        public uint MaxY { get; private set; }
 
         /// <summary>
         /// The method decodes the plt code passed in the string
@@ -38,6 +43,7 @@ namespace GUI
             decodedPlt.Clear();
             lastPoint = null;
             curColor = null;
+            MaxX = MaxY = 0;
         }
 
         private void ProcessPart(string part)
@@ -48,14 +54,7 @@ namespace GUI
                     curColor = new(part[2..].Split(','));
                     break;
                 case "PD":
-                    if (curColor == null)
-                        throw new ArgumentException("Invalid plt code. No color is set before painting!");
-
-                    Point2D newPoint = new(part[2..].Split(',').Select(elem => uint.Parse(elem)).ToArray());
-                    if (lastPoint != null)
-                        decodedPlt.Add(new(lastPoint.Value, newPoint, curColor));
-
-                    lastPoint = newPoint;
+                    ProcessPDCommand(part);
                     break;
                 case "PU":
                     lastPoint = null;
@@ -63,6 +62,24 @@ namespace GUI
                 default:
                     throw new ArgumentException($"ERROR! Unknown [{part[..2]}] operator!");
             }
+        }
+
+        private void ProcessPDCommand(string command)
+        {
+            if (curColor == null)
+                throw new ArgumentException("Invalid plt code. No color is set before painting!");
+
+            uint[] coords = command[2..].Split(',').Select(elem => uint.Parse(elem)).ToArray();
+            Point2D newPoint = new(coords);
+            newPoint.Divide(numTicksInMM);
+
+            MaxX = Math.Max(MaxX, coords[0]/numTicksInMM);
+            MaxY = Math.Max(MaxY, coords[1]/numTicksInMM);
+
+            if (lastPoint != null)
+                decodedPlt.Add(new(lastPoint.Value, newPoint, curColor));
+
+            lastPoint = newPoint;
         }
     }
 }
