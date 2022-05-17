@@ -4,15 +4,15 @@ namespace GUI
 {
     class Stroke
     {
-        private readonly Point2D start;
-        private readonly Point2D end;
-        private readonly Color color;
+        public Point2D Start { get; }
+        public Point2D End { get; }
+        public CMYBWColor StroceColor { get; }
 
-        public Stroke(Point2D start, Point2D end, Color color)
+        public Stroke(Point2D start, Point2D end, CMYBWColor color)
         {
-            this.start = start;
-            this.end = end;
-            this.color = color;
+            Start = start;
+            End = end;
+            StroceColor = color;
         }
     }
 }
