@@ -29,9 +29,11 @@ namespace GUI
 
         public static explicit operator BWColor(CMYBWColor color)
         {
-            double x = color.blue / (color.blue+color.white);
-            byte I = (byte)(89.7*Math.Exp(-14.1*x) + 143.2*Math.Exp(-1.26 *x));
-            I = (byte)((I-40) * 255d / 200d);
+            double x = (double)color.blue / (color.blue+color.white);
+            // The range of values from 40 to 240 
+            byte I = (byte)(89.7 * Math.Exp(-14.1 * x) + 143.2 * Math.Exp(-1.26 * x));
+            // The range of values from 0 to 255 
+            I = (byte)((I - 40) * 255d / 200d);
 
             return new(I);
         }
