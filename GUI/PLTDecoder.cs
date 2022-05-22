@@ -12,9 +12,9 @@ namespace GUI
     {
         public readonly static uint numTicksInMM = 40;
 
-        private List<Stroke> decodedPlt = new();
+        private readonly List<Stroke> decodedPlt = new();
         private Point2D? lastPoint = null;
-        private CMYBWColor curColor = null;
+        private CMYBWColor? curColor = null;
 
         public uint MaxX { get; private set; }
         public uint MaxY { get; private set; }
@@ -77,7 +77,7 @@ namespace GUI
             MaxY = Math.Max(MaxY, coords[1]/numTicksInMM);
 
             if (lastPoint != null)
-                decodedPlt.Add(new(lastPoint.Value, newPoint, curColor));
+                decodedPlt.Add(new(lastPoint.Value, newPoint, curColor.Value));
 
             lastPoint = newPoint;
         }
