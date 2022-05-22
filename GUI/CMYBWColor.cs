@@ -6,7 +6,7 @@ namespace GUI
     /// <summary>
     /// The class describes a color based on cyan, magenta, yellow, blue and white.
     /// </summary>
-    class CMYBWColor
+    internal struct CMYBWColor
     {
         private uint cyan, magenta, yellow, blue, white;
 

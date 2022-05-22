@@ -5,7 +5,7 @@ namespace GUI
     /// <summary>
     /// The class describes the black and white color
     /// </summary>
-    class BWColor
+    internal struct BWColor
     {
         private readonly byte brightness;
 
