@@ -9,12 +9,8 @@
     <Grid x:Name="mainGrid">
         <Grid.RowDefinitions>
             <RowDefinition Height="26"/>
-            <RowDefinition Height="1*"/>
-            <RowDefinition Height="8*"/>
+            <RowDefinition/>
         </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="1*"/>
-        </Grid.ColumnDefinitions>
 
         <Menu Grid.Row="0" Grid.Column="0" VerticalAlignment="Top" Background="LightBlue" FontSize="16">
             <MenuItem Header="Файл">
@@ -24,22 +20,48 @@
                 <MenuItem Header="Закрыть"/>
                 <MenuItem Header="Выход"/>
             </MenuItem>
-            <MenuItem Header="Настройки"/>
+            <MenuItem x:Name="viewButton" Header="Просмотр" Click="ViewClick"/>
+            <MenuItem x:Name="settingsButton" Header="Настройки" Click="SettingsClick"/>
         </Menu>
 
-        <StackPanel x:Name="openedFiles" Grid.Row="1" Grid.Column="0" Orientation="Horizontal"/>
+        <Grid x:Name="viewGrid" Visibility="Collapsed" Grid.Row="1" Grid.Column="0">
+            <Grid.RowDefinitions>
+            <RowDefinition Height="1*"/>
+            <RowDefinition Height="8*"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1*"/>
+            </Grid.ColumnDefinitions>
 
-        <Image x:Name="outputImage" Grid.Row="2" Grid.Column="0" Margin="5, 5">
-            <Image.LayoutTransform>
-                <ScaleTransform ScaleX="1" ScaleY="-1"/>
-            </Image.LayoutTransform>
+            <StackPanel x:Name="openedFiles" Grid.Row="0" Grid.Column="0" Orientation="Horizontal"/>
+
+            <Image x:Name="outputImage" Grid.Row="2" Grid.Column="0" Margin="5, 5">
+                <Image.LayoutTransform>
+                    <ScaleTransform ScaleX="1" ScaleY="-1"/>
+                </Image.LayoutTransform>
             
-            <Image.ContextMenu>
-                <ContextMenu>
-                    <MenuItem Header="Повернуть на 90 градусов" Click="RotateImage"/>
-                    <MenuItem Header="Полностью перестроить" Click="RepaintImage"/>
-                </ContextMenu>
-            </Image.ContextMenu>
-        </Image>
+                <Image.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Повернуть на 90 градусов" Click="RotateImage"/>
+                        <MenuItem Header="Полностью перестроить" Click="RepaintImage"/>
+                    </ContextMenu>
+                </Image.ContextMenu>
+            </Image>
+        </Grid>
+
+        <Grid x:Name="settingsGrid" Visibility="Visible" Grid.Row="1" Grid.Column="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Image x:Name="previewImage" Grid.Row="0" Grid.Column="0" Margin="5, 5">
+                <Image.LayoutTransform>
+                    <ScaleTransform ScaleX="1" ScaleY="-1"/>
+                </Image.LayoutTransform>
+            </Image>
+
+            <Grid x:Name="settingsFields" Grid.Row="0" Grid.Column="1"/>
+        </Grid>
     </Grid>
 </Window>
