@@ -16,9 +16,6 @@ namespace GUI
         private Point2D? lastPoint = null;
         private CMYBWColor? curColor = null;
 
-        public uint MaxX { get; private set; }
-        public uint MaxY { get; private set; }
-
         /// <summary>
         /// The method decodes the plt code passed in the string
         /// </summary>
@@ -43,7 +40,6 @@ namespace GUI
             decodedPlt.Clear();
             lastPoint = null;
             curColor = null;
-            MaxX = MaxY = 0;
         }
 
         private void ProcessPart(string part)
@@ -72,9 +68,6 @@ namespace GUI
             uint[] coords = command[2..].Split(',').Select(elem => uint.Parse(elem)).ToArray();
             Point2D newPoint = new(coords);
             newPoint.Divide(numTicksInMM);
-
-            MaxX = Math.Max(MaxX, coords[0]/numTicksInMM);
-            MaxY = Math.Max(MaxY, coords[1]/numTicksInMM);
 
             if (lastPoint != null)
                 decodedPlt.Add(new(lastPoint.Value, newPoint, curColor.Value));
