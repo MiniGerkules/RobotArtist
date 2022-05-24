@@ -23,8 +23,10 @@ namespace GUI
         private readonly List<Vector> gradients = new();
         private readonly List<Vector> strokes = new();
 
-        private static readonly SolidColorBrush active = Brushes.Green;
-        private static readonly SolidColorBrush inactive = Brushes.LightBlue;
+        public static readonly SolidColorBrush active = new(Color.FromRgb(189, 242, 252));
+        public static readonly SolidColorBrush inactive = new(Color.FromRgb(77, 147, 161));
+        public static readonly SolidColorBrush menuColor = new(Color.FromRgb(136, 212, 227));
+        public static readonly SolidColorBrush buttonColor = new(Color.FromRgb(255, 255, 255));
 
         private readonly Dictionary<FileName, RotatedBitmap> files = new();
         private FileName activeFile = null;
@@ -44,6 +46,7 @@ namespace GUI
             GUISettings.applySettings += ApplySettings;
             viewGrid.Visibility = Visibility.Visible;
             settingsGrid.Visibility = Visibility.Collapsed;
+            mainMenu.Background = menuColor;
 
             CommandBinding commandBinding = new(ApplicationCommands.Open, OpenFile);
             CommandBindings.Add(commandBinding);
@@ -64,7 +67,7 @@ namespace GUI
             if (!AddNewOpenedFile(fileDialog.FileName))
                 return;
 
-            viewButton.Background = active;
+            ChangeActive(true);
             if (fileDialog.FileName.EndsWith(".plt"))
                 PLTFileHandler(fileDialog.FileName);
             else
@@ -81,6 +84,7 @@ namespace GUI
 
             string shortName = Helpers.GetFileName(fullFilePath);
             OpenedFile file = new(fullFilePath, shortName);
+            file.Background = buttonColor;
             file.Click += ChangeFile;
             openedFiles.Children.Add(file);
 
@@ -261,14 +265,14 @@ namespace GUI
             GUISettings.DisplaySettings(
                 new()
                 {
-                    { PossibleSettings.itersMinOverlap, ("Количество итераций с малым перекрытием", 1) },
-                    { PossibleSettings.minOverlap, ("Минимальный начальный коэффициент перекрытия", 0.6) },
-                    { PossibleSettings.maxOverlap, ("Максимальный начальный коэффициент перекрытия", 1) },
-                    { PossibleSettings.pixTol, ("Возможное отклонение цвета от исходника на конце", 6) },
-                    { PossibleSettings.pixTol2, ("Возможное отклонение цвета от исходника в среднем", 100) },
-                    { PossibleSettings.pixTolBest, ("Погрешность, при которой мазок безоговорочно принят", 4) },
-                    { PossibleSettings.maxLen, ("Максимальная длина мазка", penThikness * 10) },
-                    { PossibleSettings.brushWidth, ("Толщина кисти", penThikness) },
+                    { PossibleSettings.itersMinOverlap, ("Number of iterations", 1) },
+                    { PossibleSettings.minOverlap, ("Minimum overlap coefficient", 0.6) },
+                    { PossibleSettings.maxOverlap, ("Maximum overlap coefficient", 1) },
+                    { PossibleSettings.pixTol, ("Possible color deviation at the end", 6) },
+                    { PossibleSettings.pixTol2, ("Possible color deviation on average", 100) },
+                    { PossibleSettings.pixTolBest, ("The error of taking a smear", 4) },
+                    { PossibleSettings.maxLen, ("Maximum stroke length", penThikness * 10) },
+                    { PossibleSettings.brushWidth, ("Brush thickness", penThikness) },
                 }
             );
         }
