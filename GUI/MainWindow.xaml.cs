@@ -89,7 +89,7 @@ namespace GUI
             openedFiles.Children.Add(file);
 
             activeFile = new(fullFilePath, shortName);
-            files.Add(activeFile, null);
+            files.Add(activeFile, new(null));
 
             return true;
         }
@@ -141,7 +141,7 @@ namespace GUI
             Rect bounds = image.ContentBounds;
             RenderTargetBitmap renderedImage = new((int)bounds.Width, (int)bounds.Height, 96, 96, PixelFormats.Default);
             renderedImage.Render(image);
-            files[activeFile] = new(renderedImage);
+            files[activeFile].Bitmap = renderedImage;
         }
 
         private DrawingVisual BuildImage(List<Stroke> strokes)
@@ -252,7 +252,6 @@ namespace GUI
                 return;
 
             ChangeActive(true);
-            PictureSettingsChanged(outputImage);
         }
         
         private void SettingsClick(object sender, RoutedEventArgs e)
@@ -311,10 +310,13 @@ namespace GUI
             PaintActiveBitmap(imageToOut);
         }
 
-        private void ApplySettings(ImmutableDictionary<PossibleSettings, double> settedSettings)
+        private void ApplySettings(ImmutableDictionary<PossibleSettings, double> settedSettings, bool changed)
         {
-            penThikness = settedSettings[PossibleSettings.brushWidth];
-            PictureSettingsChanged(previewImage);
+            if (changed)
+            {
+                penThikness = settedSettings[PossibleSettings.brushWidth];
+                PictureSettingsChanged(previewImage);
+            }
         }
     }
 }

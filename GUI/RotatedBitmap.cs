@@ -4,13 +4,13 @@ namespace GUI
 {
     internal class RotatedBitmap
     {
-        public RenderTargetBitmap Bitmap { get; private set; }
+        public RenderTargetBitmap Bitmap { get; set; }
         public ushort Angle { get; private set; }
 
-        public RotatedBitmap(RenderTargetBitmap bitmap)
+        public RotatedBitmap(RenderTargetBitmap bitmap, ushort angle = 0)
         {
             Bitmap = bitmap;
-            Angle = 0;
+            Angle = angle;
         }
 
         public void Rotate()

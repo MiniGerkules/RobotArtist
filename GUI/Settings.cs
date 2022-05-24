@@ -10,7 +10,7 @@ namespace GUI
     {
         private readonly Grid grid;
         private readonly Dictionary<PossibleSettings, (TextBox, double)> settings = new();
-        public event Action<ImmutableDictionary<PossibleSettings, double>> applySettings;
+        public event Action<ImmutableDictionary<PossibleSettings, double>, bool> applySettings;
 
         public Settings(Grid grid)
         {
@@ -96,13 +96,16 @@ namespace GUI
             if (applySettings == null)
                 return;
 
-            Dictionary<PossibleSettings, double> applied = new();
             List<string> errors = new();
+            bool isChanged = false;
+
+            Dictionary<PossibleSettings, double> applied = new();
             foreach (var pair in settings)
             {
                 if (double.TryParse(pair.Value.Item1.Text, out double value))
                 {
                     applied.Add(pair.Key, value);
+                    isChanged |= value != settings[pair.Key].Item2;
                 }
                 else
                 {
@@ -112,7 +115,7 @@ namespace GUI
             }
 
             DisplayErrors(errors);
-            applySettings.Invoke(applied.ToImmutableDictionary());
+            applySettings.Invoke(applied.ToImmutableDictionary(), isChanged);
             UpdateActualSettings(applied);
         }
 
