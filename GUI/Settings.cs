@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Collections.Generic;
@@ -42,6 +41,8 @@ namespace GUI
 
             Button apply = new();
             apply.Content = "Apply settings";
+            apply.Margin = new(5, 5, 5, 5);
+            apply.Background = MainWindow.buttonColor;
             apply.Click += ApplySettings;
             Grid.SetRow(apply, rowPtr);
             Grid.SetColumn(apply, 0);
@@ -57,7 +58,7 @@ namespace GUI
             label.TextWrapping = TextWrapping.Wrap;
             label.HorizontalAlignment = HorizontalAlignment.Right;
             label.VerticalAlignment = VerticalAlignment.Center;
-            label.Margin = new(0, 0, 2.5, 0);
+            label.Margin = new(5, 2.5, 2.5, 2.5);
 
             TextBox value = new();
             value.Text = pair.Value.Item2.ToString();
@@ -65,7 +66,7 @@ namespace GUI
             value.TextWrapping = TextWrapping.Wrap;
             value.HorizontalContentAlignment = HorizontalAlignment.Left;
             value.VerticalAlignment = VerticalAlignment.Center;
-            value.Margin = new(2.5, 0, 0, 0);
+            value.Margin = new(2.5, 2.5, 5, 2.5);
 
             return (label, value);
         }
@@ -79,6 +80,7 @@ namespace GUI
             for (uint i = 0; i < 2; ++i)
             {
                 ColumnDefinition column = new();
+                column.Width = new(2 - i, GridUnitType.Star);
                 grid.ColumnDefinitions.Add(column);
             }
 
@@ -95,6 +97,7 @@ namespace GUI
                 return;
 
             Dictionary<PossibleSettings, double> applied = new();
+            List<string> errors = new();
             foreach (var pair in settings)
             {
                 if (double.TryParse(pair.Value.Item1.Text, out double value))
@@ -103,13 +106,32 @@ namespace GUI
                 }
                 else
                 {
-                    MessageBox.Show($"The \"{pair.Value.Item1.Text}\" input cannot be converted to a " +
-                        "number! The setting is set to the default value.", "Convert error", MessageBoxButton.OK);
+                    errors.Add(pair.Value.Item1.Text);
                     applied.Add(pair.Key, pair.Value.Item2);
                 }
             }
 
+            DisplayErrors(errors);
             applySettings.Invoke(applied.ToImmutableDictionary());
+            UpdateActualSettings(applied);
+        }
+
+        private void DisplayErrors(List<string> errors)
+        {
+            if (errors.Count == 0)
+                return;
+
+            string toOutput = "The values of ";
+            errors.ForEach(elem => toOutput += '"' + elem + '"' + ", ");
+            toOutput = toOutput[..^2] + " could not be parsed. Default values are set instead.";
+
+            MessageBox.Show(toOutput, "Convert error", MessageBoxButton.OK);
+        }
+
+        private void UpdateActualSettings(Dictionary<PossibleSettings, double> applied)
+        {
+            foreach (var pair in applied)
+                settings[pair.Key].Item1.Text = pair.Value.ToString();
         }
     }
 }
