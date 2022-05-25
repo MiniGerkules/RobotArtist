@@ -28,15 +28,11 @@ namespace GUI
         public static readonly SolidColorBrush menuColor = new(Color.FromRgb(136, 212, 227));
         public static readonly SolidColorBrush buttonColor = new(Color.FromRgb(255, 255, 255));
 
-        private readonly Dictionary<FileName, RotatedBitmap> files = new();
+        private readonly Dictionary<FileName, Picture> files = new();
         private FileName activeFile = null;
 
         private readonly PLTDecoder pltDecoder = new();
-        private readonly List<(GeometryGroup, Pen)> picture = new();
-
         private readonly Settings GUISettings;
-
-        private double penThikness = 4;
 
         public MainWindow()
         {
@@ -72,6 +68,8 @@ namespace GUI
                 PLTFileHandler(fileDialog.FileName);
             else
                 ImageFileHandler(fileDialog.FileName);
+
+            DisplayActiveBitmap(viewImage);
         }
 
         private bool AddNewOpenedFile(string fullFilePath)
@@ -89,7 +87,7 @@ namespace GUI
             openedFiles.Children.Add(file);
 
             activeFile = new(fullFilePath, shortName);
-            files.Add(activeFile, new(null));
+            files.Add(activeFile, new());
 
             return true;
         }
@@ -108,7 +106,7 @@ namespace GUI
             try
             {
                 activeFile = files.First(elem => elem.Key.FullName == newActiveFileFullName).Key;
-                PaintActiveBitmap(outputImage);
+                DisplayActiveBitmap(viewImage);
             }
             catch (InvalidOperationException)
             {
@@ -120,8 +118,7 @@ namespace GUI
         {
             string text = File.ReadAllText(fileName);
             List<Stroke> strokes = pltDecoder.Decode(text);
-            PaintStrokes(strokes);
-            strokes.Clear();
+            files[activeFile].ProcessStrokes(strokes);
         }
 
         private void ImageFileHandler(string fileName)
@@ -129,81 +126,13 @@ namespace GUI
             throw new NotImplementedException();
         }
 
-        private void PaintStrokes(List<Stroke> strokes)
-        {
-            DrawingVisual image = BuildImage(strokes);
-            RenderActiveBitmap(image);
-            PaintActiveBitmap(outputImage);
-        }
-
-        private void RenderActiveBitmap(DrawingVisual image)
-        {
-            Rect bounds = image.ContentBounds;
-            RenderTargetBitmap renderedImage = new((int)bounds.Width, (int)bounds.Height, 96, 96, PixelFormats.Default);
-            renderedImage.Render(image);
-            files[activeFile].Bitmap = renderedImage;
-        }
-
-        private DrawingVisual BuildImage(List<Stroke> strokes)
-        {
-            DrawingVisual image = new();
-            picture.Capacity = strokes.Count;
-            DrawingContext drawingContext = image.RenderOpen();
-            
-            LineGeometry line = GetLineGeometry(strokes[0]);
-            UpdatePenAndGeometry(out Pen pen, out GeometryGroup geometry, (Brush)(BWColor)strokes[0].StroceColor);
-            geometry.Children.Add(line);
-
-            for (int i = 1; i < strokes.Count; ++i)
-            {
-                SolidColorBrush newBrush = (Brush)(BWColor)strokes[i].StroceColor as SolidColorBrush;
-                if (newBrush.Color != (pen.Brush as SolidColorBrush).Color)
-                {
-                    drawingContext.DrawGeometry(null, pen, geometry);
-                    picture.Add((geometry, pen));
-                    UpdatePenAndGeometry(out pen, out geometry, newBrush);
-                }
-
-                line = GetLineGeometry(strokes[i]);
-                geometry.Children.Add(line);
-            }
-
-            drawingContext.DrawGeometry(null, pen, geometry);
-            picture.Add((geometry, pen));
-            drawingContext.Close();
-            return image;
-        }
-
-        private LineGeometry GetLineGeometry(Stroke stoke)
-        {
-            Point start = new(stoke.Start.X, stoke.Start.Y);
-            Point end = new(stoke.End.X, stoke.End.Y);
-
-            return new(start, end);
-        }
-
-        private void UpdatePenAndGeometry(out Pen pen, out GeometryGroup geometry, Brush brush)
-        {
-            geometry = new();
-            pen = new()
-            {
-                Thickness = penThikness,
-                StartLineCap = PenLineCap.Round,
-                EndLineCap = PenLineCap.Round,
-                Brush = brush
-            };
-        }
-
-        private void PaintActiveBitmap(Image image)
+        private void DisplayActiveBitmap(Image image)
         {
             //ImageBrush imageBrush = new(bitmap);
             //imageBrush.Stretch = Stretch.Uniform;
             //outputImage.Background = imageBrush;
 
-            RotateTransform rotate = new(files[activeFile].Angle);
-            TransformedBitmap tb = new(files[activeFile].Bitmap, rotate);
-
-            image.Source = tb;
+            image.Source = files[activeFile].RenderedPicture;
         }
 
         /// <summary>
@@ -238,7 +167,7 @@ namespace GUI
         {
             //var (centerX, centerY) = Helpers.GetCenter(outputImage.ActualWidth, outputImage.ActualHeight);
             files[activeFile].Rotate();
-            PaintActiveBitmap(outputImage);
+            DisplayActiveBitmap(viewImage);
         }
 
         private void RepaintImage(object sender, RoutedEventArgs e)
@@ -252,6 +181,7 @@ namespace GUI
                 return;
 
             ChangeActive(true);
+            DisplayActiveBitmap(viewImage);
         }
         
         private void SettingsClick(object sender, RoutedEventArgs e)
@@ -260,7 +190,7 @@ namespace GUI
                 return;
 
             ChangeActive(false);
-            PaintActiveBitmap(previewImage);
+            DisplayActiveBitmap(settingsImage);
             GUISettings.DisplaySettings(
                 new()
                 {
@@ -270,8 +200,8 @@ namespace GUI
                     { PossibleSettings.pixTol, ("Possible color deviation at the end", 6) },
                     { PossibleSettings.pixTol2, ("Possible color deviation on average", 100) },
                     { PossibleSettings.pixTolBest, ("The error of taking a smear", 4) },
-                    { PossibleSettings.maxLen, ("Maximum stroke length", penThikness * 10) },
-                    { PossibleSettings.brushWidth, ("Brush thickness", penThikness) },
+                    { PossibleSettings.maxLen, ("Maximum stroke length (mm)", files[activeFile].penThikness * 10) },
+                    { PossibleSettings.brushWidth, ("Brush thickness (mm)", files[activeFile].penThikness) },
                 }
             );
         }
@@ -294,28 +224,12 @@ namespace GUI
             }
         }
 
-        private void PictureSettingsChanged(Image imageToOut)
-        {
-            DrawingVisual image = new();
-            DrawingContext context = image.RenderOpen();
-
-            foreach (var (geometry, pen) in picture)
-            {
-                pen.Thickness = penThikness;
-                context.DrawGeometry(null, pen, geometry);
-            }
-
-            context.Close();
-            RenderActiveBitmap(image);
-            PaintActiveBitmap(imageToOut);
-        }
-
         private void ApplySettings(ImmutableDictionary<PossibleSettings, double> settedSettings, bool changed)
         {
             if (changed)
             {
-                penThikness = settedSettings[PossibleSettings.brushWidth];
-                PictureSettingsChanged(previewImage);
+                files[activeFile].Redraw(settedSettings);
+                DisplayActiveBitmap(settingsImage);
             }
         }
     }

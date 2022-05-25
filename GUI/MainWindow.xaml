@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:GUI"
         mc:Ignorable="d"
-        Title="RobotArtist" Height="450" Width="800">
+        Title="RobotArtist" Height="450" Width="800" WindowState="Maximized">
     <Grid x:Name="mainGrid">
         <Grid.RowDefinitions>
             <RowDefinition Height="26"/>
@@ -35,7 +35,7 @@
 
             <StackPanel x:Name="openedFiles" Grid.Row="0" Grid.Column="0" Orientation="Horizontal"/>
 
-            <Image x:Name="outputImage" Grid.Row="2" Grid.Column="0" Margin="5, 5">
+            <Image x:Name="viewImage" Grid.Row="2" Grid.Column="0" Margin="5, 5">
                 <Image.LayoutTransform>
                     <ScaleTransform ScaleX="1" ScaleY="-1"/>
                 </Image.LayoutTransform>
@@ -55,7 +55,7 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <Image x:Name="previewImage" Grid.Row="0" Grid.Column="0" Margin="5, 5">
+            <Image x:Name="settingsImage" Grid.Row="0" Grid.Column="0" Margin="5, 5">
                 <Image.LayoutTransform>
                     <ScaleTransform ScaleX="1" ScaleY="-1"/>
                 </Image.LayoutTransform>
