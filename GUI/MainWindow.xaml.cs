@@ -200,8 +200,8 @@ namespace GUI
                     { PossibleSettings.pixTol, ("Possible color deviation at the end", 6) },
                     { PossibleSettings.pixTol2, ("Possible color deviation on average", 100) },
                     { PossibleSettings.pixTolBest, ("The error of taking a smear", 4) },
-                    { PossibleSettings.maxLen, ("Maximum stroke length", files[activeFile].penThikness * 10) },
-                    { PossibleSettings.brushWidth, ("Brush thickness", files[activeFile].penThikness) },
+                    { PossibleSettings.maxLen, ("Maximum stroke length (mm)", files[activeFile].penThikness * 10) },
+                    { PossibleSettings.brushWidth, ("Brush thickness (mm)", files[activeFile].penThikness) },
                 }
             );
         }
