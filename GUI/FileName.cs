@@ -1,4 +1,6 @@
-﻿namespace GUI
+﻿using System;
+
+namespace GUI
 {
     internal class FileName
     {
@@ -13,6 +15,43 @@
         {
             FullName = fullName;
             ShortName = shortName;
+        }
+
+        public FileName(FileName other) : this(other.FullName, other.ShortName)
+        {
+        }
+
+        public static bool operator ==(FileName a, FileName b)
+        {
+            if (ReferenceEquals(a, b))
+                return true;
+            else if (ReferenceEquals(a, null) || ReferenceEquals(b, null))
+                return false;
+            else
+                return a.FullName == b.FullName && a.ShortName == b.ShortName;
+        }
+
+        public static bool operator !=(FileName a, FileName b)
+        {
+            if (ReferenceEquals(a, b))
+                return false;
+            else if (ReferenceEquals(a, null) || ReferenceEquals(b, null))
+                return true;
+            else
+                return a.FullName != b.FullName || a.ShortName != b.ShortName;                
+        }
+
+        public override int GetHashCode()
+        {
+            return Tuple.Create(FullName, ShortName).GetHashCode();
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is FileName fileName)
+                return this == fileName;
+            else
+                return false;
         }
     }
 }
