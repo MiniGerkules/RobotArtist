@@ -11,6 +11,8 @@ namespace GUI
     class PLTDecoder
     {
         public readonly static uint numTicksInMM = 40;
+        public uint MaxX { get; private set; } = 0;
+        public uint MaxY { get; private set; } = 0;
 
         private readonly List<Stroke> decodedPlt = new();
         private Point2D? lastPoint = null;
@@ -40,6 +42,8 @@ namespace GUI
             decodedPlt.Clear();
             lastPoint = null;
             curColor = null;
+            MaxX = 0;
+            MaxY = 0;
         }
 
         private void ProcessPart(string part)
@@ -68,6 +72,9 @@ namespace GUI
             uint[] coords = command[2..].Split(',').Select(elem => uint.Parse(elem)).ToArray();
             Point2D newPoint = new(coords);
             newPoint.Divide(numTicksInMM);
+
+            MaxX = Math.Max(MaxX, newPoint.X);
+            MaxY = Math.Max(MaxY, newPoint.Y);
 
             if (lastPoint != null)
                 decodedPlt.Add(new(lastPoint.Value, newPoint, curColor.Value));

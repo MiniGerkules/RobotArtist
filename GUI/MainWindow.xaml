@@ -13,15 +13,16 @@
         </Grid.RowDefinitions>
 
         <Menu x:Name="mainMenu" Grid.Row="0" Grid.Column="0" VerticalAlignment="Top" FontSize="16">
-            <MenuItem Header="Файл">
-                <MenuItem x:Name="openButton" Header="Открыть" Command="Open"/>
-                <MenuItem Header="Сохранить"/>
-                <MenuItem Header="Сохранить как"/>
-                <MenuItem Header="Закрыть"/>
-                <MenuItem Header="Выход"/>
+            <MenuItem Header="File">
+                <MenuItem x:Name="openButton" Header="Open" Command="Open"/>
+                <MenuItem Header="Save" Click="SaveFileClick"/>
+                <MenuItem Header="Save as" Click="SaveFileAsClick"/>
+                <MenuItem Header="Сlose" Click="CloseActiveFile"/>
+                <MenuItem Header="Exit" Click="CloseApp"/>
             </MenuItem>
-            <MenuItem x:Name="viewButton" Header="Просмотр" Click="ViewClick"/>
-            <MenuItem x:Name="settingsButton" Header="Настройки" Click="SettingsClick"/>
+            <MenuItem x:Name="viewButton" Header="Viewing" Click="ViewClick"/>
+            <MenuItem x:Name="settingsButton" Header="Settings" Click="SettingsClick"/>
+            <MenuItem x:Name="infoButton" Header="Information about the painting" Click="InfoClick"/>
         </Menu>
 
         <Grid x:Name="viewGrid" Visibility="Collapsed" Grid.Row="1" Grid.Column="0">
@@ -49,7 +50,7 @@
             </Image>
         </Grid>
 
-        <Grid x:Name="settingsGrid" Visibility="Visible" Grid.Row="1" Grid.Column="0">
+        <Grid x:Name="settingsGrid" Visibility="Collapsed" Grid.Row="1" Grid.Column="0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
@@ -63,5 +64,7 @@
 
             <Grid x:Name="settingsFields" Grid.Row="0" Grid.Column="1"/>
         </Grid>
+
+        <Grid x:Name="infoGrid" Visibility="Visible" Grid.Row="1" Grid.Column="0"/>
     </Grid>
 </Window>

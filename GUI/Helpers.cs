@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Windows;
+using System.Windows.Controls;
 
 namespace GUI
 {
@@ -41,6 +43,30 @@ namespace GUI
                 fileName = fileName[(index + 1)..];
 
             return fileName;
+        }
+
+        public static string GetFileNameWithoutExt(string shortFileName)
+        {
+            string fileName = new(shortFileName);
+
+            int index = fileName.LastIndexOf('.');
+            if (index != -1)
+                fileName = fileName[..index];
+
+            return fileName;
+        }
+
+        public static TextBlock CreateTextBlock(string text, HorizontalAlignment alignment, Thickness margin)
+        {
+            TextBlock label = new();
+            label.Text = text;
+            label.FontSize = 16;
+            label.TextWrapping = TextWrapping.Wrap;
+            label.HorizontalAlignment = alignment;
+            label.VerticalAlignment = VerticalAlignment.Center;
+            label.Margin = margin;
+
+            return label;
         }
     }
 }

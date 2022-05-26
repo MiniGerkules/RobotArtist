@@ -8,60 +8,40 @@ namespace GUI
 {
     internal class Settings
     {
-        private readonly Grid grid;
-        private readonly Dictionary<PossibleSettings, (TextBox, double)> settings = new();
         public event Action<ImmutableDictionary<PossibleSettings, double>, bool> applySettings;
+        private readonly Dictionary<PossibleSettings, (TextBox, double)> settings = new();
+        private readonly GridDisplayer displayer;
 
         public Settings(Grid grid)
         {
-            this.grid = grid;
+            displayer = new(grid);
         }
 
-        public void DisplaySettings(Dictionary<PossibleSettings, (string, double)> userNeed)
+        public void DisplaySettings(Dictionary<PossibleSettings, double> userNeed)
         {
-            GridInit(userNeed.Count + 1);
+            displayer.Reset();
+            displayer.GridInit(userNeed.Count + 1);
             settings.Clear();
 
-            int rowPtr = 0;
+            List<(UIElement, UIElement)> pairs = new(userNeed.Count);
             foreach(var pair in userNeed)
             {
                 var (label, value) = CreateRecord(pair);
-
-                Grid.SetRow(label, rowPtr);
-                Grid.SetColumn(label, 0);
-                Grid.SetRow(value, rowPtr);
-                Grid.SetColumn(value, 1);
-
-                grid.Children.Add(label);
-                grid.Children.Add(value);
-
-                settings.Add(pair.Key, (value, pair.Value.Item2));
-                ++rowPtr;
+                pairs.Add((label, value));
+                settings.Add(pair.Key, (value, pair.Value));
             }
 
-            Button apply = new();
-            apply.Content = "Apply settings";
-            apply.Margin = new(5, 5, 5, 5);
-            apply.Background = MainWindow.buttonColor;
-            apply.Click += ApplySettings;
-            Grid.SetRow(apply, rowPtr);
-            Grid.SetColumn(apply, 0);
-            Grid.SetColumnSpan(apply, 2);
-            grid.Children.Add(apply);
+            displayer.DisplayPairs(pairs);
+            displayer.DisplayButton("Apply settings", ApplySettings);
         }
 
-        private (TextBlock, TextBox) CreateRecord(KeyValuePair<PossibleSettings, (string, double)> pair)
+        private (TextBlock, TextBox) CreateRecord(KeyValuePair<PossibleSettings, double> pair)
         {
-            TextBlock label = new();
-            label.Text = pair.Value.Item1;
-            label.FontSize = 16;
-            label.TextWrapping = TextWrapping.Wrap;
-            label.HorizontalAlignment = HorizontalAlignment.Right;
-            label.VerticalAlignment = VerticalAlignment.Center;
-            label.Margin = new(5, 2.5, 2.5, 2.5);
+            TextBlock label = Helpers.CreateTextBlock(pair.Key.GetDescription(),
+                HorizontalAlignment.Right, new(5, 2.5, 2.5, 2.5));
 
             TextBox value = new();
-            value.Text = pair.Value.Item2.ToString();
+            value.Text = pair.Value.ToString();
             value.FontSize = 16;
             value.TextWrapping = TextWrapping.Wrap;
             value.HorizontalContentAlignment = HorizontalAlignment.Left;
@@ -71,26 +51,6 @@ namespace GUI
             return (label, value);
         }
 
-        private void GridInit(int numOfRows)
-        {
-            grid.Children.Clear();
-            grid.RowDefinitions.Clear();
-            grid.ColumnDefinitions.Clear();
-
-            for (uint i = 0; i < 2; ++i)
-            {
-                ColumnDefinition column = new();
-                column.Width = new(2 - i, GridUnitType.Star);
-                grid.ColumnDefinitions.Add(column);
-            }
-
-            for (uint i = 0; i < numOfRows; ++i)
-            {
-                RowDefinition row = new();
-                grid.RowDefinitions.Add(row);
-            }
-        }
-
         private void ApplySettings(object sender, RoutedEventArgs e)
         {
             if (applySettings == null)
@@ -98,7 +58,6 @@ namespace GUI
 
             List<string> errors = new();
             bool isChanged = false;
-
             Dictionary<PossibleSettings, double> applied = new();
             foreach (var pair in settings)
             {
