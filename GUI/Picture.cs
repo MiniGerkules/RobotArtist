@@ -1,6 +1,6 @@
-﻿using System.Windows.Media;
+﻿using System.Windows;
+using System.Windows.Media;
 using System.Collections.Generic;
-using System.Windows;
 using System.Windows.Media.Imaging;
 using System.Collections.Immutable;
 
@@ -13,14 +13,19 @@ namespace GUI
         public double penThikness { get; private set; } = 4;
         private ushort angle = 0;
 
+        public double Width { get; private set; }
+        public double Height { get; private set; }
+
         public Picture()
         {
             RenderedPicture = null;
             Strokes = new();
         }
 
-        public void ProcessStrokes(List<Stroke> strokes)
+        public void ProcessStrokes(List<Stroke> strokes, double width, double height)
         {
+            Width = width;
+            Height = height;
             DrawingVisual image = BuildImage(strokes);
             RenderBitmap(image);
             strokes.Clear();
@@ -32,6 +37,8 @@ namespace GUI
 
             DrawingVisual image = new();
             DrawingContext context = image.RenderOpen();
+            SetBackground(context, Brushes.White);
+
             foreach (var (geometry, pen) in Strokes)
             {
                 pen.Thickness = penThikness;
@@ -47,6 +54,20 @@ namespace GUI
         {
             angle = (ushort)((angle + 90) % 360);
             RestoreRotationAngle(90);
+        }
+
+        public ImmutableDictionary<PossibleSettings, double> GetActualSettings()
+        {
+            return new Dictionary<PossibleSettings, double>()
+            {
+                { PossibleSettings.brushWidth, penThikness }
+            }.ToImmutableDictionary();
+        }
+
+        private void SetBackground(DrawingContext context, Brush brush)
+        {
+            Rect background = new(-penThikness/2, -penThikness/2, Width + penThikness, Height + penThikness);
+            context.DrawRectangle(brush, null, background);
         }
 
         private void RestoreRotationAngle(ushort angle)
@@ -73,8 +94,9 @@ namespace GUI
         {
             DrawingVisual image = new();
             Strokes.Capacity = strokes.Count;
-            DrawingContext drawingContext = image.RenderOpen();
+            DrawingContext context = image.RenderOpen();
 
+            SetBackground(context, Brushes.White);
             LineGeometry line = GetLineGeometry(strokes[0]);
             UpdatePenAndGeometry(out Pen pen, out GeometryGroup geometry, (Brush)(BWColor)strokes[0].StroceColor);
             geometry.Children.Add(line);
@@ -84,7 +106,7 @@ namespace GUI
                 SolidColorBrush newBrush = (Brush)(BWColor)strokes[i].StroceColor as SolidColorBrush;
                 if (newBrush.Color != (pen.Brush as SolidColorBrush).Color)
                 {
-                    drawingContext.DrawGeometry(null, pen, geometry);
+                    context.DrawGeometry(null, pen, geometry);
                     Strokes.Add((geometry, pen));
                     UpdatePenAndGeometry(out pen, out geometry, newBrush);
                 }
@@ -93,9 +115,9 @@ namespace GUI
                 geometry.Children.Add(line);
             }
 
-            drawingContext.DrawGeometry(null, pen, geometry);
+            context.DrawGeometry(null, pen, geometry);
+            context.Close();
             Strokes.Add((geometry, pen));
-            drawingContext.Close();
             return image;
         }
 
