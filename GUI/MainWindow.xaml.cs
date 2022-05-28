@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 using System.Windows;
 using Microsoft.Win32;
 using System.Windows.Input;
@@ -119,7 +118,8 @@ namespace GUI
 
         private void ImageFileHandler(string fileName)
         {
-            throw new NotImplementedException();
+            BitmapImage image = new(new Uri(fileName));
+            tracer = new(new(image, new()));
         }
 
         private void DisplayActiveBitmap(Image image)
