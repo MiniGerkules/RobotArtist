@@ -119,7 +119,7 @@ namespace GUI
         private void ImageFileHandler(string fileName)
         {
             BitmapImage image = new(new Uri(fileName));
-            tracer = new(new(image, new()));
+            tracer = new(image, new(new()));
         }
 
         private void DisplayActiveBitmap(Image image)

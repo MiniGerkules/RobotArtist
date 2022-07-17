@@ -1,11 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.31515.178
+# Visual Studio Version 17
+VisualStudioVersion = 17.2.32516.85
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GUI", "GUI\GUI.csproj", "{AE8CB19A-1217-4B5D-97F2-F3C17639FFEA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Algorithm", "Algorithm\Algorithm.csproj", "{D9E945A4-F7F4-4383-8BDB-3B2DF0465BBD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Algorithm", "Algorithm\Algorithm.csproj", "{D9E945A4-F7F4-4383-8BDB-3B2DF0465BBD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestMatlabFunctionsAndOperations", "TestMatlabFunctionsAndOperations\TestMatlabFunctionsAndOperations.csproj", "{3A81E5A4-E8F0-4454-BE7C-989F49FE1CC4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{D9E945A4-F7F4-4383-8BDB-3B2DF0465BBD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D9E945A4-F7F4-4383-8BDB-3B2DF0465BBD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D9E945A4-F7F4-4383-8BDB-3B2DF0465BBD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3A81E5A4-E8F0-4454-BE7C-989F49FE1CC4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3A81E5A4-E8F0-4454-BE7C-989F49FE1CC4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3A81E5A4-E8F0-4454-BE7C-989F49FE1CC4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3A81E5A4-E8F0-4454-BE7C-989F49FE1CC4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
