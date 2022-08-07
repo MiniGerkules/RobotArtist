@@ -1,12 +1,7 @@
 ﻿using System;
-using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Collections.Generic;
-using Microsoft.Office.Interop.Excel;
-
-using Range = Microsoft.Office.Interop.Excel.Range;
-using Application = Microsoft.Office.Interop.Excel.Application;
 
 namespace GUI
 {
@@ -79,41 +74,16 @@ namespace GUI
         public static double Minus(double a, double b) => a - b;
         public static double Multiply(double a, double b) => a * b;
         public static double Divide(double a, double b) => a / b;
-
         public static double Square(double a) => a * a;
 
-        public static List<List<List<double>>> LoadDatabase(String pathToColorDatabase)
+        public static List<List<double>> GetByIndexes(List<List<double>> getFrom, int[] indexes)
         {
-            if (!File.Exists(pathToColorDatabase))
-                return null;
+            List<List<double>> list = new(indexes.Length);
 
-            Application excel = new();
-            Workbook excelBook = excel.Workbooks.Open(pathToColorDatabase, UpdateLinks: 0,
-                ReadOnly: true, Origin: XlPlatform.xlWindows);
+            foreach (int index in indexes)
+                list.Add(getFrom[index]);
 
-            List<List<List<double>>> colorDatabase = new(excelBook.Sheets.Count);
-            for (int i = 0; i < excelBook.Sheets.Count; ++i)
-            {
-                Worksheet current = (Worksheet)excelBook.Sheets[i + 1];
-                Range rows = current.Rows;
-
-                Range first_cell = current.Cells[1, 1];
-                Range lastRow = current.Cells.get_End(XlDirection.xlDown);
-                int numOfRows = current.get_Range(first_cell, lastRow).Count;
-
-                colorDatabase.Add(new(numOfRows));
-                for (int j = 0; j < numOfRows; ++j)
-                {
-                    object[,] values = ((object[,])rows[j + 1].Value2);
-
-                    colorDatabase[i].Add(new(6));
-                    for (int k = 0; k < 6; ++k)
-                        colorDatabase[i][j].Add(Convert.ToDouble(values[1, k + 1]));
-                }
-            }
-
-            excel.Quit();
-            return colorDatabase;
+            return list;
         }
     }
 }
