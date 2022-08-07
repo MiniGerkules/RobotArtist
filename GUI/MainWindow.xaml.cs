@@ -36,6 +36,8 @@ namespace GUI
         private readonly PLTDecoder pltDecoder = new();
         private readonly Settings GUISettings;
 
+        private readonly string pathToDatabase = @"C:\ModelTable600.xls";
+
         public MainWindow()
         {
             InitializeComponent();
@@ -50,48 +52,72 @@ namespace GUI
             openButton.CommandBindings.Add(commandBinding);
         }
 
+        private void WindowLoaded(object sender, RoutedEventArgs e)
+        {
+            Database.LoadDatabase(pathToDatabase);
+
+            if (!Database.IsLoad())
+            {
+                MessageBox.Show("Can't to upload a file with color data. Check the presence " +
+                    "of the Am file in the directory.", "Error!", MessageBoxButton.OK);
+                Close();
+            }
+        }
+
         private void OpenFile(object sender, ExecutedRoutedEventArgs e)
         {
             OpenFileDialog fileDialog = new();
             fileDialog.Filter = "Picture or PLT-file|*.jpg;*.png;*.bmp;*.plt";
 
             if (fileDialog.ShowDialog() == false)
-            {
                 MessageBox.Show("Can't open file!", "Error!", MessageBoxButton.OK);
-                return;
-            }
-
-            ChangeActive(Active.ViewGrid);
-            if (!AddNewOpenedFile(fileDialog.FileName))
-                return;
-
-            if (fileDialog.FileName.EndsWith(".plt"))
-                PLTFileHandler(fileDialog.FileName);
             else
-                ImageFileHandler(fileDialog.FileName);
-
-            DisplayActiveBitmap(viewImage);
+                ProcessFile(fileDialog.FileName);
         }
 
-        private bool AddNewOpenedFile(string fullFilePath)
+        private void ProcessFile(string fileName)
         {
-            FileName fileName = new(fullFilePath);
-            if (files.ContainsKey(fileName))
+            FileName file = new(fileName);
+            if (IsFileAlreadyOpened(file))
+                return;
+
+            //try
+            //{
+                if (fileName.EndsWith(".plt"))
+                    PLTFileHandler(fileName);
+                else
+                    ImageFileHandler(fileName);
+            //}
+            //catch (ArgumentException error)
+            //{
+            //    MessageBox.Show($"Can't process file!\n{error.Message}",
+            //                    "Error!", MessageBoxButton.OK);
+            //    return;
+            //}
+
+            AddNewOpenedFile(file);
+            ChangeActive(Active.ViewGrid);
+            DisplayActiveBitmap(viewImage);
+        }
+        
+        private bool IsFileAlreadyOpened(FileName file)
+        {
+            if (files.ContainsKey(file))
             {
-                UpdateOutputImage(fileName);
-                return false;
+                UpdateOutputImage(file);
+                return true;
             }
 
-            activeFile = new(fileName);
-            files.Add(activeFile, new());
+            return false;
+        }
 
+        private void AddNewOpenedFile(FileName fileName)
+        {
             OpenedFile file = new(fileName);
             file.Background = buttonColor;
             file.Click += ChangeFile;
             openedFiles.Children.Add(file);
             tabs[activeFile] = openedFiles.Children[^1];
-
-            return true;
         }
 
         private void ChangeFile(object sender, EventArgs e)
@@ -105,6 +131,7 @@ namespace GUI
 
         private void UpdateOutputImage(FileName fileName)
         {
+            ChangeActive(Active.ViewGrid);
             activeFile = fileName;
             DisplayActiveBitmap(viewImage);
         }
@@ -113,7 +140,12 @@ namespace GUI
         {
             string text = File.ReadAllText(fileName);
             List<Stroke> strokes = pltDecoder.Decode(text);
-            files[activeFile].ProcessStrokes(strokes, pltDecoder.MaxX, pltDecoder.MaxY);
+
+            Picture picture = new();
+            picture.ProcessStrokes(strokes, pltDecoder.MaxX, pltDecoder.MaxY);
+
+            activeFile = new(fileName);
+            files[activeFile] = picture;
         }
 
         private void ImageFileHandler(string fileName)

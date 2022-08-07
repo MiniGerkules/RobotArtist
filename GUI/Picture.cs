@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System.IO;
+using System.Windows;
 using System.Windows.Media;
 using System.Collections.Generic;
 using System.Windows.Media.Imaging;
@@ -97,28 +98,31 @@ namespace GUI
             DrawingContext context = image.RenderOpen();
 
             SetBackground(context, Brushes.White);
-            LineGeometry line = GetLineGeometry(strokes[0]);
-            UpdatePenAndGeometry(out Pen pen, out GeometryGroup geometry, (Brush)(BWColor)strokes[0].StroceColor);
-            geometry.Children.Add(line);
-
-            for (int i = 1; i < strokes.Count; ++i)
+            UpdateColor(out Pen pen, out var geometry, strokes[0].StroceColor, out var lastColor);
+            for (int i = 0; i < strokes.Count; ++i)
             {
-                SolidColorBrush newBrush = (Brush)(BWColor)strokes[i].StroceColor as SolidColorBrush;
-                if (newBrush.Color != (pen.Brush as SolidColorBrush).Color)
+                if (strokes[i].StroceColor != lastColor)
                 {
                     context.DrawGeometry(null, pen, geometry);
                     Strokes.Add((geometry, pen));
-                    UpdatePenAndGeometry(out pen, out geometry, newBrush);
+                    UpdateColor(out pen, out geometry, strokes[i].StroceColor, out lastColor);
                 }
 
-                line = GetLineGeometry(strokes[i]);
-                geometry.Children.Add(line);
+                geometry.Children.Add(GetLineGeometry(strokes[i]));
             }
 
             context.DrawGeometry(null, pen, geometry);
-            context.Close();
             Strokes.Add((geometry, pen));
+            
+            context.Close();
             return image;
+        }
+
+        private void UpdateColor(out Pen pen, out GeometryGroup geometry,
+                                 CMYBWColor newColor, out CMYBWColor oldColor)
+        {
+            UpdatePenAndGeometry(out pen, out geometry, (Brush)newColor);
+            oldColor = newColor;
         }
 
         private void UpdatePenAndGeometry(out Pen pen, out GeometryGroup geometry, Brush newColor)
