@@ -205,6 +205,31 @@ namespace GUI
             return result;
         }
 
+        public Matrix GetByIndexes(int[] indexes)
+        {
+            Matrix matrix = new(indexes.Length, Columns);
+
+            for (int i = 0; i < indexes.Length; ++i)
+                for (int j = 0; j < Columns; ++j)
+                    matrix[i, j] = this.matrix[indexes[i], j];
+
+            return matrix;
+        }
+
+        public Matrix MakeDiag()
+        {
+            if (!(Rows > 1 && Columns == 1 || Rows == 1 && Columns > 1))
+                throw new ArgumentException("Can't make a diagonal matrix! The matrix must be a vector!");
+
+            int dim = Math.Max(Rows, Columns);
+            Matrix result = new(dim, dim, 0);
+
+            for (int i = 0; i < dim; ++i)
+                result[i, i] = this[i];
+
+            return result;
+        }
+
         public Matrix Pow(Matrix powers)
         {
             if (powers.Columns == 1 && powers.Rows == Rows)
@@ -308,6 +333,17 @@ namespace GUI
                 for (int j = 0; j < second.Columns; ++j)
                     for (int k = 0; k < second.Rows; ++k)
                         result[i, j] += first[i, k] * second[k, j];
+
+            return result;
+        }
+
+        public static Matrix operator /(double num, Matrix matrix)
+        {
+            Matrix result = new(matrix.Rows, matrix.Columns);
+
+            for (int i = 0; i < matrix.Rows; ++i)
+                for (int j = 0; j < matrix.Columns; ++j)
+                    result[i, j] = num / matrix[i, j];
 
             return result;
         }

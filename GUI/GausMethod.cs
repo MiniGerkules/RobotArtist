@@ -14,6 +14,12 @@ namespace GUI
 
             Matrix coefsCopy = new(coefs);
             Matrix answersCopy = new(answers);
+
+            // Tikhonov regularization
+            Matrix regularization = new(coefs.Rows, 1, 1e-10);
+            regularization = regularization.MakeDiag();
+            coefsCopy = coefsCopy + regularization;
+
             for (int i = 0; i < coefsCopy.Rows; ++i)
             {
                 if (IsFullNulls(coefsCopy, i))

@@ -10,8 +10,9 @@ namespace GUI
     /// </summary>
     internal struct CMYBWColor
     {
+        private static uint minColors = 5; // White/black pictures
+        private static uint maxColors = 8; // Color pictures
         private uint cyan, magenta, yellow, blue, white;
-        private static uint numOfColors = 8;
 
         private (uint, uint, uint, uint, uint) GetColors()
         {
@@ -30,8 +31,9 @@ namespace GUI
         public CMYBWColor(string[] colors)
         {
             (cyan, magenta, yellow, blue, white) = colors.Select(elem => uint.Parse(elem)).ToArray() switch {
-                var arr when arr.Length == numOfColors => (arr[0], arr[1], arr[2], arr[3], arr[4]),
-                _ => throw new ArgumentException($"The number of colors is not equal to {numOfColors}!")
+                var arr when (minColors == arr.Length || arr.Length == maxColors) =>
+                                                                    (arr[0], arr[1], arr[2], arr[3], arr[4]),
+                _ => throw new ArgumentException("There isn't correct number of the colors!")
             };
         }
 
@@ -122,17 +124,13 @@ namespace GUI
             for (int i = 0; i < numRows; ++i) {
                 Matrix matrix = new(proportions[i]);
                 // Euclidean distance
-                Matrix fir = (props - matrix);
-                Matrix sec = (props - matrix).Transpose();
-                Matrix mul = fir * sec;
-
-                double distInSquare = (double)(mul);
-                distances[i] = Math.Sqrt(distInSquare);
+                distances[i] = (double)((props - matrix) * (props - matrix).Transpose());
             }
 
             int[] indexes = distances.GetIndexesForSorted();
-            int numOfColors = 50;
+            int numOfColors = 20;
 
+            Matrix D = (1 / distances.GetByIndexes(indexes[..numOfColors])).MakeDiag();
             Matrix nearestPoints = new(Helpers.GetByIndexes(hsv, indexes[..numOfColors]));
             Matrix propsOfNearestPoints = new(Helpers.GetByIndexes(proportions, indexes[..numOfColors]));
 
@@ -160,9 +158,12 @@ namespace GUI
                     E = E + mul;
                 }
 
-                Matrix coefs = E.Transpose() * E;
-                Matrix answers = E.Transpose() * nearestPoints.GetColumn(i);
-                // firstPart * X = secondPart
+                //Matrix coefs = E.Transpose() * E;
+                //Matrix answers = E.Transpose() * nearestPoints.GetColumn(i);
+                //h = GausMethod.Solve(coefs, answers); // OLS
+
+                Matrix coefs = E.Transpose() * D * E;
+                Matrix answers = E.Transpose() * D * nearestPoints.GetColumn(i);
                 h = GausMethod.Solve(coefs, answers);
 
                 // Predict proportion
