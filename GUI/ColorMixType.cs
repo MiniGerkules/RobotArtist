@@ -8,6 +8,6 @@ namespace GUI
 {
     internal enum ColorMixType
     {
-        MagentaYellow = 0, YellowCyan, CyanMagenta
+        MagentaYellow1 = 0, MagentaYellow2, YellowCyan, CyanMagenta
     }
 }

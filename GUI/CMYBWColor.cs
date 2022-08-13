@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Windows.Media;
 using System.Collections.Generic;
 
 namespace GUI
@@ -57,29 +56,29 @@ namespace GUI
             return HashCode.Combine(cyan, magenta, yellow, blue, white);
         }
 
-        public static explicit operator Brush(CMYBWColor color)
+        public static explicit operator HSVColor(CMYBWColor color)
         {
             double a = 0, b = 0, c = 0;
 
-            ColorMixType mixType = ColorMixType.MagentaYellow;
+            ColorMixType mixType = ColorMixType.MagentaYellow1;
             if (color.cyan + color.magenta + color.yellow > 0)
             {
                 if ((color.magenta > 0) && (color.yellow > 0 || color.cyan == 0))
                 {
-                    mixType = ColorMixType.MagentaYellow;
                     a = (double)color.magenta / (color.magenta + color.yellow);
+                    mixType = a > 0.4 ? ColorMixType.MagentaYellow1 : ColorMixType.MagentaYellow2;
                 }
                 else
                 {
                     if ((color.yellow > 0) && (color.cyan > 0 || color.magenta == 0))
                     {
-                        mixType = ColorMixType.YellowCyan;
                         a = (double)color.yellow / (color.cyan + color.yellow);
+                        mixType = ColorMixType.YellowCyan;
                     }
                     else
                     {
-                        mixType = ColorMixType.CyanMagenta;
                         a = (double)color.cyan / (color.cyan + color.magenta);
+                        mixType = ColorMixType.CyanMagenta;
                     }
                 }
             }
@@ -95,7 +94,7 @@ namespace GUI
 
             List<List<double>> hsv;
             List<List<double>> proportions;
-            if (mixType == ColorMixType.MagentaYellow)
+            if (mixType == ColorMixType.MagentaYellow1 || mixType == ColorMixType.MagentaYellow2)
             {
                 hsv = new(Database.Data[0].Count + Database.Data[1].Count);
                 hsv.AddRange(Database.Data[0].Select(elem => elem.GetRange(0, 3)));
@@ -108,13 +107,11 @@ namespace GUI
             }
             else
             {
-                int sheet = (int)mixType + 1;
+                hsv = new(Database.Data[(int)mixType].Count);
+                hsv.AddRange(Database.Data[(int)mixType].Select(elem => elem.GetRange(0, 3)));
 
-                hsv = new(Database.Data[sheet].Count);
-                hsv.AddRange(Database.Data[sheet].Select(elem => elem.GetRange(0, 3)));
-
-                proportions = new(Database.Data[sheet].Count);
-                proportions.AddRange(Database.Data[sheet].Select(elem => elem.GetRange(3, 3)));
+                proportions = new(Database.Data[(int)mixType].Count);
+                proportions.AddRange(Database.Data[(int)mixType].Select(elem => elem.GetRange(3, 3)));
             }
 
             int numRows = hsv.Count;
@@ -123,47 +120,51 @@ namespace GUI
 
             for (int i = 0; i < numRows; ++i) {
                 Matrix matrix = new(proportions[i]);
-                // Euclidean distance
+                // squared Euclidean distance
                 distances[i] = (double)((props - matrix) * (props - matrix).Transpose());
             }
 
             int[] indexes = distances.GetIndexesForSorted();
-            int numOfColors = 20;
+            int numOfColors = Math.Min(250, numRows);
 
             Matrix D = (1 / distances.GetByIndexes(indexes[..numOfColors])).MakeDiag();
             Matrix nearestPoints = new(Helpers.GetByIndexes(hsv, indexes[..numOfColors]));
             Matrix propsOfNearestPoints = new(Helpers.GetByIndexes(proportions, indexes[..numOfColors]));
 
+            Matrix E = new(numOfColors, 4, 0); // evaluated polynomial
+            Matrix T = new(4, 3); // monomial orders
+            T.MakeUnit(1);
+                
+            Matrix h = new(4, 4);
+            h.MakeUnit(0);
+
+            for (int i = 0; i < 4; ++i)
+            {
+                Matrix fir = h.GetRow(i);
+                Matrix sec = Matrix.MulByRows(propsOfNearestPoints.Pow(T.GetRow(i)));
+                    
+                int columnRepeat = fir.Columns;
+                int rowsRepeat = sec.Rows;
+                fir = fir.RepeatRows(rowsRepeat);
+                sec = sec.RepeatColumns(columnRepeat);
+
+                Matrix mul = fir ^ sec;
+                E = E + mul;
+            }
+
             double[] hsvColor = new double[3];
+            Matrix hsvOfNearestPoints = new(Helpers.GetByIndexes(hsv, indexes[..numOfColors]));
+
             for (int i = 0; i < hsvColor.Length; ++i)
             {
-                Matrix E = new(numOfColors, 4, 0); // evaluated polynomial
-                Matrix T = new(4, 3); // monomial orders
-                T.MakeUnit(1);
-                
-                Matrix h = new(4, 4);
-                h.MakeUnit(0);
-
-                for (int k = 0; k < 4; ++k)
-                {
-                    Matrix fir = h.GetRow(k);
-                    Matrix sec = Matrix.MulByRows(propsOfNearestPoints.Pow(T.GetRow(k)));
-                    
-                    int columnRepeat = fir.Columns;
-                    int rowsRepeat = sec.Rows;
-                    fir = fir.RepeatRows(rowsRepeat);
-                    sec = sec.RepeatColumns(columnRepeat);
-
-                    Matrix mul = fir ^ sec;
-                    E = E + mul;
-                }
-
                 //Matrix coefs = E.Transpose() * E;
                 //Matrix answers = E.Transpose() * nearestPoints.GetColumn(i);
                 //h = GausMethod.Solve(coefs, answers); // OLS
 
+                Matrix V = hsvOfNearestPoints.GetColumn(i);
+
                 Matrix coefs = E.Transpose() * D * E;
-                Matrix answers = E.Transpose() * D * nearestPoints.GetColumn(i);
+                Matrix answers = E.Transpose() * D * V;
                 h = GausMethod.Solve(coefs, answers);
 
                 // Predict proportion
@@ -188,37 +189,8 @@ namespace GUI
             for (int i = 0; i < hsvColor.Length; ++i)
                 hsvColor[i] = Math.Min(Math.Max(hsvColor[i], 0), 1); // Get into ranges[0, 1]
 
-            return new SolidColorBrush(GetRGBFromHSV(hsvColor[0], hsvColor[1], hsvColor[2]));
-        }
-
-        private static Color GetRGBFromHSV(double hue, double saturation, double value)
-        {
-            // https://en.wikipedia.org/wiki/HSL_and_HSV#HSV_to_RGB
-            double hueInDegrees = hue * 360;
-            double C = saturation * value; // цветность
-            double H = hueInDegrees / 60;
-            double X = C * (1 - Math.Abs(H % 2 - 1));
-
-            double r1, g1, b1;
-            if (0 <= H && H < 1)
-                (r1, g1, b1) = (C, X, 0);
-            else if (1 <= H && H < 2)
-                (r1, g1, b1) = (X, C, 0);
-            else if (2 <= H && H < 3)
-                (r1, g1, b1) = (0, C, X);
-            else if (3 <= H && H < 4)
-                (r1, g1, b1) = (0, X, C);
-            else if (4 <= H && H < 5)
-                (r1, g1, b1) = (X, 0, C);
-            else /* 5 <= H && H < 6 */
-                (r1, g1, b1) = (C, 0, X);
-
-            double m = value - C;
-            byte red = (byte)((r1 + m) * 255);
-            byte green = (byte)((g1 + m) * 255);
-            byte blue = (byte)((b1 + m) * 255);
-
-            return Color.FromRgb(red, green, blue);
+            HSVColor col = new HSVColor(hsvColor);
+            return col;
         }
     }
 }
