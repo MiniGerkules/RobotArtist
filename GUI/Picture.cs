@@ -1,5 +1,4 @@
-﻿using System.IO;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Media;
 using System.Collections.Generic;
 using System.Windows.Media.Imaging;
@@ -121,7 +120,7 @@ namespace GUI
         private void UpdateColor(out Pen pen, out GeometryGroup geometry,
                                  CMYBWColor newColor, out CMYBWColor oldColor)
         {
-            UpdatePenAndGeometry(out pen, out geometry, (Brush)newColor);
+            UpdatePenAndGeometry(out pen, out geometry, new SolidColorBrush((Color)(HSVColor)newColor));
             oldColor = newColor;
         }
 
