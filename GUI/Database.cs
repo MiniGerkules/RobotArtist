@@ -1,10 +1,9 @@
 ﻿using System;
 using System.IO;
 using System.Collections.Generic;
-using Microsoft.Office.Interop.Excel;
-
-using Range = Microsoft.Office.Interop.Excel.Range;
-using Application = Microsoft.Office.Interop.Excel.Application;
+using NPOI.SS.UserModel;
+using NPOI.XSSF.UserModel;
+using NPOI.HSSF.UserModel;
 
 namespace GUI
 {
@@ -26,40 +25,35 @@ namespace GUI
                 return;
             }
 
-            Application excel = new();
-            Workbook excelBook = excel.Workbooks.Open(pathToColorDatabase, UpdateLinks: 0,
-                ReadOnly: true, Origin: XlPlatform.xlWindows);
-
-            data = new(excelBook.Sheets.Count);
-            for (int i = 0; i < excelBook.Sheets.Count; ++i)
-                GetSheetIntoDataBase(excelBook, i);
-
-            excel.Quit();
-        }
-
-        private static void GetSheetIntoDataBase(Workbook excelBook, int curIndex)
-        {
-            Worksheet current = (Worksheet)excelBook.Sheets[curIndex + 1];
-            Range rows = current.Rows;
-
-            int numOfRows = GetNumberOfRows(current);
-            data.Add(new(numOfRows));
-            for (int j = 0; j < numOfRows; ++j)
+            IWorkbook workbook;
+            using (FileStream stream = File.OpenRead(pathToColorDatabase))
             {
-                object[,] values = ((object[,])rows[j + 1].Value2);
-
-                data[curIndex].Add(new(6));
-                for (int k = 0; k < 6; ++k)
-                    data[curIndex][j].Add(Convert.ToDouble(values[1, k + 1]));
+                if (pathToColorDatabase.EndsWith(".xls"))
+                    workbook = new HSSFWorkbook(stream);
+                else
+                    workbook = new XSSFWorkbook(stream);
             }
+            
+            data = new(workbook.NumberOfSheets);
+            for (int i = 0; i < workbook.NumberOfSheets; ++i)
+                GetSheetIntoDataBase(workbook.GetSheetAt(i));
+
+            workbook.Close();
         }
 
-        private static int GetNumberOfRows(Worksheet sheet)
+        private static void GetSheetIntoDataBase(ISheet sheet)
         {
-            Range first_cell = sheet.Cells[1, 1];
-            Range lastRow = sheet.Cells.get_End(XlDirection.xlDown);
+            List<List<double>> sheetInList = new(sheet.LastRowNum);
+            foreach (IRow row in sheet)
+            {
+                List<double> rowInList = new(row.LastCellNum);
+                foreach (ICell cell in row)
+                    rowInList.Add(cell.NumericCellValue);
 
-            return sheet.get_Range(first_cell, lastRow).Count;
+                sheetInList.Add(rowInList);
+            }
+
+            data.Add(sheetInList);
         }
     }
 }
