@@ -3,7 +3,7 @@ using System.Windows.Media;
 
 namespace GUI
 {
-    internal class HSVColor
+    internal class HSVColor : PLTColor
     {
         private double hue;             // From 0 to 1
         private double saturation;      // From 0 to 1
@@ -26,11 +26,11 @@ namespace GUI
             value = hsv[2];
         }
 
-        public static explicit operator Color(HSVColor color)
+        public override Color ToColor()
         {
             // https://en.wikipedia.org/wiki/HSL_and_HSV#HSV_to_RGB
-            double hueInDegrees = color.hue * 360;
-            double C = color.saturation * color.value; // цветность
+            double hueInDegrees = hue * 360;
+            double C = saturation * value; // цветность
             double H = hueInDegrees / 60;
             double X = C * (1 - Math.Abs(H % 2 - 1));
 
@@ -48,12 +48,12 @@ namespace GUI
             else /* 5 <= H && H < 6 */
                 (r1, g1, b1) = (C, 0, X);
 
-            double m = color.value - C;
+            double m = value - C;
             byte red = (byte)((r1 + m) * 255);
             byte green = (byte)((g1 + m) * 255);
             byte blue = (byte)((b1 + m) * 255);
 
-            return Color.FromRgb(red, green, blue);
+            return new RGBColor(red, green, blue).ToColor();
         }
     }
 }

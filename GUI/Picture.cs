@@ -118,9 +118,9 @@ namespace GUI
         }
 
         private void UpdateColor(out Pen pen, out GeometryGroup geometry,
-                                 CMYBWColor newColor, out CMYBWColor oldColor)
+                                 PLTColor newColor, out PLTColor oldColor)
         {
-            UpdatePenAndGeometry(out pen, out geometry, new SolidColorBrush((Color)(HSVColor)newColor));
+            UpdatePenAndGeometry(out pen, out geometry, new SolidColorBrush(newColor.ToColor()));
             oldColor = newColor;
         }
 

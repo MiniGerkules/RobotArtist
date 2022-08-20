@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Numerics;
 using System.Collections.Generic;
+using System.IO;
 
 namespace GUI
 {
@@ -16,23 +17,35 @@ namespace GUI
 
         private readonly List<Stroke> decodedPlt = new();
         private Point2D? lastPoint = null;
-        private CMYBWColor? curColor = null;
+        private PLTColor curColor = null;
 
         /// <summary>
         /// The method decodes the plt code passed in the string
         /// </summary>
-        /// <param name="pltCode"> A string containing the plt code </param>
+        /// <param name="fileName"> Path to the file with plt code </param>
         /// <returns> List of strokes with specified colors </returns>
-        public List<Stroke> Decode(string pltCode)
+        public List<Stroke> Decode(string fileName)
         {
-            if (pltCode[..2].ToLower() != "in" || pltCode[pltCode.Length - 1] != ';')
-                throw new ArgumentException("ERROR! Invalid code. PLT-code should start with [IN] operator!");
+            using (StreamReader reader = new(fileName))
+            {
+                string line = reader.ReadLine();
 
-            pltCode = pltCode[3..(pltCode.Length - 1)];
-            NewDecode();
+                if (line == null || line == "")
+                    throw new ArgumentException("ERROR! PLT file is empty!");
+                if (line.Length <= 2 || line[..2].ToLower() != "in")
+                    throw new ArgumentException("ERROR! Invalid code. PLT-code should start with [IN] operator!");
+                
+                NewDecode();
+                line = line[^1] == ';' ? line[3..(line.Length - 1)] : line[3..];
 
-            foreach (string part in pltCode.Split(';'))
-                ProcessPart(part);
+                do
+                {
+                    foreach (string part in line.Split(';'))
+                        ProcessPart(part);
+
+                    line = reader.ReadLine();
+                } while (line != null);
+            }
 
             return decodedPlt;
         }
@@ -51,7 +64,10 @@ namespace GUI
             switch (part[..2])
             {
                 case "PP":
-                    curColor = new(part[2..].Split(','));
+                    curColor = new CMYBWColor(part[2..].Split(','));
+                    break;
+                case "PC":
+                    curColor = new RGBColor(part[2..].Split(','));
                     break;
                 case "PD":
                     ProcessPDCommand(part);
@@ -67,7 +83,7 @@ namespace GUI
         private void ProcessPDCommand(string command)
         {
             if (curColor == null)
-                throw new ArgumentException("Invalid plt code. No color is set before painting!");
+                throw new ArgumentException("Invalid plt code. Color don't set before painting!");
 
             uint[] coords = command[2..].Split(',').Select(elem => uint.Parse(elem)).ToArray();
             Point2D newPoint = new(coords);
@@ -77,7 +93,7 @@ namespace GUI
             MaxY = Math.Max(MaxY, newPoint.Y);
 
             if (lastPoint != null)
-                decodedPlt.Add(new(lastPoint.Value, newPoint, curColor.Value));
+                decodedPlt.Add(new(lastPoint.Value, newPoint, curColor));
 
             lastPoint = newPoint;
         }

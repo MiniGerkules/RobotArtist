@@ -93,7 +93,11 @@ namespace GUI
         private void UpdateActualSettings(Dictionary<PossibleSettings, double> applied)
         {
             foreach (var pair in applied)
-                settings[pair.Key].Item1.Text = pair.Value.ToString();
+            {
+                TextBox textBox = settings[pair.Key].Item1;
+                textBox.Text = pair.Value.ToString();
+                settings[pair.Key] = (textBox, pair.Value);
+            }
         }
     }
 }
