@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
+using System.Windows.Media;
 
 namespace GUI
 {
     /// <summary>
     /// The class describes a color based on cyan, magenta, yellow, blue and white.
     /// </summary>
-    internal struct CMYBWColor
+    internal class CMYBWColor : PLTColor
     {
         private static uint minColors = 5; // White/black pictures
         private static uint maxColors = 8; // Color pictures
@@ -16,15 +17,6 @@ namespace GUI
         private (uint, uint, uint, uint, uint) GetColors()
         {
             return (cyan, magenta, yellow, blue, white);
-        }
-
-        public CMYBWColor() : this((0, 0, 0, 0, 0))
-        {
-        }
-
-        public CMYBWColor((uint cyan, uint magenta, uint yellow, uint blue, uint white) colors)
-        {
-            (cyan, magenta, yellow, blue, white) = colors;
         }
 
         public CMYBWColor(string[] colors)
@@ -54,6 +46,11 @@ namespace GUI
         public override int GetHashCode()
         {
             return HashCode.Combine(cyan, magenta, yellow, blue, white);
+        }
+
+        public override Color ToColor()
+        {
+            return ((HSVColor)this).ToColor();
         }
 
         public static explicit operator HSVColor(CMYBWColor color)
