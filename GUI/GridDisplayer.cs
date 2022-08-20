@@ -54,7 +54,7 @@ namespace GUI
             Button button = new();
             button.Content = text;
             button.Margin = new(5, 5, 5, 5);
-            button.Background = MainWindow.buttonColor;
+            button.Background = DefaultSettings.buttonColor;
             button.Click += click;
 
             Grid.SetRow(button, lastFreeRow);

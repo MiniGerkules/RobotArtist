@@ -5,7 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:GUI"
         mc:Ignorable="d"
-        Title="RobotArtist" Height="450" Width="800" WindowState="Maximized" Loaded="WindowLoaded">
+        Title="RobotArtist" Height="450" Width="800" MinHeight="375" MinWidth="450"
+        WindowState="Maximized" Loaded="WindowLoaded">
     <Grid x:Name="mainGrid">
         <Grid.RowDefinitions>
             <RowDefinition Height="26"/>
@@ -25,10 +26,10 @@
             <MenuItem x:Name="infoButton" Header="Information about the painting" Click="InfoClick"/>
         </Menu>
 
-        <Grid x:Name="viewGrid" Visibility="Collapsed" Grid.Row="1" Grid.Column="0">
+        <Grid x:Name="viewGrid" Visibility="Visible" Grid.Row="1" Grid.Column="0">
             <Grid.RowDefinitions>
-            <RowDefinition Height="1*"/>
-            <RowDefinition Height="8*"/>
+            <RowDefinition Height="*" MinHeight="60"/>
+            <RowDefinition Height="15*"/>
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="1*"/>
@@ -65,6 +66,6 @@
             <Grid x:Name="settingsFields" Grid.Row="0" Grid.Column="1"/>
         </Grid>
 
-        <Grid x:Name="infoGrid" Visibility="Visible" Grid.Row="1" Grid.Column="0"/>
+        <Grid x:Name="infoGrid" Visibility="Collapsed" Grid.Row="1" Grid.Column="0"/>
     </Grid>
 </Window>

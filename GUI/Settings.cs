@@ -42,7 +42,7 @@ namespace GUI
 
             TextBox value = new();
             value.Text = pair.Value.ToString();
-            value.FontSize = 16;
+            value.FontSize = DefaultSettings.FontSize;
             value.TextWrapping = TextWrapping.Wrap;
             value.HorizontalContentAlignment = HorizontalAlignment.Left;
             value.VerticalAlignment = VerticalAlignment.Center;
