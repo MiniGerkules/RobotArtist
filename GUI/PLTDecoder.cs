@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Numerics;
 using System.Collections.Generic;
+using System.IO;
 
 namespace GUI
 {
@@ -16,7 +17,7 @@ namespace GUI
 
         private readonly List<Stroke> decodedPlt = new();
         private Point2D? lastPoint = null;
-        private CMYBWColor? curColor = null;
+        private PLTColor curColor = null;
 
         /// <summary>
         /// The method decodes the plt code passed in the string
@@ -51,7 +52,10 @@ namespace GUI
             switch (part[..2])
             {
                 case "PP":
-                    curColor = new(part[2..].Split(','));
+                    curColor = new CMYBWColor(part[2..].Split(','));
+                    break;
+                case "PC":
+                    curColor = new RGBColor(part[2..].Split(','));
                     break;
                 case "PD":
                     ProcessPDCommand(part);
@@ -67,7 +71,7 @@ namespace GUI
         private void ProcessPDCommand(string command)
         {
             if (curColor == null)
-                throw new ArgumentException("Invalid plt code. No color is set before painting!");
+                throw new ArgumentException("Invalid plt code. Color don't set before painting!");
 
             uint[] coords = command[2..].Split(',').Select(elem => uint.Parse(elem)).ToArray();
             Point2D newPoint = new(coords);
@@ -77,7 +81,7 @@ namespace GUI
             MaxY = Math.Max(MaxY, newPoint.Y);
 
             if (lastPoint != null)
-                decodedPlt.Add(new(lastPoint.Value, newPoint, curColor.Value));
+                decodedPlt.Add(new(lastPoint.Value, newPoint, curColor));
 
             lastPoint = newPoint;
         }
