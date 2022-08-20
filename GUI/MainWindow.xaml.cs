@@ -19,24 +19,15 @@ namespace GUI
         private Algorithm.Settings settings;
         private Algorithm.Tracer tracer;
 
-        private readonly List<Vector> gradients = new();
-        private readonly List<Vector> strokes = new();
-
-        //public static readonly SolidColorBrush inactive = new(Color.FromRgb(77, 147, 161));
-        public static readonly SolidColorBrush menuColor = new(Color.FromRgb(136, 212, 227));
-        public static readonly SolidColorBrush buttonColor = new(Color.FromRgb(255, 255, 255));
-        public static readonly SolidColorBrush activeButton = new(Color.FromRgb(189, 242, 252));
-        public static readonly SolidColorBrush inactiveButton = menuColor;
-
-        private readonly Dictionary<FileName, Picture> files = new();
-        private readonly Dictionary<FileName, UIElement> tabs = new();
-        private readonly Dictionary<FileName, string> savedFiles = new();
-        private FileName activeFile = null;
+        private readonly Dictionary<string, Picture> files = new();
+        private readonly Dictionary<string, UIElement> tabs = new();
+        private readonly Dictionary<string, string> savedFiles = new();
+        private string pathToActiveFile = null;
 
         private readonly PLTDecoder pltDecoder = new();
         private readonly Settings GUISettings;
 
-        private readonly string pathToDatabase = @"C:\ModelTable600.xls";
+        private readonly string pathToDatabase = @"resources/ModelTable600.xls";
 
         public MainWindow()
         {
@@ -44,7 +35,7 @@ namespace GUI
 
             GUISettings = new(settingsFields);
             GUISettings.applySettings += ApplySettings;
-            mainMenu.Background = menuColor;
+            mainMenu.Background = DefaultSettings.menuColor;
             SetInactive();
 
             CommandBinding commandBinding = new(ApplicationCommands.Open, OpenFile);
@@ -77,8 +68,7 @@ namespace GUI
 
         private void ProcessFile(string fileName)
         {
-            FileName file = new(fileName);
-            if (IsFileAlreadyOpened(file))
+            if (IsFileAlreadyOpened(fileName))
                 return;
 
             //try
@@ -95,12 +85,12 @@ namespace GUI
             //    return;
             //}
 
-            AddNewOpenedFile(file);
+            AddNewOpenedFile(fileName);
             ChangeActive(Active.ViewGrid);
             DisplayActiveBitmap(viewImage);
         }
         
-        private bool IsFileAlreadyOpened(FileName file)
+        private bool IsFileAlreadyOpened(string file)
         {
             if (files.ContainsKey(file))
             {
@@ -111,28 +101,27 @@ namespace GUI
             return false;
         }
 
-        private void AddNewOpenedFile(FileName fileName)
+        private void AddNewOpenedFile(string fileName)
         {
-            OpenedFile file = new(fileName);
-            file.Background = buttonColor;
-            file.Click += ChangeFile;
+            OpenedFile file = new(fileName, ChangeFile, CloseActiveFile);
+
             openedFiles.Children.Add(file);
-            tabs[activeFile] = openedFiles.Children[^1];
+            tabs[pathToActiveFile] = openedFiles.Children[^1];
         }
 
         private void ChangeFile(object sender, EventArgs e)
         {
             OpenedFile clicked = (OpenedFile)sender;
-            if (clicked.FileName.FullName == activeFile.FullName)
+            if (clicked.PathToFile == pathToActiveFile)
                 return;
 
-            UpdateOutputImage(clicked.FileName);
+            UpdateOutputImage(clicked.PathToFile);
         }
 
-        private void UpdateOutputImage(FileName fileName)
+        private void UpdateOutputImage(string fileName)
         {
             ChangeActive(Active.ViewGrid);
-            activeFile = fileName;
+            pathToActiveFile = fileName;
             DisplayActiveBitmap(viewImage);
         }
 
@@ -143,8 +132,8 @@ namespace GUI
             Picture picture = new();
             picture.ProcessStrokes(strokes, pltDecoder.MaxX, pltDecoder.MaxY);
 
-            activeFile = new(fileName);
-            files[activeFile] = picture;
+            pathToActiveFile = new(fileName);
+            files[pathToActiveFile] = picture;
         }
 
         private void ImageFileHandler(string fileName)
@@ -159,52 +148,24 @@ namespace GUI
             //imageBrush.Stretch = Stretch.Uniform;
             //outputImage.Background = imageBrush;
 
-            image.Source = files[activeFile].RenderedPicture;
-        }
-
-        /// <summary>
-        /// Event handler for the process of adding new strokes to the map
-        /// </summary>
-        /// <param name="sender"> The object sending new strokes </param>
-        /// <param name="vectors"> New strokes to add to the map </param>
-        private void AddNewVectors(object sender, List<Vector> vectors)
-        {
-            if (vectors == null || vectors.Count == 0)
-                return;
-
-            strokes.AddRange(vectors);
-            // Paint new vectors
-        }
-
-        /// <summary>
-        /// Event handler for the process of adding new gradients to the map
-        /// </summary>
-        /// <param name="sender"> The object sending new gradients </param>
-        /// <param name="vectors"> New gradients to add to the map </param>
-        private void AddNewGradients(object sender, List<Vector> vectors)
-        {
-            if (vectors == null || vectors.Count == 0)
-                return;
-
-            gradients.AddRange(vectors);
-            // Paint new vectors
+            image.Source = files[pathToActiveFile].RenderedPicture;
         }
 
         private void RotateImage(object sender, RoutedEventArgs e)
         {
             //var (centerX, centerY) = Helpers.GetCenter(outputImage.ActualWidth, outputImage.ActualHeight);
-            files[activeFile].Rotate();
+            files[pathToActiveFile].Rotate();
             DisplayActiveBitmap(viewImage);
         }
 
         private void RepaintImage(object sender, RoutedEventArgs e)
         {
-            PLTFileHandler(activeFile.FullName);
+            PLTFileHandler(pathToActiveFile);
         }
 
         private void ViewClick(object sender, RoutedEventArgs e)
         {
-            if (activeFile == null || (viewButton.Background as SolidColorBrush).Color == activeButton.Color)
+            if (pathToActiveFile == null || (viewButton.Background as SolidColorBrush).Color == DefaultSettings.activeButton.Color)
                 return;
 
             ChangeActive(Active.ViewGrid);
@@ -213,7 +174,7 @@ namespace GUI
         
         private void SettingsClick(object sender, RoutedEventArgs e)
         {
-            if (activeFile == null || (settingsButton.Background as SolidColorBrush).Color == activeButton.Color)
+            if (pathToActiveFile == null || (settingsButton.Background as SolidColorBrush).Color == DefaultSettings.activeButton.Color)
                 return;
 
             ChangeActive(Active.SettingsGrid);
@@ -227,23 +188,23 @@ namespace GUI
                     { PossibleSettings.pixTol, 6 },
                     { PossibleSettings.pixTol2, 100 },
                     { PossibleSettings.pixTolBest, 4 },
-                    { PossibleSettings.maxLen, files[activeFile].penThikness * 10 },
-                    { PossibleSettings.brushWidth, files[activeFile].penThikness },
+                    { PossibleSettings.maxLen, files[pathToActiveFile].penThikness * 10 },
+                    { PossibleSettings.brushWidth, files[pathToActiveFile].penThikness },
                 }
             );
         }
 
         private void InfoClick(object sender, RoutedEventArgs e)
         {
-            if (activeFile == null || (infoButton.Background as SolidColorBrush).Color == activeButton.Color)
+            if (pathToActiveFile == null || (infoButton.Background as SolidColorBrush).Color == DefaultSettings.activeButton.Color)
                 return;
 
             ChangeActive(Active.InfoGreed);
-            var settings = files[activeFile].GetActualSettings();
+            var settings = files[pathToActiveFile].GetActualSettings();
             List<UIElement> elements = new(settings.Count);
 
-            string width = "Width (mm) = " + files[activeFile].Width.ToString();
-            string height = "Height (mm) = " + files[activeFile].Height.ToString();
+            string width = "Width (mm) = " + files[pathToActiveFile].Width.ToString();
+            string height = "Height (mm) = " + files[pathToActiveFile].Height.ToString();
             elements.Add(Helpers.CreateTextBlock(width, HorizontalAlignment.Center, new()));
             elements.Add(Helpers.CreateTextBlock(height, HorizontalAlignment.Center, new()));
 
@@ -266,40 +227,40 @@ namespace GUI
                     viewGrid.Visibility = Visibility.Visible;
                     settingsGrid.Visibility = Visibility.Collapsed;
                     infoGrid.Visibility = Visibility.Collapsed;
-                    viewButton.Background = activeButton;
-                    settingsButton.Background = inactiveButton;
-                    infoButton.Background = inactiveButton;
+                    viewButton.Background = DefaultSettings.activeButton;
+                    settingsButton.Background = DefaultSettings.inactiveButton;
+                    infoButton.Background = DefaultSettings.inactiveButton;
                     break;
                 case Active.SettingsGrid:
                     viewGrid.Visibility = Visibility.Collapsed;
                     settingsGrid.Visibility = Visibility.Visible;
                     infoGrid.Visibility = Visibility.Collapsed;
-                    viewButton.Background = inactiveButton;
-                    settingsButton.Background = activeButton;
-                    infoButton.Background = inactiveButton;
+                    viewButton.Background = DefaultSettings.inactiveButton;
+                    settingsButton.Background = DefaultSettings.activeButton;
+                    infoButton.Background = DefaultSettings.inactiveButton;
                     break;
                 case Active.InfoGreed:
                     viewGrid.Visibility = Visibility.Collapsed;
                     settingsGrid.Visibility = Visibility.Collapsed;
                     infoGrid.Visibility = Visibility.Visible;
-                    viewButton.Background = inactiveButton;
-                    settingsButton.Background = inactiveButton;
-                    infoButton.Background = activeButton;
+                    viewButton.Background = DefaultSettings.inactiveButton;
+                    settingsButton.Background = DefaultSettings.inactiveButton;
+                    infoButton.Background = DefaultSettings.activeButton;
                     break;
             }
         }
 
         private void SetInactive()
         {
-            activeFile = null;
+            pathToActiveFile = null;
             
             viewGrid.Visibility = Visibility.Visible;
             settingsGrid.Visibility = Visibility.Collapsed;
             infoGrid.Visibility = Visibility.Collapsed;
             
-            viewButton.Background = inactiveButton;
-            settingsButton.Background = inactiveButton;
-            infoButton.Background= inactiveButton;
+            viewButton.Background = DefaultSettings.inactiveButton;
+            settingsButton.Background = DefaultSettings.inactiveButton;
+            infoButton.Background= DefaultSettings.inactiveButton;
 
             viewImage.Source = null;
             settingsImage.Source = null;
@@ -309,21 +270,21 @@ namespace GUI
         {
             if (changed)
             {
-                files[activeFile].Redraw(settedSettings);
+                files[pathToActiveFile].Redraw(settedSettings);
                 DisplayActiveBitmap(settingsImage);
             }
         }
 
         private void CloseActiveFile(object sender, RoutedEventArgs e)
         {
-            if (activeFile != null)
+            if (pathToActiveFile != null)
             {
-                files.Remove(activeFile);
-                openedFiles.Children.Remove(tabs[activeFile]);
+                files.Remove(pathToActiveFile);
+                openedFiles.Children.Remove(tabs[pathToActiveFile]);
                 if (openedFiles.Children.Count != 0)
                 {
-                    activeFile = ((OpenedFile)openedFiles.Children[0]).FileName;
-                    if ((viewButton.Background as SolidColorBrush).Color == activeButton.Color)
+                    pathToActiveFile = ((OpenedFile)openedFiles.Children[0]).PathToFile;
+                    if ((viewButton.Background as SolidColorBrush).Color == DefaultSettings.activeButton.Color)
                         DisplayActiveBitmap(viewImage);
                     else
                         DisplayActiveBitmap(settingsImage);
@@ -342,15 +303,15 @@ namespace GUI
 
         private void SaveFileClick(object sender, RoutedEventArgs e)
         {
-            if (activeFile == null)
+            if (pathToActiveFile == null)
                 return;
 
-            if (savedFiles.ContainsKey(activeFile))
+            if (savedFiles.ContainsKey(pathToActiveFile))
             {
-                if (activeFile.ShortName.EndsWith(".plt"))
-                    SaveImageToFile(files[activeFile].RenderedPicture, savedFiles[activeFile]);
+                if (pathToActiveFile.EndsWith(".plt"))
+                    SaveImageToFile(files[pathToActiveFile].RenderedPicture, savedFiles[pathToActiveFile]);
                 else
-                    SavePLTToFile(files[activeFile].RenderedPicture, savedFiles[activeFile]);
+                    SavePLTToFile(files[pathToActiveFile].RenderedPicture, savedFiles[pathToActiveFile]);
             }
             else
             {
@@ -360,20 +321,21 @@ namespace GUI
 
         private void SaveFileAsClick(object sender, RoutedEventArgs e)
         {
-            if (activeFile == null)
+            if (pathToActiveFile == null)
                 return;
 
             Action<BitmapSource, string> call;
             SaveFileDialog dlg = new();
-            dlg.FileName = Helpers.GetFileNameWithoutExt(activeFile.ShortName);
+            string fileName = Helpers.GetFileName(pathToActiveFile);
+            dlg.FileName = Helpers.GetFileNameWithoutExt(fileName);
 
-            if (activeFile.ShortName.EndsWith(".plt"))
+            if (pathToActiveFile.EndsWith(".plt"))
             {
                 dlg.DefaultExt = ".png";
                 dlg.Filter = "Picture|*.jpg;*.png;*.bmp";
                 call = SaveImageToFile;
             }
-            else
+            else 
             {
                 dlg.DefaultExt = ".plt";
                 dlg.Filter = "PLT-file|*.plt";
@@ -384,8 +346,8 @@ namespace GUI
                 MessageBox.Show("Couldn't select the path to save the file!", "Error!", MessageBoxButton.OK);
             else
             {
-                savedFiles[activeFile] = dlg.FileName;
-                call(files[activeFile].RenderedPicture, dlg.FileName);
+                savedFiles[pathToActiveFile] = dlg.FileName;
+                call(files[pathToActiveFile].RenderedPicture, dlg.FileName);
             }
         }
 
