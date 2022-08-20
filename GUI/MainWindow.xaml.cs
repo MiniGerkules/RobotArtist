@@ -59,7 +59,7 @@ namespace GUI
             if (!Database.IsLoad())
             {
                 MessageBox.Show("Can't to upload a file with color data. Check the presence " +
-                    "of the Am file in the directory.", "Error!", MessageBoxButton.OK);
+                    "of the database file in the directory.", "Error!", MessageBoxButton.OK);
                 Close();
             }
         }
@@ -138,8 +138,7 @@ namespace GUI
 
         private void PLTFileHandler(string fileName)
         {
-            string text = File.ReadAllText(fileName);
-            List<Stroke> strokes = pltDecoder.Decode(text);
+            List<Stroke> strokes = pltDecoder.Decode(fileName);
 
             Picture picture = new();
             picture.ProcessStrokes(strokes, pltDecoder.MaxX, pltDecoder.MaxY);

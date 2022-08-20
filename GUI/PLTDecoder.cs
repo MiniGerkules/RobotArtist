@@ -22,18 +22,30 @@ namespace GUI
         /// <summary>
         /// The method decodes the plt code passed in the string
         /// </summary>
-        /// <param name="pltCode"> A string containing the plt code </param>
+        /// <param name="fileName"> Path to the file with plt code </param>
         /// <returns> List of strokes with specified colors </returns>
-        public List<Stroke> Decode(string pltCode)
+        public List<Stroke> Decode(string fileName)
         {
-            if (pltCode[..2].ToLower() != "in" || pltCode[pltCode.Length - 1] != ';')
-                throw new ArgumentException("ERROR! Invalid code. PLT-code should start with [IN] operator!");
+            using (StreamReader reader = new(fileName))
+            {
+                string line = reader.ReadLine();
 
-            pltCode = pltCode[3..(pltCode.Length - 1)];
-            NewDecode();
+                if (line == null || line == "")
+                    throw new ArgumentException("ERROR! PLT file is empty!");
+                if (line.Length <= 2 || line[..2].ToLower() != "in")
+                    throw new ArgumentException("ERROR! Invalid code. PLT-code should start with [IN] operator!");
+                
+                NewDecode();
+                line = line[^1] == ';' ? line[3..(line.Length - 1)] : line[3..];
 
-            foreach (string part in pltCode.Split(';'))
-                ProcessPart(part);
+                do
+                {
+                    foreach (string part in line.Split(';'))
+                        ProcessPart(part);
+
+                    line = reader.ReadLine();
+                } while (line != null);
+            }
 
             return decodedPlt;
         }
