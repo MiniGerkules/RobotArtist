@@ -6,9 +6,9 @@ namespace GUI
     {
         public Point2D Start { get; }
         public Point2D End { get; }
-        public CMYBWColor StroceColor { get; }
+        public PLTColor StroceColor { get; }
 
-        public Stroke(Point2D start, Point2D end, CMYBWColor color)
+        public Stroke(Point2D start, Point2D end, PLTColor color)
         {
             Start = start;
             End = end;
