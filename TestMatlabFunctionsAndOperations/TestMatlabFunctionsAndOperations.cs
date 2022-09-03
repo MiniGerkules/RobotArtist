@@ -7,6 +7,163 @@ namespace TestMatlabFunctionsAndOperations
     {
 
         [TestMethod]
+        public void TestFunction_hsv2rgb1()
+        {
+            double[] hsv = { 0.4122,   0.7720,   0.1339 };
+            double[] rgb = { 0.030530,   0.133882,   0.079433 }; 
+            double[] testRGB = Functions.hsv2rgb(hsv);
+
+            for (int i = 0; i < rgb.Length; i++)
+                Assert.AreEqual(Math.Round(rgb[i], 4), Math.Round(testRGB[i], 4), " wrong on " + i + " index");
+        }
+
+        [TestMethod]
+        public void TestFunction_hsv2rgb2()
+        {
+            double[] hsv = { 0.1545,   0.7829,   0.9513 };
+            double[] rgb = { 0.95130000000000003446132268436486, 0.89693158779000003999470891358214, 0.206527229999999978327096528119 }; // using vpa
+            double[] testRGB = Functions.hsv2rgb(hsv);
+
+            for (int i = 0; i < rgb.Length; i++)
+                Assert.AreEqual(rgb[i], testRGB[i], " wrong on " + i + " index");
+        }
+
+        [TestMethod]
+        public void TestFunction_hsv2rgb3()
+        {
+            double[] hsv = { 0.1841,   0.3554,   0.4611 };
+            double[] rgb = { 0.4440,   0.4611,   0.2972 };
+            double[] testRGB = Functions.hsv2rgb(hsv);
+
+            for (int i = 0; i < rgb.Length; i++)
+                Assert.AreEqual(Math.Round(rgb[i], 4), Math.Round(testRGB[i], 4), " wrong on " + i + " index");
+        }
+
+        [TestMethod]
+        public void TestFunction_GaussSolution5()
+        {
+            double[,] matrix = {{ 16,  2,    3,   13 },
+                                { 5,  11,   10,    8 },
+                                { 9,   7,    6,   12 },
+                                { 4,  14,   15,    1 } };
+
+            double[] solution = { 0, 1, 1, 0 };
+
+            double[] answer = Functions.GaussSolution(matrix, solution);
+            double[] rightResult = { 1 / 34d - 1 / 6d, 19 / 34d - 0.5, 0.5 - 9 / 17d, 1 / 6d};
+            //{ 1/34 - c, 19/34 - 3c, 3c - 9/17, c}; - общее решение, где с - любое число, мой алгоритм взял с = 1/6
+
+            Assert.AreEqual(answer.GetLength(0), rightResult.GetLength(0), "amount of elements is wrong");
+
+            for (int i = 0; i < rightResult.GetLength(0); i++)
+            {
+                Assert.AreEqual(Math.Round(rightResult[i], 15), Math.Round(answer[i], 15), "wrong result for " + i + " element");
+            }
+        }
+
+        [TestMethod]
+        public void TestFunction_GaussSolution4()
+        {
+            double[,] matrix = {{ 2,  5,  4,  1 },
+                                { 1,  3,  2,  1 },
+                                { 2, 10,  9,  7 },
+                                { 3,  8,  9,  2 }};
+
+            double[] solution = { 20, 11, 40, 37 };
+
+            double[] answer = Functions.GaussSolution(matrix, solution); // { -215, 38, -21, 2 };
+            double[] rightResult = { 1, 2, 2, 0 };
+
+            Assert.AreEqual(answer.GetLength(0), rightResult.GetLength(0), "amount of elements is wrong");
+
+            for (int i = 0; i < rightResult.GetLength(0); i++)
+            {
+                Assert.AreEqual(rightResult[i], answer[i], "wrong result for " + i + " element");
+            }
+        }
+
+        [TestMethod]
+        public void TestFunction_GaussSolution3()
+        {
+            double[,] matrix = {{ 3,  2, -5 },
+                                { 2, -1,  3 },
+                                { 1,  2, -1 } };
+
+            double[] solution = { -1, 13, 9 };
+
+            double[] answer = Functions.GaussSolution(matrix, solution); // { -215, 38, -21, 2 };
+            double[] rightResult = { 3, 5, 4 };
+
+            Assert.AreEqual(answer.GetLength(0), rightResult.GetLength(0), "amount of elements is wrong");
+
+            for (int i = 0; i < rightResult.GetLength(0); i++)
+            {
+                Assert.AreEqual(rightResult[i], answer[i], "wrong result for " + i + " element");
+            }
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(Exception), "Solution of the system doesn't exist!")]
+        public void TestFunction_GaussSolution2()
+        {
+            double[,] matrix = { { 1, 0, 0 },
+                                 { 0, 1, 0 },
+                                 { 0, 0, 0 } };
+
+            double[] solution = { 1, 1, 1 };
+
+            double[] answer = Functions.GaussSolution(matrix, solution);
+            //double[] rightResult = { 1, 1, 0 };
+
+            //Assert.ThrowsException<Exception>(() => Functions.GaussSolution(matrix, solution));
+        }
+
+
+        [TestMethod]
+        public void TestFunction_GaussSolution1()
+        {
+            double[,] matrix = { { 1, 0, 0 },
+                                 { 0, 1, 0 },
+                                 { 0, 0, 1 } };
+
+            double[] solution = { 1, 1, 1 };
+
+            double[] answer = Functions.GaussSolution(matrix, solution);
+            double[] rightResult = { 1, 1, 1 };
+
+            Assert.AreEqual(answer.GetLength(0), rightResult.GetLength(0), "amount of elements is wrong");
+
+            for (int i = 0; i < rightResult.GetLength(0); i++)
+            {
+                Assert.AreEqual(rightResult[i], answer[i], "wrong result for " + i + " element");
+            }
+        }
+
+        [TestMethod]
+        public void TestFunction_repmat()
+        {
+            int rowsRepeat = 3;
+            int columnsRepeat = 1;
+            double[] data = { 0, 1, 2 };
+            
+            double[,] test = Functions.repmat(data, rowsRepeat, columnsRepeat);
+
+            double[,] right = { { 0, 1, 2 },
+                                { 0, 1, 2 },
+                                { 0, 1, 2 } };
+            Assert.AreEqual(test.GetLength(0), right.GetLength(0), "amount of rows is wrong");
+            Assert.AreEqual(test.GetLength(1), right.GetLength(1), "amount of colomns is wrong");
+            for (int i = 0; i < right.GetLength(0); i++)
+            {
+                for (int j = 0; j < right.GetLength(1); j++)
+                {
+                    Assert.AreEqual(right[i, j], test[i, j], "wrong result for " + i + ", " + j);
+                }
+            }
+        }
+
+
+        [TestMethod]
         public void TestFunction_rgb2hsv1()
         {
             double[] rgb = { 82, 0, 87 };
