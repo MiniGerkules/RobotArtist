@@ -15,6 +15,20 @@ namespace GUI
             this.grid = grid;
         }
 
+        public List<UIElement>[] GetDisplayedElems() {
+            var result = new List<UIElement>[lastFreeRow];
+            for (int i = 0; i < result.Length; ++i)
+                result[i] = new();
+
+            foreach (var elem in grid.Children) {
+                UIElement current = (UIElement)elem;
+                int rowCurElem = Grid.GetRow(current);
+                result[rowCurElem].Add(current);
+            }
+
+            return result;
+        }
+
         public void DisplayPairs(List<(UIElement, UIElement)> pairs)
         {
             if (grid.RowDefinitions.Count < pairs.Count)
@@ -54,7 +68,7 @@ namespace GUI
             Button button = new();
             button.Content = text;
             button.Margin = new(5, 5, 5, 5);
-            button.Background = DefaultSettings.buttonColor;
+            button.Background = DefaultGUISettings.buttonColor;
             button.Click += click;
 
             Grid.SetRow(button, lastFreeRow);
