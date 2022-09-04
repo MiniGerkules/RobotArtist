@@ -28,9 +28,13 @@ namespace GUI
 
         public override Color ToColor()
         {
+            return ((RGBColor)this).ToColor();
+        }
+
+        public static explicit operator RGBColor(HSVColor color) {
             // https://en.wikipedia.org/wiki/HSL_and_HSV#HSV_to_RGB
-            double hueInDegrees = hue * 360;
-            double C = saturation * value; // цветность
+            double hueInDegrees = color.hue * 360;
+            double C = color.saturation * color.value; // цветность
             double H = hueInDegrees / 60;
             double X = C * (1 - Math.Abs(H % 2 - 1));
 
@@ -48,12 +52,12 @@ namespace GUI
             else /* 5 <= H && H < 6 */
                 (r1, g1, b1) = (C, 0, X);
 
-            double m = value - C;
+            double m = color.value - C;
             byte red = (byte)((r1 + m) * 255);
             byte green = (byte)((g1 + m) * 255);
             byte blue = (byte)((b1 + m) * 255);
 
-            return new RGBColor(red, green, blue).ToColor();
+            return new RGBColor(red, green, blue);
         }
     }
 }
