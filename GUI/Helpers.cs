@@ -61,7 +61,7 @@ namespace GUI
         {
             TextBlock label = new();
             label.Text = text;
-            label.FontSize = DefaultSettings.FontSize;
+            label.FontSize = DefaultGUISettings.FontSize;
             label.TextWrapping = TextWrapping.Wrap;
             label.HorizontalAlignment = alignment;
             label.VerticalAlignment = VerticalAlignment.Center;
