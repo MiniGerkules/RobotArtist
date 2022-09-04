@@ -9,6 +9,7 @@
   <ItemGroup>
     <None Remove="filler.jpg" />
     <None Remove="ModelTable600.xls" />
+    <None Remove="resources\forClose.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -20,12 +21,22 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="resources\forClose.png">
+    <None Update="configs\default.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="resources\ModelTable600.xls">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="configs\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="resources\forClose.png">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
   </ItemGroup>
 
 </Project>
