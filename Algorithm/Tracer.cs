@@ -23,13 +23,19 @@ namespace Algorithm
 
         public Gradient gradients; // stores gradients (pairs U and V for every pixel) for all picture
         
-        public Tracer(BitmapImage img, Settings settings) 
+        public Tracer(BitmapImage img, Settings settings) // settings shouldn't be null! 
         {
             // битмапы должны иметь размеры исходной картинки, один цвета canvasColor, другой цветной на таком же
             //canvasgray = (canvasColor + zeros(m, n, 1)); % gray version of canvas with tones
             //canvas = (canvasColor + zeros(m, n, 3)); % colored version
-            
+
+            if (settings == null) // i would like to throw exception here or to make sure of parameters by default
+                settings = new Settings(new GUITrace());
+
+            this.settings = settings;
+
             image = img;
+
             strokeBrush = new StrokeBrush(settings.guiTrace.brushWidthMM,
                Math.Min(settings.guiTrace.canvasWidthMM / image.PixelWidth,
                settings.guiTrace.canvasHeightMM / image.PixelHeight));

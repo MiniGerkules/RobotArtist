@@ -1488,7 +1488,7 @@ namespace Algorithm
             {
                 for (double Yl = Math.Round(yo - bs2); Yl < Math.Round(yo + bs2); Yl++)
                 {
-                    if (Xl > 0 && Xl <= m && Yl > 0 && Yl <= n) // если квадрат не вылез за рамки холста
+                    if (Xl > 0 && Xl < m && Yl > 0 && Yl < n) // если квадрат не вылез за рамки холста, было <= m, <= n
                     {
                         if ((Xl - xo) * (Xl - xo) + (Yl - yo) * (Yl - yo) < bsQuad) // если расстояние до точки удовлетворяет уравнению круга
                         {

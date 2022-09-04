@@ -156,7 +156,7 @@ namespace Algorithm
             {
                 for (int y = 0; y < height; y++)
                 {
-                    int index = y * stride + bpp * x;
+                    int index = y * stride + ((bpp + 7) / 8) * x;
                     p[x, y, 0] = pixels[index]; // R
                     p[x, y, 1] = pixels[index + 1]; // G
                     p[x, y, 2] = pixels[index + 2]; // B
