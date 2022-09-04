@@ -18,7 +18,7 @@
 
         <Button x:Name="choose" Grid.Row="0" Grid.Column="0" Margin="0 0 1.25 0" Click="Choose_Click"/>
         <Button x:Name="close" Grid.Row="0" Grid.Column="1" Margin="1.25 0 0 0" Click="Close_Click">
-            <Image Source="/forClose.png" Stretch="Fill"/>
+            <Image Source="/resources/forClose.png" Stretch="Fill"/>
         </Button>
     </Grid>
 </UserControl>
