@@ -2,38 +2,35 @@
 using System.Windows.Media;
 using System.Collections.Generic;
 using System.Windows.Media.Imaging;
-using System.Collections.Immutable;
 
 namespace GUI
 {
     internal class Picture
     {
-        public List<(GeometryGroup, Pen)> Strokes { get; private set; }
-        public BitmapSource RenderedPicture { get; private set; }
-        public double penThikness { get; private set; } = 4;
+        public List<(GeometryGroup, Pen)> Strokes { get; private set; } = new();
+        public BitmapSource RenderedPicture { get; private set; } = null;
+        public AlgorithmSettings Settings { get; private set; }
         private ushort angle = 0;
 
         public double Width { get; private set; }
         public double Height { get; private set; }
 
-        public Picture()
-        {
-            RenderedPicture = null;
-            Strokes = new();
+        public Picture(AlgorithmSettings settings) {
+            Settings = settings;
         }
 
-        public void ProcessStrokes(List<Stroke> strokes, double width, double height)
-        {
+        public void ProcessStrokes(List<Stroke> strokes, double width, double height) {
             Width = width;
             Height = height;
+
             DrawingVisual image = BuildImage(strokes);
             RenderBitmap(image);
             strokes.Clear();
         }
 
-        public void Redraw(ImmutableDictionary<PossibleSettings, double> newSettings)
+        public void Redraw(AlgorithmSettings newSettings)
         {
-            UpdateSettings(newSettings);
+            Settings = newSettings;
 
             DrawingVisual image = new();
             DrawingContext context = image.RenderOpen();
@@ -41,7 +38,7 @@ namespace GUI
 
             foreach (var (geometry, pen) in Strokes)
             {
-                pen.Thickness = penThikness;
+                pen.Thickness = Settings.BrushWidth;
                 context.DrawGeometry(null, pen, geometry);
             }
 
@@ -56,17 +53,11 @@ namespace GUI
             RestoreRotationAngle(90);
         }
 
-        public ImmutableDictionary<PossibleSettings, double> GetActualSettings()
-        {
-            return new Dictionary<PossibleSettings, double>()
-            {
-                { PossibleSettings.brushWidth, penThikness }
-            }.ToImmutableDictionary();
-        }
-
         private void SetBackground(DrawingContext context, Brush brush)
         {
-            Rect background = new(-penThikness/2, -penThikness/2, Width + penThikness, Height + penThikness);
+            double brushWidth = Settings.BrushWidth;
+            Rect background = new(-brushWidth / 2, -brushWidth / 2,
+                                  Width + brushWidth, Height + brushWidth);
             context.DrawRectangle(brush, null, background);
         }
 
@@ -75,11 +66,6 @@ namespace GUI
             RotateTransform rotate = new(angle);
             TransformedBitmap tb = new(RenderedPicture, rotate);
             RenderedPicture = tb;
-        }
-
-        private void UpdateSettings(ImmutableDictionary<PossibleSettings, double> newSettings)
-        {
-            penThikness = newSettings[PossibleSettings.brushWidth];
         }
 
         private void RenderBitmap(DrawingVisual image)
@@ -129,7 +115,7 @@ namespace GUI
             geometry = new();
             pen = new()
             {
-                Thickness = penThikness,
+                Thickness = Settings.BrushWidth,
                 StartLineCap = PenLineCap.Round,
                 EndLineCap = PenLineCap.Round,
                 Brush = newColor

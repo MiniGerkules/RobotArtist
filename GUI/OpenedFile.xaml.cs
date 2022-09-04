@@ -1,7 +1,5 @@
-﻿using System;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
 
 namespace GUI
 {
@@ -19,8 +17,8 @@ namespace GUI
             this.closeClick = closeClick;
 
             choose.Content = Helpers.GetFileName(pathToFile);
-            choose.Background = DefaultSettings.buttonColor;
-            choose.FontSize = DefaultSettings.FontSize;
+            choose.Background = DefaultGUISettings.buttonColor;
+            choose.FontSize = DefaultGUISettings.FontSize;
         }
 
         private void Choose_Click(object sender, RoutedEventArgs e)

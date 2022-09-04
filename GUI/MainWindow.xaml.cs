@@ -16,7 +16,6 @@ namespace GUI
     /// </summary>
     public partial class MainWindow : Window
     {
-        private Algorithm.Settings settings;
         private Algorithm.Tracer tracer;
 
         private readonly Dictionary<string, Picture> files = new();
@@ -25,7 +24,7 @@ namespace GUI
         private string pathToActiveFile = null;
 
         private readonly PLTDecoder pltDecoder = new();
-        private readonly Settings GUISettings;
+        private readonly SettingsManager settingsManager;
 
         private readonly string pathToDatabase = @"resources/ModelTable600.xls";
 
@@ -33,10 +32,10 @@ namespace GUI
         {
             InitializeComponent();
 
-            GUISettings = new(settingsFields);
-            GUISettings.applySettings += ApplySettings;
-            mainMenu.Background = DefaultSettings.menuColor;
+            mainMenu.Background = DefaultGUISettings.menuColor;
             SetInactive();
+
+            settingsManager = new(ApplySettings);
 
             CommandBinding commandBinding = new(ApplicationCommands.Open, OpenFile);
             CommandBindings.Add(commandBinding);
@@ -129,7 +128,7 @@ namespace GUI
         {
             List<Stroke> strokes = pltDecoder.Decode(fileName);
 
-            Picture picture = new();
+            Picture picture = new(SettingsLoader.LoadSettings());
             picture.ProcessStrokes(strokes, pltDecoder.MaxX, pltDecoder.MaxY);
 
             pathToActiveFile = new(fileName);
@@ -165,7 +164,7 @@ namespace GUI
 
         private void ViewClick(object sender, RoutedEventArgs e)
         {
-            if (pathToActiveFile == null || (viewButton.Background as SolidColorBrush).Color == DefaultSettings.activeButton.Color)
+            if (pathToActiveFile == null || (viewButton.Background as SolidColorBrush).Color == DefaultGUISettings.activeButton.Color)
                 return;
 
             ChangeActive(Active.ViewGrid);
@@ -174,34 +173,22 @@ namespace GUI
         
         private void SettingsClick(object sender, RoutedEventArgs e)
         {
-            if (pathToActiveFile == null || (settingsButton.Background as SolidColorBrush).Color == DefaultSettings.activeButton.Color)
+            if (pathToActiveFile == null || (settingsButton.Background as SolidColorBrush).Color == DefaultGUISettings.activeButton.Color)
                 return;
 
             ChangeActive(Active.SettingsGrid);
             DisplayActiveBitmap(settingsImage);
-            GUISettings.DisplaySettings(
-                new()
-                {
-                    { PossibleSettings.itersMinOverlap, 1 },
-                    { PossibleSettings.minOverlap, 0.6 },
-                    { PossibleSettings.maxOverlap, 1 },
-                    { PossibleSettings.pixTol, 6 },
-                    { PossibleSettings.pixTol2, 100 },
-                    { PossibleSettings.pixTolBest, 4 },
-                    { PossibleSettings.maxLen, files[pathToActiveFile].penThikness * 10 },
-                    { PossibleSettings.brushWidth, files[pathToActiveFile].penThikness },
-                }
-            );
+            settingsManager.DisplaySettings(settingsFields, files[pathToActiveFile].Settings);
         }
 
         private void InfoClick(object sender, RoutedEventArgs e)
         {
-            if (pathToActiveFile == null || (infoButton.Background as SolidColorBrush).Color == DefaultSettings.activeButton.Color)
+            if (pathToActiveFile == null || (infoButton.Background as SolidColorBrush).Color == DefaultGUISettings.activeButton.Color)
                 return;
 
             ChangeActive(Active.InfoGreed);
-            var settings = files[pathToActiveFile].GetActualSettings();
-            List<UIElement> elements = new(settings.Count);
+            var settings = files[pathToActiveFile].Settings;
+            List<UIElement> elements = new(settings.numOfSettings);
 
             string width = "Width (mm) = " + files[pathToActiveFile].Width.ToString();
             string height = "Height (mm) = " + files[pathToActiveFile].Height.ToString();
@@ -210,7 +197,7 @@ namespace GUI
 
             foreach (var pair in settings)
             {
-                string text = pair.Key.GetDescription() + " = " + pair.Value.ToString();
+                string text = AlgorithmSettings.GetPropertyDesc(pair.Item1) + " = " + pair.Item2.ToString();
                 elements.Add(Helpers.CreateTextBlock(text, HorizontalAlignment.Center, new()));
             }
 
@@ -227,25 +214,25 @@ namespace GUI
                     viewGrid.Visibility = Visibility.Visible;
                     settingsGrid.Visibility = Visibility.Collapsed;
                     infoGrid.Visibility = Visibility.Collapsed;
-                    viewButton.Background = DefaultSettings.activeButton;
-                    settingsButton.Background = DefaultSettings.inactiveButton;
-                    infoButton.Background = DefaultSettings.inactiveButton;
+                    viewButton.Background = DefaultGUISettings.activeButton;
+                    settingsButton.Background = DefaultGUISettings.inactiveButton;
+                    infoButton.Background = DefaultGUISettings.inactiveButton;
                     break;
                 case Active.SettingsGrid:
                     viewGrid.Visibility = Visibility.Collapsed;
                     settingsGrid.Visibility = Visibility.Visible;
                     infoGrid.Visibility = Visibility.Collapsed;
-                    viewButton.Background = DefaultSettings.inactiveButton;
-                    settingsButton.Background = DefaultSettings.activeButton;
-                    infoButton.Background = DefaultSettings.inactiveButton;
+                    viewButton.Background = DefaultGUISettings.inactiveButton;
+                    settingsButton.Background = DefaultGUISettings.activeButton;
+                    infoButton.Background = DefaultGUISettings.inactiveButton;
                     break;
                 case Active.InfoGreed:
                     viewGrid.Visibility = Visibility.Collapsed;
                     settingsGrid.Visibility = Visibility.Collapsed;
                     infoGrid.Visibility = Visibility.Visible;
-                    viewButton.Background = DefaultSettings.inactiveButton;
-                    settingsButton.Background = DefaultSettings.inactiveButton;
-                    infoButton.Background = DefaultSettings.activeButton;
+                    viewButton.Background = DefaultGUISettings.inactiveButton;
+                    settingsButton.Background = DefaultGUISettings.inactiveButton;
+                    infoButton.Background = DefaultGUISettings.activeButton;
                     break;
             }
         }
@@ -258,15 +245,15 @@ namespace GUI
             settingsGrid.Visibility = Visibility.Collapsed;
             infoGrid.Visibility = Visibility.Collapsed;
             
-            viewButton.Background = DefaultSettings.inactiveButton;
-            settingsButton.Background = DefaultSettings.inactiveButton;
-            infoButton.Background= DefaultSettings.inactiveButton;
+            viewButton.Background = DefaultGUISettings.inactiveButton;
+            settingsButton.Background = DefaultGUISettings.inactiveButton;
+            infoButton.Background= DefaultGUISettings.inactiveButton;
 
             viewImage.Source = null;
             settingsImage.Source = null;
         }
 
-        private void ApplySettings(ImmutableDictionary<PossibleSettings, double> settedSettings, bool changed)
+        private void ApplySettings(AlgorithmSettings settedSettings, bool changed)
         {
             if (changed)
             {
@@ -284,7 +271,7 @@ namespace GUI
                 if (openedFiles.Children.Count != 0)
                 {
                     pathToActiveFile = ((OpenedFile)openedFiles.Children[0]).PathToFile;
-                    if ((viewButton.Background as SolidColorBrush).Color == DefaultSettings.activeButton.Color)
+                    if ((viewButton.Background as SolidColorBrush).Color == DefaultGUISettings.activeButton.Color)
                         DisplayActiveBitmap(viewImage);
                     else
                         DisplayActiveBitmap(settingsImage);

@@ -2,7 +2,7 @@
 
 namespace GUI
 {
-    internal class DefaultSettings
+    internal class DefaultGUISettings
     {
         //public static readonly SolidColorBrush inactive = new(Color.FromRgb(77, 147, 161));
         public static readonly SolidColorBrush menuColor = new(Color.FromRgb(136, 212, 227));
