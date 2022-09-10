@@ -2,7 +2,6 @@
 using System.Reflection;
 using System.Collections.Generic;
 using System.Collections;
-using NPOI.Util;
 
 namespace GUI {
     internal class AlgorithmSettings : IEnumerable<(PropertyInfo, double)> {

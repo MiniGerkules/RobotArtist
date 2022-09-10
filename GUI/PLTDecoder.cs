@@ -1,16 +1,13 @@
 using System;
-using System.Linq;
-using System.Numerics;
-using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Collections.Generic;
 
-namespace GUI
-{
+namespace GUI {
     /// <summary>
     /// The class describes the plt code decoder
     /// </summary>
-    class PLTDecoder
-    {
+    class PLTDecoder {
         public readonly static uint numTicksInMM = 40;
         public uint MaxX { get; private set; } = 0;
         public uint MaxY { get; private set; } = 0;
@@ -24,22 +21,19 @@ namespace GUI
         /// </summary>
         /// <param name="fileName"> Path to the file with plt code </param>
         /// <returns> List of strokes with specified colors </returns>
-        public List<Stroke> Decode(string fileName)
-        {
-            using (StreamReader reader = new(fileName))
-            {
+        public List<Stroke> Decode(string fileName) {
+            using (StreamReader reader = new(fileName)) {
                 string line = reader.ReadLine();
 
                 if (line == null || line == "")
                     throw new ArgumentException("ERROR! PLT file is empty!");
                 if (line.Length <= 2 || line[..2].ToLower() != "in")
                     throw new ArgumentException("ERROR! Invalid code. PLT-code should start with [IN] operator!");
-                
+
                 NewDecode();
                 line = line[^1] == ';' ? line[3..(line.Length - 1)] : line[3..];
 
-                do
-                {
+                do {
                     foreach (string part in line.Split(';'))
                         ProcessPart(part);
 
@@ -50,8 +44,7 @@ namespace GUI
             return decodedPlt;
         }
 
-        private void NewDecode()
-        {
+        private void NewDecode() {
             decodedPlt.Clear();
             lastPoint = null;
             curColor = null;
@@ -59,10 +52,8 @@ namespace GUI
             MaxY = 0;
         }
 
-        private void ProcessPart(string part)
-        {
-            switch (part[..2])
-            {
+        private void ProcessPart(string part) {
+            switch (part[..2]) {
                 case "PP":
                     curColor = new CMYBWColor(part[2..].Split(','));
                     break;
@@ -80,8 +71,7 @@ namespace GUI
             }
         }
 
-        private void ProcessPDCommand(string command)
-        {
+        private void ProcessPDCommand(string command) {
             if (curColor == null)
                 throw new ArgumentException("Invalid plt code. Color don't set before painting!");
 

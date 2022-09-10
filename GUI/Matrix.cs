@@ -1,24 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace GUI
-{
-    internal class Matrix
-    {
+namespace GUI {
+    internal class Matrix {
         public int Rows { get; private set; }
         public int Columns { get; private set; }
         private readonly double[,] matrix;
 
-        public double this[int row, int column]
-        {
+        public double this[int row, int column] {
             get => matrix[row, column];
             set => matrix[row, column] = value;
         }
 
-        public double this[int index]
-        {
-            get
-            {
+        public double this[int index] {
+            get {
                 if (Rows == 1)
                     return matrix[0, index];
                 else if (Columns == 1)
@@ -27,8 +22,7 @@ namespace GUI
                     throw new IndexOutOfRangeException("Index out of range!");
             }
 
-            set
-            {
+            set {
                 if (Rows == 1)
                     matrix[0, index] = value;
                 else if (Columns == 1)
@@ -38,22 +32,19 @@ namespace GUI
             }
         }
 
-        public Matrix(int rows, int columns)
-        {
+        public Matrix(int rows, int columns) {
             Rows = rows;
             Columns = columns;
             matrix = new double[rows, columns];
         }
 
-        public Matrix(int rows, int columns, double initVal) : this(rows, columns)
-        {
+        public Matrix(int rows, int columns, double initVal) : this(rows, columns) {
             for (int i = 0; i < rows; i++)
                 for (int j = 0; j < columns; j++)
                     matrix[i, j] = initVal;
         }
 
-        public Matrix(List<double> vector)
-        {
+        public Matrix(List<double> vector) {
             if (vector.Count == 0)
                 throw new ArgumentException("Pass a empty list to construct " +
                     "a new matrix!");
@@ -66,8 +57,7 @@ namespace GUI
                 matrix[0, j] = vector[j];
         }
 
-        public Matrix(List<List<double>> matrix)
-        {
+        public Matrix(List<List<double>> matrix) {
             if (matrix.Count == 0)
                 throw new ArgumentException("Pass a empty list to construct " +
                     "a new matrix!");
@@ -81,16 +71,14 @@ namespace GUI
                     this.matrix[i, j] = matrix[i][j];
         }
 
-        public Matrix(Matrix matrix)
-        {
+        public Matrix(Matrix matrix) {
             Rows = matrix.Rows;
             Columns = matrix.Columns;
             this.matrix = new double[Rows, Columns];
             Array.Copy(matrix.matrix, this.matrix, Rows * Columns);
         }
 
-        public Matrix GetRow(int rowIndex)
-        {
+        public Matrix GetRow(int rowIndex) {
             Matrix row = new(1, Columns);
 
             for (int i = 0; i < Columns; ++i)
@@ -99,8 +87,7 @@ namespace GUI
             return row;
         }
 
-        public Matrix GetColumn(int columnIndex)
-        {
+        public Matrix GetColumn(int columnIndex) {
             Matrix column = new(Rows, 1);
 
             for (int i = 0; i < Rows; ++i)
@@ -109,8 +96,7 @@ namespace GUI
             return column;
         }
 
-        public void SwapRows(int index1, int index2)
-        {
+        public void SwapRows(int index1, int index2) {
             if (!(0 < index1 && index1 < Rows && 0 < index2 && index2 < Rows))
                 throw new IndexOutOfRangeException("The indexes is incorrect! " +
                     "They must be positive and less then number of matrix rows!");
@@ -126,8 +112,7 @@ namespace GUI
                 matrix[index2, i] = temp[i];
         }
 
-        public void SwapColumns(int index1, int index2)
-        {
+        public void SwapColumns(int index1, int index2) {
             if (!(0 < index1 && index1 < Columns && 0 < index2 && index2 < Columns))
                 throw new IndexOutOfRangeException("The indexes is incorrect! " +
                     "They must be positive and less then number of matrix rows!");
@@ -143,20 +128,18 @@ namespace GUI
                 matrix[i, index2] = temp[i];
         }
 
-        public Matrix RepeatColumns(int numOfRepeat)
-        {
+        public Matrix RepeatColumns(int numOfRepeat) {
             Matrix result = new(Rows, Columns * numOfRepeat);
 
             for (int k = 0; k < numOfRepeat; ++k)
                 for (int i = 0; i < Rows; ++i)
                     for (int j = 0; j < Columns; ++j)
-                        result[i, k*Columns + j] = matrix[i, j];
+                        result[i, k * Columns + j] = matrix[i, j];
 
             return result;
         }
 
-        public Matrix RepeatRows(int numOfRepeat)
-        {
+        public Matrix RepeatRows(int numOfRepeat) {
             Matrix result = new(Rows * numOfRepeat, Columns);
 
             for (int k = 0; k < numOfRepeat; ++k)
@@ -167,13 +150,11 @@ namespace GUI
             return result;
         }
 
-        public int[] GetIndexesForSorted()
-        {
+        public int[] GetIndexesForSorted() {
             int[] indexes = new int[Rows];
             double[] firstColumn = new double[Rows];
 
-            for (int i = 0; i < Rows; ++i)
-            {
+            for (int i = 0; i < Rows; ++i) {
                 indexes[i] = i;
                 firstColumn[i] = matrix[i, 0];
             }
@@ -183,8 +164,7 @@ namespace GUI
             return indexes;
         }
 
-        public void MakeUnit(int startRow)
-        {
+        public void MakeUnit(int startRow) {
             if (startRow > Rows)
                 throw new IndexOutOfRangeException("Can't make unit matrix! " +
                     "The index of the start row is greater than rows number.");
@@ -194,8 +174,7 @@ namespace GUI
                 matrix[i, column++] = 1;
         }
 
-        public Matrix Transpose()
-        {
+        public Matrix Transpose() {
             Matrix result = new(Columns, Rows);
 
             for (int i = 0; i < Rows; ++i)
@@ -205,8 +184,7 @@ namespace GUI
             return result;
         }
 
-        public Matrix GetByIndexes(int[] indexes)
-        {
+        public Matrix GetByIndexes(int[] indexes) {
             Matrix matrix = new(indexes.Length, Columns);
 
             for (int i = 0; i < indexes.Length; ++i)
@@ -216,8 +194,7 @@ namespace GUI
             return matrix;
         }
 
-        public Matrix MakeDiag()
-        {
+        public Matrix MakeDiag() {
             if (!(Rows > 1 && Columns == 1 || Rows == 1 && Columns > 1))
                 throw new ArgumentException("Can't make a diagonal matrix! The matrix must be a vector!");
 
@@ -230,42 +207,31 @@ namespace GUI
             return result;
         }
 
-        public Matrix Pow(Matrix powers)
-        {
-            if (powers.Columns == 1 && powers.Rows == Rows)
-            {
+        public Matrix Pow(Matrix powers) {
+            if (powers.Columns == 1 && powers.Rows == Rows) {
                 powers = powers.RepeatColumns(Columns);
                 return ByElem(this, powers, Math.Pow);
-            }
-            else if (powers.Rows == 1 && powers.Columns == Columns)
-            {
+            } else if (powers.Rows == 1 && powers.Columns == Columns) {
                 powers = powers.RepeatRows(Rows);
                 return ByElem(this, powers, Math.Pow);
-            }
-            else if (powers.Columns == Columns && powers.Rows == Rows)
-            {
+            } else if (powers.Columns == Columns && powers.Rows == Rows) {
                 return ByElem(this, powers, Math.Pow);
-            }
-            else
-            {
+            } else {
                 throw new ArgumentException("The matrix dimensions isn't same!");
             }
         }
 
-        public static explicit operator double(Matrix matrix)
-        {
+        public static explicit operator double(Matrix matrix) {
             if (matrix.Rows != 1 || matrix.Columns != 1)
-                throw new ArgumentException("Matrix dimension is not 1x1!");    
+                throw new ArgumentException("Matrix dimension is not 1x1!");
             return matrix[0];
-        } 
+        }
 
-        public Matrix Square()
-        {
+        public Matrix Square() {
             return DoAction(Helpers.Square);
         }
 
-        public Matrix DoAction(Func<double, double> action)
-        {
+        public Matrix DoAction(Func<double, double> action) {
             Matrix result = new(Rows, Columns);
 
             for (int i = 0; i < Rows; ++i)
@@ -305,8 +271,7 @@ namespace GUI
         /// <param name="matrix"> The matrix </param>
         /// <param name="number"> The number to multiply the matrix by </param>
         /// <returns></returns>
-        public static Matrix operator *(Matrix matrix, double number)
-        {
+        public static Matrix operator *(Matrix matrix, double number) {
             Matrix result = new(matrix.Rows, matrix.Columns);
 
             for (int i = 0; i < result.Rows; ++i)
@@ -322,8 +287,7 @@ namespace GUI
         /// <param name="first"> First matrix </param>
         /// <param name="second"> Second matrix </param>
         /// <returns> The result of matrix multiply operation </returns>
-        public static Matrix operator *(Matrix first, Matrix second)
-        {
+        public static Matrix operator *(Matrix first, Matrix second) {
             if (first.Columns != second.Rows)
                 throw new ArgumentException("The number of rows first " +
                     "matrix don't equal the number of columns second matrix!");
@@ -337,8 +301,7 @@ namespace GUI
             return result;
         }
 
-        public static Matrix operator /(double num, Matrix matrix)
-        {
+        public static Matrix operator /(double num, Matrix matrix) {
             Matrix result = new(matrix.Rows, matrix.Columns);
 
             for (int i = 0; i < matrix.Rows; ++i)
@@ -348,12 +311,10 @@ namespace GUI
             return result;
         }
 
-        public static Matrix MulByRows(Matrix matrix)
-        {
+        public static Matrix MulByRows(Matrix matrix) {
             Matrix product = new(matrix.Rows, 1);
 
-            for (int i = 0; i < matrix.Rows; ++i)
-            {
+            for (int i = 0; i < matrix.Rows; ++i) {
                 product[i] = 1;
                 for (int j = 0; j < matrix.Columns; ++j)
                     product[i] *= matrix[i, j];
@@ -363,8 +324,7 @@ namespace GUI
         }
 
         private static Matrix ByElem(Matrix first, Matrix second,
-            Func<double, double, double> action)
-        {
+            Func<double, double, double> action) {
             if (first.Rows != second.Rows || first.Columns != second.Columns)
                 throw new ArgumentException("Dimensions of matrixes is different!");
 
@@ -376,12 +336,10 @@ namespace GUI
             return result;
         }
 
-        public List<List<double>> ToList()
-        {
+        public List<List<double>> ToList() {
             List<List<double>> list = new(Rows);
 
-            for (int i = 0; i < Rows; ++i)
-            {
+            for (int i = 0; i < Rows; ++i) {
                 list.Add(new(Columns));
                 for (int j = 0; j < Columns; ++j)
                     list[i].Add(matrix[i, j]);

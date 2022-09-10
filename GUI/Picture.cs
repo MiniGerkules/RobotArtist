@@ -3,10 +3,8 @@ using System.Windows.Media;
 using System.Collections.Generic;
 using System.Windows.Media.Imaging;
 
-namespace GUI
-{
-    internal class Picture
-    {
+namespace GUI {
+    internal class Picture {
         public List<(GeometryGroup, Pen)> Strokes { get; private set; } = new();
         public BitmapSource RenderedPicture { get; private set; } = null;
         public AlgorithmSettings Settings { get; private set; }
@@ -28,16 +26,14 @@ namespace GUI
             strokes.Clear();
         }
 
-        public void Redraw(AlgorithmSettings newSettings)
-        {
+        public void Redraw(AlgorithmSettings newSettings) {
             Settings = newSettings;
 
             DrawingVisual image = new();
             DrawingContext context = image.RenderOpen();
             SetBackground(context, Brushes.White);
 
-            foreach (var (geometry, pen) in Strokes)
-            {
+            foreach (var (geometry, pen) in Strokes) {
                 pen.Thickness = Settings.BrushWidth;
                 context.DrawGeometry(null, pen, geometry);
             }
@@ -47,47 +43,40 @@ namespace GUI
             RestoreRotationAngle(angle);
         }
 
-        public void Rotate()
-        {
+        public void Rotate() {
             angle = (ushort)((angle + 90) % 360);
             RestoreRotationAngle(90);
         }
 
-        private void SetBackground(DrawingContext context, Brush brush)
-        {
+        private void SetBackground(DrawingContext context, Brush brush) {
             double brushWidth = Settings.BrushWidth;
             Rect background = new(-brushWidth / 2, -brushWidth / 2,
                                   Width + brushWidth, Height + brushWidth);
             context.DrawRectangle(brush, null, background);
         }
 
-        private void RestoreRotationAngle(ushort angle)
-        {
+        private void RestoreRotationAngle(ushort angle) {
             RotateTransform rotate = new(angle);
             TransformedBitmap tb = new(RenderedPicture, rotate);
             RenderedPicture = tb;
         }
 
-        private void RenderBitmap(DrawingVisual image)
-        {
+        private void RenderBitmap(DrawingVisual image) {
             Rect bounds = image.ContentBounds;
             RenderTargetBitmap renderedImage = new((int)bounds.Width, (int)bounds.Height, 96, 96, PixelFormats.Default);
             renderedImage.Render(image);
             RenderedPicture = renderedImage;
         }
 
-        private DrawingVisual BuildImage(List<Stroke> strokes)
-        {
+        private DrawingVisual BuildImage(List<Stroke> strokes) {
             DrawingVisual image = new();
             Strokes.Capacity = strokes.Count;
             DrawingContext context = image.RenderOpen();
 
             SetBackground(context, Brushes.White);
             UpdateColor(out Pen pen, out var geometry, strokes[0].StroceColor, out var lastColor);
-            for (int i = 0; i < strokes.Count; ++i)
-            {
-                if (strokes[i].StroceColor != lastColor)
-                {
+            for (int i = 0; i < strokes.Count; ++i) {
+                if (strokes[i].StroceColor != lastColor) {
                     context.DrawGeometry(null, pen, geometry);
                     Strokes.Add((geometry, pen));
                     UpdateColor(out pen, out geometry, strokes[i].StroceColor, out lastColor);
@@ -98,23 +87,20 @@ namespace GUI
 
             context.DrawGeometry(null, pen, geometry);
             Strokes.Add((geometry, pen));
-            
+
             context.Close();
             return image;
         }
 
         private void UpdateColor(out Pen pen, out GeometryGroup geometry,
-                                 PLTColor newColor, out PLTColor oldColor)
-        {
+                                 PLTColor newColor, out PLTColor oldColor) {
             UpdatePenAndGeometry(out pen, out geometry, new SolidColorBrush(newColor.ToColor()));
             oldColor = newColor;
         }
 
-        private void UpdatePenAndGeometry(out Pen pen, out GeometryGroup geometry, Brush newColor)
-        {
+        private void UpdatePenAndGeometry(out Pen pen, out GeometryGroup geometry, Brush newColor) {
             geometry = new();
-            pen = new()
-            {
+            pen = new() {
                 Thickness = Settings.BrushWidth,
                 StartLineCap = PenLineCap.Round,
                 EndLineCap = PenLineCap.Round,
@@ -122,8 +108,7 @@ namespace GUI
             };
         }
 
-        private LineGeometry GetLineGeometry(Stroke stoke)
-        {
+        private LineGeometry GetLineGeometry(Stroke stoke) {
             Point start = new(stoke.Start.X, stoke.Start.Y);
             Point end = new(stoke.End.X, stoke.End.Y);
 

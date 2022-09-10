@@ -11,7 +11,7 @@ namespace GUI {
         private GridDisplayer displayer;
         private AlgorithmSettings oldSettings;
         private event ApplySettingsEvent ReturnNewSettings;
-        
+
         public SettingsManager(ApplySettingsEvent returnNewSettings) {
             ReturnNewSettings += returnNewSettings;
         }
