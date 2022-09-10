@@ -7,18 +7,15 @@ namespace Algorithm
 {
     public class Tracer
     {
-        const uint depth = 3;
-
         public StrokeBrush strokeBrush { get; private set; }
         public uint maxAmountOfIters { get; private set; }
         public BitmapImage image { get; private set; }
         public Settings settings { get; }
-        public RGBLayers grayCanvas { get; private set; } // array m x n of canvasColor // is that ok
+        public GeneralComponents.Matrix /*RGBLayers*/ grayCanvas { get; private set; } // array m x n of canvasColor // is that ok
         public RGBLayers coloredCanvas { get; private set; } // array m x n x 3 of canvasColor
         public RGBLayers initialImage { get; private set; } // array m x n x 3 where m x n x 0 is a red layer, m x n x 1 is a green layer, m x n x 2 is a blue layer, ignore layer alpha
         public RGBLayers error { get; private set; }
         public RGBLayers unblurredImage { get; private set; }
-
         public double[,] grayInitialImage { get; private set; }
 
         public Gradient gradients; // stores gradients (pairs U and V for every pixel) for all picture
@@ -41,7 +38,7 @@ namespace Algorithm
                settings.guiTrace.canvasHeightMM / image.PixelHeight));
             maxAmountOfIters = strokeBrush.thickness;
             initialImage = new RGBLayers(image);
-            grayCanvas = new RGBLayers(settings.canvasColor, image.PixelHeight, image.PixelWidth, 1);
+            grayCanvas = new GeneralComponents.Matrix(image.PixelHeight, image.PixelWidth, settings.canvasColor);//new RGBLayers(settings.canvasColor, image.PixelHeight, image.PixelWidth, 1);
             coloredCanvas = new RGBLayers(settings.canvasColor, image.PixelHeight, image.PixelWidth, 3);
             error = coloredCanvas - initialImage; // not doubled, for what? may be done later where it'll be needed in countings
 

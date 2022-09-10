@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Algorithm\Algorithm.csproj" />
+    <ProjectReference Include="..\GeneralComponents\GeneralComponents.csproj" />
   </ItemGroup>
 
   <ItemGroup>

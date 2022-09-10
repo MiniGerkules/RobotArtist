@@ -6,4 +6,8 @@
     <OutputType>Library</OutputType>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\GeneralComponents\GeneralComponents.csproj" />
+  </ItemGroup>
+
 </Project>

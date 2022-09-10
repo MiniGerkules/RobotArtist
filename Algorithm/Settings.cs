@@ -5,17 +5,17 @@ namespace Algorithm
 {
     public class Settings
     {
-        public byte canvasColor { get; private set; }
+        public byte canvasColor { get; private set; } // canvasColor
         public uint amoutOfLloydIters { get; private set; } // 2, options
-        public uint amountOfTotalIters { get; private set; }
-        public bool doBlur { get; private set; }
-        public GUITrace guiTrace { get; private set; }
-        public double canvasColorFault { get; private set; }
-        public uint itersAmountWithSmallOverlap { get; private set; }
-        public double minInitOverlapRatio { get; private set; }
-        public double maxInitOverlapRatio { get; private set; }
-        public double pixTol { get; private set; } // possible color deviation from the original at the end
-        public double pixTolAverage { get; private set; }
+        public uint amountOfTotalIters { get; private set; } // TotalIter
+        public bool doBlur { get; private set; } // do_blur
+        public GUITrace guiTrace { get; private set; } // GUI_Trace
+        public double canvasColorFault { get; private set; } // canvasEps
+        public uint itersAmountWithSmallOverlap { get; private set; } // itersMinOverlap
+        public double minInitOverlapRatio { get; private set; } // minOverlap
+        public double maxInitOverlapRatio { get; private set; } // maxOverlap
+        public double pixTol { get; private set; } // possible color deviation from the original at the end // pixTol
+        public double pixTolAverage { get; private set; } // pixTol2
         public double pixTolAccept { get; private set; } // error at which a stroke is unconditionally accepted
 
         public Settings(

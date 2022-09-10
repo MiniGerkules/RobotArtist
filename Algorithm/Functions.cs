@@ -3,15 +3,14 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Collections.Generic;
 using System.Linq;
-
-
+using GeneralComponents;
 
 namespace Algorithm
 {
     public static class Functions
     {
 
-        public enum MIXTYPE { MY1, MY2, CY, CM }
+        //public enum MIXTYPE { MY1, MY2, CY, CM }
 
         public static double[] GaussSolution(double[,] matrix, double[] solution)
         {
@@ -163,7 +162,7 @@ namespace Algorithm
          * 
          * 
          */
-        public static void PredictProportions(out double[,] proportions, out MIXTYPE[] mixTypes, out double[,] hsvNewColor, double[,] hsvColor, List<List<List<double>>> Ycell = null, List<List<List<double>>> Wcell = null, int sheetsAmount = 4)
+        internal static void PredictProportions(out double[,] proportions, out GeneralComponents.ColorMixType[] mixTypes, out double[,] hsvNewColor, double[,] hsvColor, List<List<List<double>>> Ycell = null, List<List<List<double>>> Wcell = null, int sheetsAmount = 4)
         {
             
             int K = 22;
@@ -199,7 +198,7 @@ namespace Algorithm
             int hsvPixelsAmount = hsvColor.GetLength(0);
             hsvNewColor = hsvColor.Clone() as double[,];
             proportions = new double[hsvPixelsAmount, 3];
-            mixTypes = new MIXTYPE[hsvPixelsAmount];
+            mixTypes = new GeneralComponents.ColorMixType[hsvPixelsAmount];
             double[,] hsvArray = new double[hsvPixelsAmount, 3];
             for (int i = 0; i < hsvPixelsAmount; i++)
             {
@@ -295,17 +294,17 @@ namespace Algorithm
                     .Select(pair => pair.index)   // select original indicies
                     .ToArray();
                 int clsvect = Clss[I[i]];
-                mixTypes[i] = (MIXTYPE)clsvect;
+                mixTypes[i] = (GeneralComponents.ColorMixType)clsvect;
                 // then, find second possible class
                 bool flag = true; // 1
                 int ctr = 1; // index
-                MIXTYPE class2 = mixTypes[i];
+                GeneralComponents.ColorMixType class2 = mixTypes[i];
                 while (flag) 
                 {
-                    if ((MIXTYPE)Clss[I[ctr]] != mixTypes[i])
+                    if ((GeneralComponents.ColorMixType)Clss[I[ctr]] != mixTypes[i])
                     {
                         flag = false;
-                        class2 = (MIXTYPE)Clss[I[ctr]]; // this class will be tested if cls(i) is wrong
+                        class2 = (GeneralComponents.ColorMixType)Clss[I[ctr]]; // this class will be tested if cls(i) is wrong
                     }
                     else
                         ctr++;
@@ -427,7 +426,7 @@ namespace Algorithm
                         if (err > err0) // if error is greater, return to first variant
                         {
                             propscur = props0;
-                            mixTypes[i] = (MIXTYPE)clsvect;
+                            mixTypes[i] = (GeneralComponents.ColorMixType)clsvect;
                         }
                         // anyway, go out of the loop
                         flag = false; // go out of the loop
@@ -443,7 +442,7 @@ namespace Algorithm
         }
 
 
-        public static double[][] prop2hsv(double[][] proportions, MIXTYPE[] mixTypes, List<List<List<double>>> Ycell = null, List<List<List<double>>> Wcell = null, int sheetsAmount = 4)
+        internal static double[][] prop2hsv(double[][] proportions, GeneralComponents.ColorMixType[] mixTypes, List<List<List<double>>> Ycell = null, List<List<List<double>>> Wcell = null, int sheetsAmount = 4)
         {
             int K = 150;
             if ((Ycell == null) && (Wcell == null))

@@ -138,8 +138,8 @@ namespace Algorithm
                         {
                             //int index = y * stride + bpp * x;
                             // count weighted sum: R * 0.2989 + G * 0.5870 + B * 0.1140
-                            p[x, y] = (layers[x, y, 0] * 0.2989)
-                                + (layers[x, y, 1] * 0.5870) + (layers[x, y, 2] * 0.1140);
+                            p[x, y] = Math.Round((layers[x, y, 0] * 0.2989)
+                                + (layers[x, y, 1] * 0.5870) + (layers[x, y, 2] * 0.1140));
                         }
                     }
                 }
