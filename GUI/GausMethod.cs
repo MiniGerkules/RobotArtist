@@ -2,18 +2,18 @@
 
 namespace GUI {
     internal class GausMethod {
-        public static Matrix Solve(Matrix coefs, Matrix answers) {
+        public static Matrix2D Solve(Matrix2D coefs, Matrix2D answers) {
             if (answers.Columns != 1 || answers.Rows != coefs.Rows)
                 throw new ArgumentException("Can't solve a linear system! Matrix dimensions isn't same!");
 
             if (coefs.Rows != coefs.Columns)
                 throw new ArgumentException("Method solve only a square matrix!");
 
-            Matrix coefsCopy = new(coefs);
-            Matrix answersCopy = new(answers);
+            Matrix2D coefsCopy = new(coefs);
+            Matrix2D answersCopy = new(answers);
 
             // Tikhonov regularization
-            Matrix regularization = new(coefs.Rows, 1, 1e-10);
+            Matrix2D regularization = new(coefs.Rows, 1, 1e-10);
             regularization = regularization.MakeDiag();
             coefsCopy = coefsCopy + regularization;
 
@@ -35,7 +35,7 @@ namespace GUI {
                 }
             }
 
-            Matrix result = new(coefs.Columns, 1);
+            Matrix2D result = new(coefs.Columns, 1);
             for (int i = result.Rows - 1; i >= 0; i--) {
                 if (Equals(coefsCopy[i, i], 0))
                     throw new ArgumentException("The system haven't one solution!");
@@ -50,7 +50,7 @@ namespace GUI {
             return result;
         }
 
-        private static bool IsFullNulls(Matrix matrix, int curRow) {
+        private static bool IsFullNulls(Matrix2D matrix, int curRow) {
             for (int i = 0; i < matrix.Columns; ++i)
                 if (matrix[curRow, i] != 0)
                     return false;
@@ -58,7 +58,7 @@ namespace GUI {
             return true;
         }
 
-        private static bool TrySwap(Matrix coefs, Matrix answers, int startRow, int column) {
+        private static bool TrySwap(Matrix2D coefs, Matrix2D answers, int startRow, int column) {
             for (int i = startRow; i < coefs.Rows; ++i) {
                 if (Equals(coefs[i, column], 0))
                     continue;

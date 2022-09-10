@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 
 namespace GUI {
-    internal class Matrix {
+    internal class Matrix2D {
         public int Rows { get; private set; }
         public int Columns { get; private set; }
         private readonly double[,] matrix;
@@ -32,19 +32,19 @@ namespace GUI {
             }
         }
 
-        public Matrix(int rows, int columns) {
+        public Matrix2D(int rows, int columns) {
             Rows = rows;
             Columns = columns;
             matrix = new double[rows, columns];
         }
 
-        public Matrix(int rows, int columns, double initVal) : this(rows, columns) {
+        public Matrix2D(int rows, int columns, double initVal) : this(rows, columns) {
             for (int i = 0; i < rows; i++)
                 for (int j = 0; j < columns; j++)
                     matrix[i, j] = initVal;
         }
 
-        public Matrix(List<double> vector) {
+        public Matrix2D(List<double> vector) {
             if (vector.Count == 0)
                 throw new ArgumentException("Pass a empty list to construct " +
                     "a new matrix!");
@@ -57,7 +57,7 @@ namespace GUI {
                 matrix[0, j] = vector[j];
         }
 
-        public Matrix(List<List<double>> matrix) {
+        public Matrix2D(List<List<double>> matrix) {
             if (matrix.Count == 0)
                 throw new ArgumentException("Pass a empty list to construct " +
                     "a new matrix!");
@@ -71,15 +71,15 @@ namespace GUI {
                     this.matrix[i, j] = matrix[i][j];
         }
 
-        public Matrix(Matrix matrix) {
+        public Matrix2D(Matrix2D matrix) {
             Rows = matrix.Rows;
             Columns = matrix.Columns;
             this.matrix = new double[Rows, Columns];
             Array.Copy(matrix.matrix, this.matrix, Rows * Columns);
         }
 
-        public Matrix GetRow(int rowIndex) {
-            Matrix row = new(1, Columns);
+        public Matrix2D GetRow(int rowIndex) {
+            Matrix2D row = new(1, Columns);
 
             for (int i = 0; i < Columns; ++i)
                 row[i] = matrix[rowIndex, i];
@@ -87,8 +87,8 @@ namespace GUI {
             return row;
         }
 
-        public Matrix GetColumn(int columnIndex) {
-            Matrix column = new(Rows, 1);
+        public Matrix2D GetColumn(int columnIndex) {
+            Matrix2D column = new(Rows, 1);
 
             for (int i = 0; i < Rows; ++i)
                 column[i] = matrix[i, columnIndex];
@@ -128,8 +128,8 @@ namespace GUI {
                 matrix[i, index2] = temp[i];
         }
 
-        public Matrix RepeatColumns(int numOfRepeat) {
-            Matrix result = new(Rows, Columns * numOfRepeat);
+        public Matrix2D RepeatColumns(int numOfRepeat) {
+            Matrix2D result = new(Rows, Columns * numOfRepeat);
 
             for (int k = 0; k < numOfRepeat; ++k)
                 for (int i = 0; i < Rows; ++i)
@@ -139,8 +139,8 @@ namespace GUI {
             return result;
         }
 
-        public Matrix RepeatRows(int numOfRepeat) {
-            Matrix result = new(Rows * numOfRepeat, Columns);
+        public Matrix2D RepeatRows(int numOfRepeat) {
+            Matrix2D result = new(Rows * numOfRepeat, Columns);
 
             for (int k = 0; k < numOfRepeat; ++k)
                 for (int i = 0; i < Rows; ++i)
@@ -174,8 +174,8 @@ namespace GUI {
                 matrix[i, column++] = 1;
         }
 
-        public Matrix Transpose() {
-            Matrix result = new(Columns, Rows);
+        public Matrix2D Transpose() {
+            Matrix2D result = new(Columns, Rows);
 
             for (int i = 0; i < Rows; ++i)
                 for (int j = 0; j < Columns; ++j)
@@ -184,8 +184,8 @@ namespace GUI {
             return result;
         }
 
-        public Matrix GetByIndexes(int[] indexes) {
-            Matrix matrix = new(indexes.Length, Columns);
+        public Matrix2D GetByIndexes(int[] indexes) {
+            Matrix2D matrix = new(indexes.Length, Columns);
 
             for (int i = 0; i < indexes.Length; ++i)
                 for (int j = 0; j < Columns; ++j)
@@ -194,12 +194,12 @@ namespace GUI {
             return matrix;
         }
 
-        public Matrix MakeDiag() {
+        public Matrix2D MakeDiag() {
             if (!(Rows > 1 && Columns == 1 || Rows == 1 && Columns > 1))
                 throw new ArgumentException("Can't make a diagonal matrix! The matrix must be a vector!");
 
             int dim = Math.Max(Rows, Columns);
-            Matrix result = new(dim, dim, 0);
+            Matrix2D result = new(dim, dim, 0);
 
             for (int i = 0; i < dim; ++i)
                 result[i, i] = this[i];
@@ -207,7 +207,7 @@ namespace GUI {
             return result;
         }
 
-        public Matrix Pow(Matrix powers) {
+        public Matrix2D Pow(Matrix2D powers) {
             if (powers.Columns == 1 && powers.Rows == Rows) {
                 powers = powers.RepeatColumns(Columns);
                 return ByElem(this, powers, Math.Pow);
@@ -221,18 +221,18 @@ namespace GUI {
             }
         }
 
-        public static explicit operator double(Matrix matrix) {
+        public static explicit operator double(Matrix2D matrix) {
             if (matrix.Rows != 1 || matrix.Columns != 1)
                 throw new ArgumentException("Matrix dimension is not 1x1!");
             return matrix[0];
         }
 
-        public Matrix Square() {
+        public Matrix2D Square() {
             return DoAction(Helpers.Square);
         }
 
-        public Matrix DoAction(Func<double, double> action) {
-            Matrix result = new(Rows, Columns);
+        public Matrix2D DoAction(Func<double, double> action) {
+            Matrix2D result = new(Rows, Columns);
 
             for (int i = 0; i < Rows; ++i)
                 for (int j = 0; j < Columns; ++j)
@@ -247,7 +247,7 @@ namespace GUI {
         /// <param name="first"> First matrix </param>
         /// <param name="second"> Second matrix </param>
         /// <returns> The result of minux operation </returns>
-        public static Matrix operator -(Matrix first, Matrix second) => ByElem(first, second, Helpers.Minus);
+        public static Matrix2D operator -(Matrix2D first, Matrix2D second) => ByElem(first, second, Helpers.Minus);
 
         /// <summary>
         /// The method defines the plus operation
@@ -255,7 +255,7 @@ namespace GUI {
         /// <param name="first"> First matrix </param>
         /// <param name="second"> Second matrix </param>
         /// <returns> The result of plus operation </returns>
-        public static Matrix operator +(Matrix first, Matrix second) => ByElem(first, second, Helpers.Plus);
+        public static Matrix2D operator +(Matrix2D first, Matrix2D second) => ByElem(first, second, Helpers.Plus);
 
         /// <summary>
         /// The method defines the element by element multiply operation
@@ -263,7 +263,7 @@ namespace GUI {
         /// <param name="first"> First matrix </param>
         /// <param name="second"> Second matrix </param>
         /// <returns> The result of element by element multiply operation </returns>
-        public static Matrix operator ^(Matrix first, Matrix second) => ByElem(first, second, Helpers.Multiply);
+        public static Matrix2D operator ^(Matrix2D first, Matrix2D second) => ByElem(first, second, Helpers.Multiply);
 
         /// <summary>
         /// The method defines the multyply between a matrix and a number
@@ -271,8 +271,8 @@ namespace GUI {
         /// <param name="matrix"> The matrix </param>
         /// <param name="number"> The number to multiply the matrix by </param>
         /// <returns></returns>
-        public static Matrix operator *(Matrix matrix, double number) {
-            Matrix result = new(matrix.Rows, matrix.Columns);
+        public static Matrix2D operator *(Matrix2D matrix, double number) {
+            Matrix2D result = new(matrix.Rows, matrix.Columns);
 
             for (int i = 0; i < result.Rows; ++i)
                 for (int j = 0; j < result.Columns; ++j)
@@ -287,12 +287,12 @@ namespace GUI {
         /// <param name="first"> First matrix </param>
         /// <param name="second"> Second matrix </param>
         /// <returns> The result of matrix multiply operation </returns>
-        public static Matrix operator *(Matrix first, Matrix second) {
+        public static Matrix2D operator *(Matrix2D first, Matrix2D second) {
             if (first.Columns != second.Rows)
                 throw new ArgumentException("The number of rows first " +
                     "matrix don't equal the number of columns second matrix!");
 
-            Matrix result = new(first.Rows, second.Columns, 0);
+            Matrix2D result = new(first.Rows, second.Columns, 0);
             for (int i = 0; i < first.Rows; ++i)
                 for (int j = 0; j < second.Columns; ++j)
                     for (int k = 0; k < second.Rows; ++k)
@@ -301,8 +301,8 @@ namespace GUI {
             return result;
         }
 
-        public static Matrix operator /(double num, Matrix matrix) {
-            Matrix result = new(matrix.Rows, matrix.Columns);
+        public static Matrix2D operator /(double num, Matrix2D matrix) {
+            Matrix2D result = new(matrix.Rows, matrix.Columns);
 
             for (int i = 0; i < matrix.Rows; ++i)
                 for (int j = 0; j < matrix.Columns; ++j)
@@ -311,8 +311,8 @@ namespace GUI {
             return result;
         }
 
-        public static Matrix MulByRows(Matrix matrix) {
-            Matrix product = new(matrix.Rows, 1);
+        public static Matrix2D MulByRows(Matrix2D matrix) {
+            Matrix2D product = new(matrix.Rows, 1);
 
             for (int i = 0; i < matrix.Rows; ++i) {
                 product[i] = 1;
@@ -323,12 +323,12 @@ namespace GUI {
             return product;
         }
 
-        private static Matrix ByElem(Matrix first, Matrix second,
+        private static Matrix2D ByElem(Matrix2D first, Matrix2D second,
             Func<double, double, double> action) {
             if (first.Rows != second.Rows || first.Columns != second.Columns)
                 throw new ArgumentException("Dimensions of matrixes is different!");
 
-            Matrix result = new(first.Rows, first.Columns);
+            Matrix2D result = new(first.Rows, first.Columns);
             for (int i = 0; i < first.Rows; ++i)
                 for (int j = 0; j < first.Columns; ++j)
                     result[i, j] = action(first[i, j], second[i, j]);
