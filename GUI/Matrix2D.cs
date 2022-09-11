@@ -5,43 +5,58 @@ namespace GUI {
     internal class Matrix2D {
         public int Rows { get; private set; }
         public int Columns { get; private set; }
-        private readonly double[,] matrix;
+        private readonly Vector[] matrix;
 
         public double this[int row, int column] {
-            get => matrix[row, column];
-            set => matrix[row, column] = value;
+            get {
+                if (matrix[0].IsRow)
+                    return matrix[row][column];
+                else
+                    return matrix[column][row];
+            }
+            set {
+                if (matrix[0].IsRow)
+                    matrix[row][column] = value;
+                else
+                    matrix[column][row] = value;
+            }
         }
 
         public double this[int index] {
             get {
                 if (Rows == 1)
-                    return matrix[0, index];
+                    return matrix[0][index];
                 else if (Columns == 1)
-                    return matrix[index, 0];
+                    return matrix[index][0];
                 else
                     throw new IndexOutOfRangeException("Index out of range!");
             }
 
             set {
                 if (Rows == 1)
-                    matrix[0, index] = value;
+                    matrix[0][index] = value;
                 else if (Columns == 1)
-                    matrix[index, 0] = value;
+                    matrix[index][0] = value;
                 else
                     throw new IndexOutOfRangeException("Index out of range!");
             }
         }
 
         public Matrix2D(int rows, int columns) {
+            if (rows == 0 || columns == 0)
+                throw new ArgumentException("Can't create an empty matrix!");
+
             Rows = rows;
             Columns = columns;
-            matrix = new double[rows, columns];
+            matrix = new Vector[rows];
+            for (int i = 0; i < rows; ++i)
+                matrix[i] = new(columns);
         }
 
         public Matrix2D(int rows, int columns, double initVal) : this(rows, columns) {
             for (int i = 0; i < rows; i++)
                 for (int j = 0; j < columns; j++)
-                    matrix[i, j] = initVal;
+                    this[i, j] = initVal;
         }
 
         public Matrix2D(List<double> vector) {
@@ -51,49 +66,57 @@ namespace GUI {
 
             Rows = 1;
             Columns = vector.Count;
-            matrix = new double[Rows, Columns];
+            matrix = new Vector[] { new(vector) };
+        }
 
-            for (int j = 0; j < Columns; ++j)
-                matrix[0, j] = vector[j];
+        public Matrix2D(Vector vector) {
+            if (vector.IsRow) {
+                Rows = 1;
+                Columns = vector.Size;
+            } else {
+                Rows = vector.Size;
+                Columns = 1;
+            }
+
+            matrix = new Vector[] { new(vector) };
         }
 
         public Matrix2D(List<List<double>> matrix) {
-            if (matrix.Count == 0)
+            if (matrix.Count == 0 || matrix[0].Count == 0)
                 throw new ArgumentException("Pass a empty list to construct " +
                     "a new matrix!");
 
             Rows = matrix.Count;
             Columns = matrix[0].Count;
-            this.matrix = new double[Rows, Columns];
+            this.matrix = new Vector[Rows];
 
             for (int i = 0; i < Rows; ++i)
-                for (int j = 0; j < Columns; ++j)
-                    this.matrix[i, j] = matrix[i][j];
+                this.matrix[i] = new(matrix[i]);
         }
 
         public Matrix2D(Matrix2D matrix) {
             Rows = matrix.Rows;
             Columns = matrix.Columns;
-            this.matrix = new double[Rows, Columns];
-            Array.Copy(matrix.matrix, this.matrix, Rows * Columns);
-        }
-
-        public Matrix2D GetRow(int rowIndex) {
-            Matrix2D row = new(1, Columns);
-
-            for (int i = 0; i < Columns; ++i)
-                row[i] = matrix[rowIndex, i];
-
-            return row;
-        }
-
-        public Matrix2D GetColumn(int columnIndex) {
-            Matrix2D column = new(Rows, 1);
+            this.matrix = new Vector[Rows];
 
             for (int i = 0; i < Rows; ++i)
-                column[i] = matrix[i, columnIndex];
+                this.matrix[i] = new(matrix.matrix[i]);
+        }
 
-            return column;
+        public Vector GetRow(int rowIndex) {
+            double[] vector = new double[Columns];
+            for (int i = 0; i < Columns; ++i)
+                vector[i] = this[rowIndex, i];
+    
+            return new(vector);
+        }
+
+        public Vector GetColumn(int columnIndex) {
+            double[] vector = new double[Rows];
+            for (int i = 0; i < Rows; ++i)
+                vector[i] = this[i, columnIndex];
+
+            return new(vector, false);
         }
 
         public void SwapRows(int index1, int index2) {
@@ -101,15 +124,8 @@ namespace GUI {
                 throw new IndexOutOfRangeException("The indexes is incorrect! " +
                     "They must be positive and less then number of matrix rows!");
 
-            double[] temp = new double[Columns];
             for (int i = 0; i < Columns; ++i)
-                temp[i] = matrix[index1, i];
-
-            for (int i = 0; i < Columns; ++i)
-                matrix[index1, i] = matrix[index2, i];
-
-            for (int i = 0; i < Columns; ++i)
-                matrix[index2, i] = temp[i];
+                (this[index1, i], this[index2, i]) = (this[index2, i], this[index1, i]);
         }
 
         public void SwapColumns(int index1, int index2) {
@@ -117,24 +133,17 @@ namespace GUI {
                 throw new IndexOutOfRangeException("The indexes is incorrect! " +
                     "They must be positive and less then number of matrix rows!");
 
-            double[] temp = new double[Rows];
             for (int i = 0; i < Rows; ++i)
-                temp[i] = matrix[i, index1];
-
-            for (int i = 0; i < Rows; ++i)
-                matrix[i, index1] = matrix[i, index2];
-
-            for (int i = 0; i < Rows; ++i)
-                matrix[i, index2] = temp[i];
+                (this[i, index1], this[i, index2]) = (this[i, index2], this[i, index1]);
         }
 
         public Matrix2D RepeatColumns(int numOfRepeat) {
             Matrix2D result = new(Rows, Columns * numOfRepeat);
 
-            for (int k = 0; k < numOfRepeat; ++k)
-                for (int i = 0; i < Rows; ++i)
-                    for (int j = 0; j < Columns; ++j)
-                        result[i, k * Columns + j] = matrix[i, j];
+            for (int i = 0; i < numOfRepeat; ++i)
+                for (int j = 0; j < Rows; ++j) 
+                    for (int k = 0; k < Columns; ++k) 
+                        result[j, i*Columns + k] = this[j, k];
 
             return result;
         }
@@ -142,21 +151,21 @@ namespace GUI {
         public Matrix2D RepeatRows(int numOfRepeat) {
             Matrix2D result = new(Rows * numOfRepeat, Columns);
 
-            for (int k = 0; k < numOfRepeat; ++k)
-                for (int i = 0; i < Rows; ++i)
-                    for (int j = 0; j < Columns; ++j)
-                        result[k * Rows + i, j] = matrix[i, j];
+            for (int i = 0; i < numOfRepeat; ++i)
+                for (int j = 0; j < Rows; ++j)
+                    for (int k = 0; k < Columns; ++k)
+                        result[i*Rows + j, k] = this[j, k];
 
             return result;
         }
 
         public int[] GetIndexesForSorted() {
-            int[] indexes = new int[Rows];
             double[] firstColumn = new double[Rows];
+            int[] indexes = new int[Rows];
 
             for (int i = 0; i < Rows; ++i) {
+                firstColumn[i] = this[i, 0];
                 indexes[i] = i;
-                firstColumn[i] = matrix[i, 0];
             }
 
             Array.Sort(firstColumn, indexes);
@@ -170,16 +179,16 @@ namespace GUI {
                     "The index of the start row is greater than rows number.");
 
             int column = 0;
-            for (int i = startRow; i < Rows && column < Columns; ++i)
-                matrix[i, column++] = 1;
+            for (int row = startRow; row < Rows && column < Columns; ++row, ++column)
+                this[row, column] = 1;
         }
 
         public Matrix2D Transpose() {
-            Matrix2D result = new(Columns, Rows);
+            Matrix2D result = new(this);
 
-            for (int i = 0; i < Rows; ++i)
-                for (int j = 0; j < Columns; ++j)
-                    result[j, i] = matrix[i, j];
+            (result.Rows, result.Columns) = (result.Columns, result.Rows);
+            foreach (var vector in result.matrix)
+                vector.Transpose();
 
             return result;
         }
@@ -189,7 +198,7 @@ namespace GUI {
 
             for (int i = 0; i < indexes.Length; ++i)
                 for (int j = 0; j < Columns; ++j)
-                    matrix[i, j] = this.matrix[indexes[i], j];
+                    matrix[i, j] = this[indexes[i], j];
 
             return matrix;
         }
@@ -205,6 +214,17 @@ namespace GUI {
                 result[i, i] = this[i];
 
             return result;
+        }
+
+        public Matrix2D Pow(Vector powers) {
+            Matrix2D matrix = new(powers);
+            
+            if (powers.IsRow)
+                matrix = matrix.RepeatRows(Rows);
+            else
+                matrix = matrix.RepeatColumns(Columns);
+
+            return ByElem(this, matrix, Math.Pow);
         }
 
         public Matrix2D Pow(Matrix2D powers) {
@@ -236,7 +256,7 @@ namespace GUI {
 
             for (int i = 0; i < Rows; ++i)
                 for (int j = 0; j < Columns; ++j)
-                    result[i, j] = action(matrix[i, j]);
+                    result[i, j] = action(this[i, j]);
 
             return result;
         }
@@ -342,7 +362,7 @@ namespace GUI {
             for (int i = 0; i < Rows; ++i) {
                 list.Add(new(Columns));
                 for (int j = 0; j < Columns; ++j)
-                    list[i].Add(matrix[i, j]);
+                    list[i].Add(this[i, j]);
             }
 
             return list;
