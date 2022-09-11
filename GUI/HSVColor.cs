@@ -1,23 +1,19 @@
 ﻿using System;
 using System.Windows.Media;
 
-namespace GUI
-{
-    internal class HSVColor : PLTColor
-    {
+namespace GUI {
+    internal class HSVColor : PLTColor {
         private double hue;             // From 0 to 1
         private double saturation;      // From 0 to 1
         private double value;           // From 0 to 1
 
-        public HSVColor(double hue, double saturation, double value)
-        {
+        public HSVColor(double hue, double saturation, double value) {
             this.hue = hue;
             this.saturation = saturation;
             this.value = value;
         }
 
-        public HSVColor(double[] hsv)
-        {
+        public HSVColor(double[] hsv) {
             if (hsv == null || hsv.Length != 3)
                 throw new ArgumentException("");
 
@@ -26,8 +22,7 @@ namespace GUI
             value = hsv[2];
         }
 
-        public override Color ToColor()
-        {
+        public override Color ToColor() {
             return ((RGBColor)this).ToColor();
         }
 

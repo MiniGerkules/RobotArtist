@@ -7,15 +7,12 @@ using System.Windows.Media;
 using System.Windows.Controls;
 using System.Collections.Generic;
 using System.Windows.Media.Imaging;
-using System.Collections.Immutable;
 
-namespace GUI
-{
+namespace GUI {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
-    {
+    public partial class MainWindow : Window {
         private Algorithm.Tracer tracer;
 
         private readonly Dictionary<string, Picture> files = new();
@@ -28,8 +25,7 @@ namespace GUI
 
         private readonly string pathToDatabase = @"resources/ModelTable600.xls";
 
-        public MainWindow()
-        {
+        public MainWindow() {
             InitializeComponent();
 
             mainMenu.Background = DefaultGUISettings.menuColor;
@@ -42,20 +38,17 @@ namespace GUI
             openButton.CommandBindings.Add(commandBinding);
         }
 
-        private void WindowLoaded(object sender, RoutedEventArgs e)
-        {
+        private void WindowLoaded(object sender, RoutedEventArgs e) {
             Database.LoadDatabase(pathToDatabase);
 
-            if (!Database.IsLoad())
-            {
+            if (!Database.IsLoad()) {
                 MessageBox.Show("Can't to upload a file with color data. Check the presence " +
                     "of the database file in the directory.", "Error!", MessageBoxButton.OK);
                 Close();
             }
         }
 
-        private void OpenFile(object sender, ExecutedRoutedEventArgs e)
-        {
+        private void OpenFile(object sender, ExecutedRoutedEventArgs e) {
             OpenFileDialog fileDialog = new();
             fileDialog.Filter = "Picture or PLT-file|*.jpg;*.png;*.bmp;*.plt";
 
@@ -65,17 +58,16 @@ namespace GUI
                 ProcessFile(fileDialog.FileName);
         }
 
-        private void ProcessFile(string fileName)
-        {
+        private void ProcessFile(string fileName) {
             if (IsFileAlreadyOpened(fileName))
                 return;
 
             //try
             //{
-                if (fileName.EndsWith(".plt"))
-                    PLTFileHandler(fileName);
-                else
-                    ImageFileHandler(fileName);
+            if (fileName.EndsWith(".plt"))
+                PLTFileHandler(fileName);
+            else
+                ImageFileHandler(fileName);
             //}
             //catch (ArgumentException error)
             //{
@@ -88,11 +80,9 @@ namespace GUI
             ChangeActive(Active.ViewGrid);
             DisplayActiveBitmap(viewImage);
         }
-        
-        private bool IsFileAlreadyOpened(string file)
-        {
-            if (files.ContainsKey(file))
-            {
+
+        private bool IsFileAlreadyOpened(string file) {
+            if (files.ContainsKey(file)) {
                 UpdateOutputImage(file);
                 return true;
             }
@@ -100,16 +90,14 @@ namespace GUI
             return false;
         }
 
-        private void AddNewOpenedFile(string fileName)
-        {
+        private void AddNewOpenedFile(string fileName) {
             OpenedFile file = new(fileName, ChangeFile, CloseActiveFile);
 
             openedFiles.Children.Add(file);
             tabs[pathToActiveFile] = openedFiles.Children[^1];
         }
 
-        private void ChangeFile(object sender, EventArgs e)
-        {
+        private void ChangeFile(object sender, EventArgs e) {
             OpenedFile clicked = (OpenedFile)sender;
             if (clicked.PathToFile == pathToActiveFile)
                 return;
@@ -117,15 +105,13 @@ namespace GUI
             UpdateOutputImage(clicked.PathToFile);
         }
 
-        private void UpdateOutputImage(string fileName)
-        {
+        private void UpdateOutputImage(string fileName) {
             ChangeActive(Active.ViewGrid);
             pathToActiveFile = fileName;
             DisplayActiveBitmap(viewImage);
         }
 
-        private void PLTFileHandler(string fileName)
-        {
+        private void PLTFileHandler(string fileName) {
             List<Stroke> strokes = pltDecoder.Decode(fileName);
 
             Picture picture = new(SettingsLoader.LoadSettings());
@@ -135,14 +121,12 @@ namespace GUI
             files[pathToActiveFile] = picture;
         }
 
-        private void ImageFileHandler(string fileName)
-        {
+        private void ImageFileHandler(string fileName) {
             BitmapImage image = new(new Uri(fileName));
             tracer = new(image, new(new()));
         }
 
-        private void DisplayActiveBitmap(Image image)
-        {
+        private void DisplayActiveBitmap(Image image) {
             //ImageBrush imageBrush = new(bitmap);
             //imageBrush.Stretch = Stretch.Uniform;
             //outputImage.Background = imageBrush;
@@ -150,29 +134,25 @@ namespace GUI
             image.Source = files[pathToActiveFile].RenderedPicture;
         }
 
-        private void RotateImage(object sender, RoutedEventArgs e)
-        {
+        private void RotateImage(object sender, RoutedEventArgs e) {
             //var (centerX, centerY) = Helpers.GetCenter(outputImage.ActualWidth, outputImage.ActualHeight);
             files[pathToActiveFile].Rotate();
             DisplayActiveBitmap(viewImage);
         }
 
-        private void RepaintImage(object sender, RoutedEventArgs e)
-        {
+        private void RepaintImage(object sender, RoutedEventArgs e) {
             PLTFileHandler(pathToActiveFile);
         }
 
-        private void ViewClick(object sender, RoutedEventArgs e)
-        {
+        private void ViewClick(object sender, RoutedEventArgs e) {
             if (pathToActiveFile == null || (viewButton.Background as SolidColorBrush).Color == DefaultGUISettings.activeButton.Color)
                 return;
 
             ChangeActive(Active.ViewGrid);
             DisplayActiveBitmap(viewImage);
         }
-        
-        private void SettingsClick(object sender, RoutedEventArgs e)
-        {
+
+        private void SettingsClick(object sender, RoutedEventArgs e) {
             if (pathToActiveFile == null || (settingsButton.Background as SolidColorBrush).Color == DefaultGUISettings.activeButton.Color)
                 return;
 
@@ -181,8 +161,7 @@ namespace GUI
             settingsManager.DisplaySettings(settingsFields, files[pathToActiveFile].Settings);
         }
 
-        private void InfoClick(object sender, RoutedEventArgs e)
-        {
+        private void InfoClick(object sender, RoutedEventArgs e) {
             if (pathToActiveFile == null || (infoButton.Background as SolidColorBrush).Color == DefaultGUISettings.activeButton.Color)
                 return;
 
@@ -195,8 +174,7 @@ namespace GUI
             elements.Add(Helpers.CreateTextBlock(width, HorizontalAlignment.Center, new()));
             elements.Add(Helpers.CreateTextBlock(height, HorizontalAlignment.Center, new()));
 
-            foreach (var pair in settings)
-            {
+            foreach (var pair in settings) {
                 string text = AlgorithmSettings.GetPropertyDesc(pair.Item1) + " = " + pair.Item2.ToString();
                 elements.Add(Helpers.CreateTextBlock(text, HorizontalAlignment.Center, new()));
             }
@@ -206,10 +184,8 @@ namespace GUI
             displayer.DisplayElemByRow(elements);
         }
 
-        private void ChangeActive(Active active)
-        {
-            switch (active)
-            {
+        private void ChangeActive(Active active) {
+            switch (active) {
                 case Active.ViewGrid:
                     viewGrid.Visibility = Visibility.Visible;
                     settingsGrid.Visibility = Visibility.Collapsed;
@@ -237,77 +213,63 @@ namespace GUI
             }
         }
 
-        private void SetInactive()
-        {
+        private void SetInactive() {
             pathToActiveFile = null;
-            
+
             viewGrid.Visibility = Visibility.Visible;
             settingsGrid.Visibility = Visibility.Collapsed;
             infoGrid.Visibility = Visibility.Collapsed;
-            
+
             viewButton.Background = DefaultGUISettings.inactiveButton;
             settingsButton.Background = DefaultGUISettings.inactiveButton;
-            infoButton.Background= DefaultGUISettings.inactiveButton;
+            infoButton.Background = DefaultGUISettings.inactiveButton;
 
             viewImage.Source = null;
             settingsImage.Source = null;
         }
 
-        private void ApplySettings(AlgorithmSettings settedSettings, bool changed)
-        {
-            if (changed)
-            {
+        private void ApplySettings(AlgorithmSettings settedSettings, bool changed) {
+            if (changed) {
                 files[pathToActiveFile].Redraw(settedSettings);
                 DisplayActiveBitmap(settingsImage);
             }
         }
 
-        private void CloseActiveFile(object sender, RoutedEventArgs e)
-        {
-            if (pathToActiveFile != null)
-            {
+        private void CloseActiveFile(object sender, RoutedEventArgs e) {
+            if (pathToActiveFile != null) {
                 files.Remove(pathToActiveFile);
                 openedFiles.Children.Remove(tabs[pathToActiveFile]);
-                if (openedFiles.Children.Count != 0)
-                {
+                if (openedFiles.Children.Count != 0) {
                     pathToActiveFile = ((OpenedFile)openedFiles.Children[0]).PathToFile;
                     if ((viewButton.Background as SolidColorBrush).Color == DefaultGUISettings.activeButton.Color)
                         DisplayActiveBitmap(viewImage);
                     else
                         DisplayActiveBitmap(settingsImage);
-                }
-                else
-                {
+                } else {
                     SetInactive();
                 }
             }
         }
 
-        private void CloseApp(object sender, RoutedEventArgs e)
-        {
+        private void CloseApp(object sender, RoutedEventArgs e) {
             Close();
         }
 
-        private void SaveFileClick(object sender, RoutedEventArgs e)
-        {
+        private void SaveFileClick(object sender, RoutedEventArgs e) {
             if (pathToActiveFile == null)
                 return;
 
-            if (savedFiles.ContainsKey(pathToActiveFile))
-            {
+            if (savedFiles.ContainsKey(pathToActiveFile)) {
                 if (pathToActiveFile.EndsWith(".plt"))
                     SaveImageToFile(files[pathToActiveFile].RenderedPicture, savedFiles[pathToActiveFile]);
                 else
                     SavePLTToFile(files[pathToActiveFile].RenderedPicture, savedFiles[pathToActiveFile]);
-            }
-            else
-            {
+            } else {
                 SaveFileAsClick(sender, e);
             }
         }
 
-        private void SaveFileAsClick(object sender, RoutedEventArgs e)
-        {
+        private void SaveFileAsClick(object sender, RoutedEventArgs e) {
             if (pathToActiveFile == null)
                 return;
 
@@ -316,14 +278,11 @@ namespace GUI
             string fileName = Helpers.GetFileName(pathToActiveFile);
             dlg.FileName = Helpers.GetFileNameWithoutExt(fileName);
 
-            if (pathToActiveFile.EndsWith(".plt"))
-            {
+            if (pathToActiveFile.EndsWith(".plt")) {
                 dlg.DefaultExt = ".png";
                 dlg.Filter = "Picture|*.jpg;*.png;*.bmp";
                 call = SaveImageToFile;
-            }
-            else 
-            {
+            } else {
                 dlg.DefaultExt = ".plt";
                 dlg.Filter = "PLT-file|*.plt";
                 call = SavePLTToFile;
@@ -331,17 +290,14 @@ namespace GUI
 
             if (dlg.ShowDialog() != true)
                 MessageBox.Show("Couldn't select the path to save the file!", "Error!", MessageBoxButton.OK);
-            else
-            {
+            else {
                 savedFiles[pathToActiveFile] = dlg.FileName;
                 call(files[pathToActiveFile].RenderedPicture, dlg.FileName);
             }
         }
 
-        private void SaveImageToFile(BitmapSource image, string filePath)
-        {
-            BitmapEncoder encoder = filePath[^3..] switch
-            {
+        private void SaveImageToFile(BitmapSource image, string filePath) {
+            BitmapEncoder encoder = filePath[^3..] switch {
                 "png" => new PngBitmapEncoder(),
                 "bmp" => new BmpBitmapEncoder(),
                 _ => new JpegBitmapEncoder()
@@ -354,8 +310,7 @@ namespace GUI
             encoder.Save(stream);
         }
 
-        private void SavePLTToFile(BitmapSource image, string filePath)
-        {
+        private void SavePLTToFile(BitmapSource image, string filePath) {
             throw new NotImplementedException();
         }
     }

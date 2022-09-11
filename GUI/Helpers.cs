@@ -3,20 +3,16 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Collections.Generic;
 
-namespace GUI
-{
-    internal static class Helpers
-    {
-        public static double GetMaxCoefficient(double maxXPic, double maxYPic, double maxXDisp, double maxYDisp)
-        {
+namespace GUI {
+    internal static class Helpers {
+        public static double GetMaxCoefficient(double maxXPic, double maxYPic, double maxXDisp, double maxYDisp) {
             double k1 = maxXPic / maxXDisp;
             double k2 = maxYPic / maxYDisp;
 
             return Math.Max(k1, k2);
         }
 
-        public static (double, double) GetCenter(double width, double height)
-        {
+        public static (double, double) GetCenter(double width, double height) {
             return (width / 2, height / 2);
         }
 
@@ -28,15 +24,13 @@ namespace GUI
         /// <param name="picWidth"> picture width  </param>
         /// <param name="picHeight"> picture height </param>
         /// <returns> Point2D where the center is located </returns>
-        public static Point2D GetCenter(double canWidth, double canHeight, double picWidth, double picHeight)
-        {
+        public static Point2D GetCenter(double canWidth, double canHeight, double picWidth, double picHeight) {
             var (centerX, centerY) = GetCenter(canWidth - picWidth, canHeight - picHeight);
 
             return new((uint)centerX, (uint)centerY);
         }
 
-        public static string GetFileName(string fullFilePath)
-        {
+        public static string GetFileName(string fullFilePath) {
             string fileName = new(fullFilePath);
 
             int index = fileName.LastIndexOf(System.IO.Path.DirectorySeparatorChar);
@@ -46,8 +40,7 @@ namespace GUI
             return fileName;
         }
 
-        public static string GetFileNameWithoutExt(string shortFileName)
-        {
+        public static string GetFileNameWithoutExt(string shortFileName) {
             string fileName = new(shortFileName);
 
             int index = fileName.LastIndexOf('.');
@@ -57,8 +50,7 @@ namespace GUI
             return fileName;
         }
 
-        public static TextBlock CreateTextBlock(string text, HorizontalAlignment alignment, Thickness margin)
-        {
+        public static TextBlock CreateTextBlock(string text, HorizontalAlignment alignment, Thickness margin) {
             TextBlock label = new();
             label.Text = text;
             label.FontSize = DefaultGUISettings.FontSize;
@@ -76,8 +68,7 @@ namespace GUI
         public static double Divide(double a, double b) => a / b;
         public static double Square(double a) => a * a;
 
-        public static List<List<double>> GetByIndexes(List<List<double>> getFrom, int[] indexes)
-        {
+        public static List<List<double>> GetByIndexes(List<List<double>> getFrom, int[] indexes) {
             List<List<double>> list = new(indexes.Length);
 
             foreach (int index in indexes)
