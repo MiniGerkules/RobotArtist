@@ -116,15 +116,16 @@ namespace GUI {
             h.MakeUnit(0);
 
             for (int i = 0; i < 4; ++i) {
-                Matrix2D fir = h.GetRow(i);
+                Vector fir = h.GetRow(i);
                 Matrix2D sec = Matrix2D.MulByRows(propsOfNearestPoints.Pow(T.GetRow(i)));
 
-                int columnRepeat = fir.Columns;
+                int columnRepeat = fir.Size;
                 int rowsRepeat = sec.Rows;
-                fir = fir.RepeatRows(rowsRepeat);
+                Matrix2D matrix = new(fir);
+                matrix = matrix.RepeatRows(rowsRepeat);
                 sec = sec.RepeatColumns(columnRepeat);
 
-                Matrix2D mul = fir ^ sec;
+                Matrix2D mul = matrix ^ sec;
                 E = E + mul;
             }
 
@@ -136,10 +137,11 @@ namespace GUI {
                 //Matrix answers = E.Transpose() * nearestPoints.GetColumn(i);
                 //h = GausMethod.Solve(coefs, answers); // OLS
 
-                Matrix2D V = hsvOfNearestPoints.GetColumn(i);
+                Vector V = hsvOfNearestPoints.GetColumn(i);
 
                 Matrix2D coefs = E.Transpose() * D * E;
-                Matrix2D answers = E.Transpose() * D * V;
+                Matrix2D VInMatr = new(V); // Need refactoring
+                Matrix2D answers = E.Transpose() * D * VInMatr;
                 h = GausMethod.Solve(coefs, answers);
 
                 // Predict proportion
@@ -147,10 +149,11 @@ namespace GUI {
                 Matrix2D X = props;
 
                 for (int k = 0; k < 4; ++k) {
-                    Matrix2D fir = h.GetRow(k);
+                    Vector fir = h.GetRow(k);
                     Matrix2D sec = Matrix2D.MulByRows(X.Pow(T.GetRow(k)));
 
-                    Matrix2D mul = fir ^ sec;
+                    Matrix2D matrix = new(fir); // Need refactoring
+                    Matrix2D mul = matrix ^ sec;
                     p += (double)(mul);
                 }
 
