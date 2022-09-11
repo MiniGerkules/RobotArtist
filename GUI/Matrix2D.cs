@@ -1,5 +1,7 @@
-﻿using System;
+﻿using NPOI.HSSF.Record;
+using System;
 using System.Collections.Generic;
+using System.Runtime.ExceptionServices;
 
 namespace GUI {
     internal class Matrix2D {
@@ -297,6 +299,42 @@ namespace GUI {
             for (int i = 0; i < result.Rows; ++i)
                 for (int j = 0; j < result.Columns; ++j)
                     result[i, j] = number * matrix[i, j];
+
+            return result;
+        }
+
+        /// <summary>
+        /// The method defines the multyply between a matrix and a vector
+        /// </summary>
+        /// <param name="matrix"> The matrix </param>
+        /// <param name="number"> The number to multiply the matrix by </param>
+        /// <returns></returns>
+        public static Matrix2D operator *(Matrix2D matrix, Vector vector) {
+            if (!vector.IsRow && matrix.Columns != vector.Size)
+                throw new ArgumentException("The number of rows first " +
+                    "matrix don't equal the number of columns second matrix!");
+            else if (vector.IsRow && matrix.Columns != 1)
+                throw new ArgumentException("The number of rows first " +
+                    "matrix don't equal the number of columns second matrix!");
+
+            Matrix2D result;
+            int rows = matrix.Rows;
+
+            if (vector.IsRow) {
+                int columns = vector.Size;
+                result = new(rows, columns);
+
+                for (int i = 0; i < rows; ++i)
+                    for (int j = 0; j < columns; ++j)
+                        result[i, j] = matrix[i, j] * vector[j];
+            } else {
+                int jMax = matrix.Columns;
+                result = new(rows, 1, 0);
+
+                for (int i = 0; i < rows; ++i)
+                    for (int j = 0; j < jMax; ++j)
+                        result[i] += matrix[i, j] * vector[j];
+            }
 
             return result;
         }
