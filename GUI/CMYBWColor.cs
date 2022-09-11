@@ -140,8 +140,7 @@ namespace GUI {
                 Vector V = hsvOfNearestPoints.GetColumn(i);
 
                 Matrix2D coefs = E.Transpose() * D * E;
-                Matrix2D VInMatr = new(V); // Need refactoring
-                Matrix2D answers = E.Transpose() * D * VInMatr;
+                Matrix2D answers = E.Transpose() * D * V;
                 h = GausMethod.Solve(coefs, answers);
 
                 // Predict proportion
