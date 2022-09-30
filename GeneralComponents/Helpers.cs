@@ -75,6 +75,7 @@ namespace GeneralComponents
         public static double Multiply(double a, double b) => a * b;
         public static double Divide(double a, double b) => a / b;
         public static double Square(double a) => a * a;
+        public static double Sqrt(double a) => Math.Sqrt(a);
 
         public static List<List<double>> GetByIndexes(List<List<double>> getFrom, int[] indexes)
         {

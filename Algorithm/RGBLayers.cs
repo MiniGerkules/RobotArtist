@@ -12,7 +12,7 @@ namespace Algorithm
      * 4 layer is about opaque of the RGB-color
      * 
      **/
-    public class RGBLayers // first use a bitmap image constructor!!!
+    public class RGBLayers // first use a bitmap Image constructor!!!
     {
         static int bpp = 24; // bits per pixel
         static int width = 256; // width in pixels
@@ -25,7 +25,7 @@ namespace Algorithm
         {
             FormatConvertedBitmap bla = new FormatConvertedBitmap(image, PixelFormats.Rgb24, BitmapPalettes.Halftone256, 0);
             bpp = 24;
-           //bpp = image.Format.BitsPerPixel; // omg pictures opens in bgr32
+           //bpp = Image.Format.BitsPerPixel; // omg pictures opens in bgr32
             width = bla.PixelWidth;
             height = bla.PixelHeight;
             int depth = ((bpp + 7) / 8); // layers amount!!!! will be 3
@@ -136,7 +136,6 @@ namespace Algorithm
                     {
                         for (int y = 0; y < height; y++)
                         {
-                            //int index = y * stride + bpp * x;
                             // count weighted sum: R * 0.2989 + G * 0.5870 + B * 0.1140
                             p[x, y] = Math.Round((layers[x, y, 0] * 0.2989)
                                 + (layers[x, y, 1] * 0.5870) + (layers[x, y, 2] * 0.1140));

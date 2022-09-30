@@ -69,9 +69,9 @@ namespace GUI {
             else
                 ImageFileHandler(fileName);
             //}
-            //catch (ArgumentException error)
+            //catch (ArgumentException Error)
             //{
-            //    MessageBox.Show($"Can't process file!\n{error.Message}",
+            //    MessageBox.Show($"Can't process file!\n{Error.Message}",
             //                    "Error!", MessageBoxButton.OK);
             //    return;
             //}

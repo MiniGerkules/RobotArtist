@@ -143,6 +143,14 @@ namespace GeneralComponents
                 matrix[i, index2] = temp[i];
         }
 
+        public static Matrix Eye(int dimension)
+        {
+            Matrix eye = new Matrix(dimension, dimension);
+            for (int i = 0; i < dimension; i++)
+                eye[i, i] = 1;
+            return eye;
+        }
+
         public Matrix RepeatColumns(int numOfRepeat)
         {
             Matrix result = new(Rows, Columns * numOfRepeat);
@@ -202,6 +210,15 @@ namespace GeneralComponents
                 for (int j = 0; j < Columns; ++j)
                     result[j, i] = matrix[i, j];
 
+            return result;
+        }
+
+        public double GetSum()
+        {
+            double result = 0;
+            for (int i = 0; i < Rows; ++i)
+                for (int j = 0; j < Columns; ++j)
+                    result += matrix[i, j];
             return result;
         }
 
@@ -314,6 +331,17 @@ namespace GeneralComponents
                     result[i, j] = number * matrix[i, j];
 
             return result;
+        }
+
+        /// <summary>
+        /// The method defines division matrix by number
+        /// </summary>
+        /// <param name="matrix"> The matrix </param>
+        /// <param name="number"> The number to divide by </param>
+        /// <returns></returns>
+        public static Matrix operator /(Matrix matrix, double number)
+        {
+            return matrix * (1 / number);
         }
 
         /// <summary>

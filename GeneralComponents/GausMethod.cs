@@ -2,7 +2,7 @@
 
 namespace GeneralComponents
 {
-    internal class GausMethod
+    public class GausMethod
     {
         public static Matrix Solve(Matrix coefs, Matrix answers)
         {

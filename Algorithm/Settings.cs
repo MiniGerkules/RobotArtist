@@ -16,7 +16,7 @@ namespace Algorithm
         public double maxInitOverlapRatio { get; private set; } // maxOverlap
         public double pixTol { get; private set; } // possible color deviation from the original at the end // pixTol
         public double pixTolAverage { get; private set; } // pixTol2
-        public double pixTolAccept { get; private set; } // error at which a stroke is unconditionally accepted
+        public double pixTolAccept { get; private set; } // Error at which a stroke is unconditionally accepted
 
         public Settings(
             GUITrace guiTrace,
@@ -30,7 +30,7 @@ namespace Algorithm
             double maxInitOverlapRatio = 1, // 0.8,
             double pixTol = 15, // 6, // possible color deviation from the original at the end
             double pixTolAverage = 100,
-            double pixTolAccept = 4 // error at which a stroke is unconditionally accepted
+            double pixTolAccept = 4 // Error at which a stroke is unconditionally accepted
             )
         {
             this.canvasColor = canvasColor;

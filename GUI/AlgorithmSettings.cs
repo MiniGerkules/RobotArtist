@@ -10,7 +10,7 @@ namespace GUI {
         public double MaxOverlap { get; private set; }      // Maximum overlap coefficient
         public double PixTol { get; private set; }          // Possible color deviation at the end
         public double PixTol2 { get; private set; }         // Possible color deviation on average
-        public double PixTolBest { get; private set; }      // The error of taking a smear
+        public double PixTolBest { get; private set; }      // The Error of taking a smear
         public double BrushWidth { get; private set; }      // The width of the brush
 
         public readonly int numOfSettings;                  // The number of settings
@@ -21,7 +21,7 @@ namespace GUI {
             "MaxOverlap" => "Maximum overlap coefficient",
             "PixTol" => "Possible color deviation at the end",
             "PixTol2" => "Possible color deviation on average",
-            "PixTolBest" => "The error of taking a smear",
+            "PixTolBest" => "The Error of taking a smear",
             "BrushWidth" => "The width of the brush",
             _ => throw new FieldAccessException($"There aren't decription for {property.Name} setting!")
         };

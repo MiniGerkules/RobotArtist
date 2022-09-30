@@ -7,7 +7,7 @@ using NPOI.HSSF.UserModel;
 
 namespace GeneralComponents
 {
-    internal class Database
+    public static class Database
     {
         private static List<List<List<double>>> data = null;
         public static List<List<List<double>>> Data => data;

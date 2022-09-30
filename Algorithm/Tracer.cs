@@ -1,60 +1,74 @@
 ﻿using System;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-//using System.Drawing.Common;
+using GeneralComponents;
+using System.Collections.Generic;
 
 namespace Algorithm
 {
     public class Tracer
     {
         public StrokeBrush strokeBrush { get; private set; }
-        public uint maxAmountOfIters { get; private set; }
-        public BitmapImage image { get; private set; }
+        public uint MaxAmountOfIters { get; private set; }
+        public BitmapImage Image { get; private set; }
         public Settings settings { get; }
-        public GeneralComponents.Matrix /*RGBLayers*/ grayCanvas { get; private set; } // array m x n of canvasColor // is that ok
-        public RGBLayers coloredCanvas { get; private set; } // array m x n x 3 of canvasColor
-        public RGBLayers initialImage { get; private set; } // array m x n x 3 where m x n x 0 is a red layer, m x n x 1 is a green layer, m x n x 2 is a blue layer, ignore layer alpha
-        public RGBLayers error { get; private set; }
-        public RGBLayers unblurredImage { get; private set; }
-        public double[,] grayInitialImage { get; private set; }
+        public Matrix2D ColorClass { get; private set; } // #canvasgraymix first layer
+        public Matrix2D VolumeOfWhite { get; private set; } // #canvasgraymix second layer
+        public Matrix3D ColoredCanvas { get; private set; } // #canvas // array m x n x 3 of canvasColor
+        public Matrix3D InitialImage { get; private set; } // #img // array m x n x 3 where m x n x 0 is a red layer, m x n x 1 is a green layer, m x n x 2 is a blue layer, ignore layer alpha
+        public Matrix3D Error { get; private set; } // #err
+        public Matrix3D UnblurredImage { get; private set; } // #img_unblurred
+        public Matrix2D GrayInitialImage { get; private set; }
+        public List<List<List<double>>> Ycell { get; private set; }
+        public List<List<List<double>>> Wcell { get; private set; }
 
-        public Gradient gradients; // stores gradients (pairs U and V for every pixel) for all picture
+        public Gradient Gradients; // stores Gradients (pairs U and V for every pixel) for all picture
         
         public Tracer(BitmapImage img, Settings settings) // settings shouldn't be null! 
         {
-            // битмапы должны иметь размеры исходной картинки, один цвета canvasColor, другой цветной на таком же
-            //canvasgray = (canvasColor + zeros(m, n, 1)); % gray version of canvas with tones
-            //canvas = (canvasColor + zeros(m, n, 3)); % colored version
-
             if (settings == null) // i would like to throw exception here or to make sure of parameters by default
                 settings = new Settings(new GUITrace());
 
             this.settings = settings;
 
-            image = img;
+            Image = img;
 
             strokeBrush = new StrokeBrush(settings.guiTrace.brushWidthMM,
-               Math.Min(settings.guiTrace.canvasWidthMM / image.PixelWidth,
-               settings.guiTrace.canvasHeightMM / image.PixelHeight));
-            maxAmountOfIters = strokeBrush.thickness;
-            initialImage = new RGBLayers(image);
-            grayCanvas = new GeneralComponents.Matrix(image.PixelHeight, image.PixelWidth, settings.canvasColor);//new RGBLayers(settings.canvasColor, image.PixelHeight, image.PixelWidth, 1);
-            coloredCanvas = new RGBLayers(settings.canvasColor, image.PixelHeight, image.PixelWidth, 3);
-            error = coloredCanvas - initialImage; // not doubled, for what? may be done later where it'll be needed in countings
+               Math.Min(settings.guiTrace.canvasWidthMM / Image.PixelWidth,
+               settings.guiTrace.canvasHeightMM / Image.PixelHeight));
+            MaxAmountOfIters = strokeBrush.thickness;
+            InitialImage = Functions.imageToMatrix3D(Image);
 
-            unblurredImage = initialImage;
+            
+            Database.LoadDatabase("C:\\Users\\varka\\Documents\\3course2sem\\NIR\\NIRgit\\GeneralComponents\\resources\\ModelTable600.xls");
+            if (!Database.IsLoad())
+            {
+                throw new ArgumentException("Path to color model table is not valid");
+            }
+
+            List<List<List<double>>> ycell, wcell;
+
+            Functions.getYcellWcell(Database.Data, out ycell, out wcell);
+
+            Ycell = ycell;
+            Wcell = wcell;
+
+            ColorClass = new Matrix2D(Image.PixelHeight, Image.PixelWidth); // ColorMixType only
+            VolumeOfWhite = new Matrix2D(Image.PixelHeight, Image.PixelWidth);
+            ColoredCanvas = new Matrix3D(Image.PixelHeight, Image.PixelWidth, layers: 3, initVal: settings.canvasColor);
+            Error = ColoredCanvas - InitialImage; // not doubled, for what? may be done later where it'll be needed in countings
+
+            UnblurredImage = InitialImage;
 
             if (settings.doBlur)
             {
                 double[,] H = Functions.fspecial((int)strokeBrush.smallThickness);
-                initialImage = Functions.conv2(initialImage, H, "replicate");
+                InitialImage = Functions.conv2(InitialImage, H, "replicate");
             }
 
-            grayInitialImage = initialImage.rgb2gray();
-            // strokes = cell(0);
-            gradients = new Gradient(grayInitialImage, strokeBrush.thickness);
-
-
+            GrayInitialImage = InitialImage.rgb2gray();
+            
+            Gradients = new Gradient(GrayInitialImage, strokeBrush.thickness);
 
             // ale iterations
             doIterations();
@@ -65,39 +79,46 @@ namespace Algorithm
             int nStrokes = 0;
             int accepted = 0;
 
-            int mSize = initialImage.layers.GetLength(0);
-            int nSize = initialImage.layers.GetLength(1);
-            int kSize = initialImage.layersAmount;
+            int mSize = InitialImage[0].Rows;
+            int nSize = InitialImage[0].Columns;
+            int kSize = InitialImage.Layers;
 
-            double[,,] syntheticSmearMap = new double[mSize, nSize, kSize]; // canvas2
+            Matrix3D syntheticSmearMap = new Matrix3D(mSize, nSize, kSize); // #canvas2
 
             for (int kk = 0; kk < settings.amountOfTotalIters; kk++)
             {
                 double overlap = settings.minInitOverlapRatio;
 
                 if (kk == 2)
-                    initialImage = unblurredImage;
+                    InitialImage = UnblurredImage;
 
                 if (kk > settings.minInitOverlapRatio)
                     overlap = settings.maxInitOverlapRatio;
                 else
                     overlap = settings.minInitOverlapRatio;
 
-                // int j = 0; // wtf
-                for (int i = 0; i < mSize; i++)
+                for (int i = 0; i < mSize; i++) 
                 {
                     for (int j = 0; j < nSize; j++)
                     {
-                        if ((error.layers[i, j, 0] > settings.pixTolAccept) || (syntheticSmearMap[i, j, 0] == 0)) 
+                        if ((Error[i, j, 0] > settings.pixTolAccept) || (syntheticSmearMap[i, j, 0] == 0)) 
                         {
                             int prevX = i; // pX
                             int prevY = j; // pY
 
                             //meancol is [r, g, b], col is the same but in shape of 3d array like (0,0,k) element
                             double[] meanColorPixel = Functions.getMeanColor( // col? meancol
-                                initialImage, prevX, prevY, strokeBrush.smallThickness, 
+                                InitialImage, prevX, prevY, strokeBrush.smallThickness, 
                                 strokeBrush.bsQuad, mSize, nSize);
+                            double[] hsvMeanColorPixel = new double[meanColorPixel.Length];
+                            for (int m = 0; m < meanColorPixel.Length; m++)
+                                hsvMeanColorPixel[m] = meanColorPixel[m] / 255;
+                            hsvMeanColorPixel = Functions.rgb2hsv(hsvMeanColorPixel);
 
+                            double[] proportions;
+                            ColorMixType mixTypes;
+
+                            Functions.PredictProportions(out proportions, out mixTypes, hsvMeanColorPixel, Ycell, Wcell, Ycell.Count);
 
                         }
                     }
