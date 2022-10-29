@@ -2,13 +2,13 @@
 using System.Linq;
 using System.Windows.Media;
 
-namespace GUI {
+namespace GUI.Colors {
     internal class RGBColor : PLTColor {
         private byte red, green, blue;
 
         public RGBColor(string[] colors) {
             (red, green, blue) = colors.Select(elem => byte.Parse(elem)).ToArray() switch {
-                var arr when (arr.Length == 4) => (arr[1], arr[2], arr[3]),
+                var arr when arr.Length == 4 => (arr[1], arr[2], arr[3]),
                 _ => throw new ArgumentException("There isn't correct number of the colors!" +
                                                  $"Get {colors.Length}, expected 4!")
             };

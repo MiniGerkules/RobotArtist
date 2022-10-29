@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Media;
 
-namespace GUI {
+namespace GUI.Colors {
     internal class HSVColor : PLTColor {
         private double hue;             // From 0 to 1
         private double saturation;      // From 0 to 1
