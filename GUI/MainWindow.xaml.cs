@@ -61,19 +61,14 @@ namespace GUI {
             if (IsFileAlreadyOpened(fileName))
                 return;
 
-            //try
-            //{
-            if (fileName.EndsWith(".plt"))
-                PLTFileHandler(fileName);
-            else
-                ImageFileHandler(fileName);
-            //}
-            //catch (ArgumentException Error)
-            //{
-            //    MessageBox.Show($"Can't process file!\n{Error.Message}",
-            //                    "Error!", MessageBoxButton.OK);
-            //    return;
-            //}
+            try {
+                if (fileName.EndsWith(".plt")) PLTFileHandler(fileName);
+                else ImageFileHandler(fileName);
+            } catch (ArgumentException Error) {
+                MessageBox.Show($"Can't process file!\n{Error.Message}",
+                                "Error!", MessageBoxButton.OK);
+                return;
+            }
 
             AddNewOpenedFile(fileName);
             ChangeActive(Active.ViewGrid);
