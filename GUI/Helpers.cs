@@ -3,6 +3,8 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Collections.Generic;
 
+using GeneralComponents;
+
 namespace GUI {
     internal static class Helpers {
         public static double GetMaxCoefficient(double maxXPic, double maxYPic, double maxXDisp, double maxYDisp) {
@@ -60,21 +62,6 @@ namespace GUI {
             label.Margin = margin;
 
             return label;
-        }
-
-        public static double Plus(double a, double b) => a + b;
-        public static double Minus(double a, double b) => a - b;
-        public static double Multiply(double a, double b) => a * b;
-        public static double Divide(double a, double b) => a / b;
-        public static double Square(double a) => a * a;
-
-        public static List<List<double>> GetByIndexes(List<List<double>> getFrom, int[] indexes) {
-            List<List<double>> list = new(indexes.Length);
-
-            foreach (int index in indexes)
-                list.Add(getFrom[index]);
-
-            return list;
         }
     }
 }
