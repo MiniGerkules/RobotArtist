@@ -1,11 +1,8 @@
 ﻿using System;
 
-namespace GeneralComponents
-{
-    public class GausMethod
-    {
-        public static Matrix Solve(Matrix coefs, Matrix answers)
-        {
+namespace GeneralComponents {
+    public class GausMethod {
+        public static Matrix Solve(Matrix coefs, Matrix answers) {
             if (answers.Columns != 1 || answers.Rows != coefs.Rows)
                 throw new ArgumentException("Can't solve a linear system! Matrix dimensions isn't same!");
 
@@ -20,8 +17,7 @@ namespace GeneralComponents
             regularization = regularization.MakeDiag();
             coefsCopy = coefsCopy + regularization;
 
-            for (int i = 0; i < coefsCopy.Rows; ++i)
-            {
+            for (int i = 0; i < coefsCopy.Rows; ++i) {
                 if (IsFullNulls(coefsCopy, i))
                     throw new ArgumentException("The system haven't one solution!");
 
@@ -29,8 +25,7 @@ namespace GeneralComponents
                     if (!TrySwap(coefsCopy, answersCopy, i, i))
                         continue;
 
-                for (int j = i + 1; j < coefs.Rows; ++j)
-                {
+                for (int j = i + 1; j < coefs.Rows; ++j) {
                     double toMul = coefsCopy[j, i] / coefsCopy[i, i];
                     coefsCopy[j, i] = 0;
                     answersCopy[j] -= answersCopy[i] * toMul;
@@ -41,8 +36,7 @@ namespace GeneralComponents
             }
 
             Matrix result = new(coefs.Columns, 1);
-            for (int i = result.Rows - 1; i >= 0; i--)
-            {
+            for (int i = result.Rows - 1; i >= 0; i--) {
                 if (Equals(coefsCopy[i, i], 0))
                     throw new ArgumentException("The system haven't one solution!");
 
@@ -56,8 +50,7 @@ namespace GeneralComponents
             return result;
         }
 
-        private static bool IsFullNulls(Matrix matrix, int curRow)
-        {
+        private static bool IsFullNulls(Matrix matrix, int curRow) {
             for (int i = 0; i < matrix.Columns; ++i)
                 if (matrix[curRow, i] != 0)
                     return false;
@@ -65,10 +58,8 @@ namespace GeneralComponents
             return true;
         }
 
-        private static bool TrySwap(Matrix coefs, Matrix answers, int startRow, int column)
-        {
-            for (int i = startRow; i < coefs.Rows; ++i)
-            {
+        private static bool TrySwap(Matrix coefs, Matrix answers, int startRow, int column) {
+            for (int i = startRow; i < coefs.Rows; ++i) {
                 if (Equals(coefs[i, column], 0))
                     continue;
 
