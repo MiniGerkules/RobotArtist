@@ -1,8 +1,9 @@
 ﻿using System;
+using System.Linq;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Collections.Generic;
-using System.Linq;
+
 using GeneralComponents;
 
 namespace Algorithm
@@ -10,7 +11,7 @@ namespace Algorithm
     public static class Functions
     {
 
-        public static GeneralComponents.Matrix3D imageToMatrix3D(BitmapImage image)
+        public static Matrix3D imageToMatrix3D(BitmapImage image)
         {
             FormatConvertedBitmap imageInRGB24 = new FormatConvertedBitmap(image, PixelFormats.Rgb24, BitmapPalettes.Halftone256, 0);
             int bpp = 24; // bits per pixel
@@ -44,7 +45,7 @@ namespace Algorithm
                 }
             }
 
-            return new GeneralComponents.Matrix3D(listedBytes);
+            return new Matrix3D(listedBytes);
         }
 
         public static double[] GaussSolution(double[,] matrix, double[] solution)
@@ -53,7 +54,7 @@ namespace Algorithm
             int columnsAmount = matrix.GetLength(1);
 
             if (rowsAmount != columnsAmount)
-                throw new ArgumentException("Matrix should be square!");
+                throw new ArgumentException("Matrix2D should be square!");
 
             for (int i = 0; i < rowsAmount; i++) // ходим по строкам
             {
@@ -241,13 +242,13 @@ namespace Algorithm
             mixTypes = (ColorMixType)0; // #cls
             double[] hsvArray = new double[3];
 
-            GeneralComponents.Matrix M = (new GeneralComponents.Matrix(new List<double> { 1d, 1d / 16, 1d })).MakeDiag();
+            Matrix2D M = (new Matrix2D(new List<double> { 1d, 1d / 16, 1d })).MakeDiag();
 
             // then, replace the current color with the accessible one
             double[] hsvColorCurrent = hsvNewColor.Clone() as double[];
             // make prediction from the closest point
             int Ks = 10;
-            GeneralComponents.Matrix dst = new GeneralComponents.Matrix(N, 1); // distances - taken as maximum range
+            Matrix2D dst = new Matrix2D(N, 1); // distances - taken as maximum range
 
             for (int n = 0; n < N; n++)
                 dst[n] = EuclideanDistance(hsvColorCurrent, Tbl[n].ToArray());
@@ -299,19 +300,19 @@ namespace Algorithm
                 List<List<double>> Y = Ycell[(int)mixTypes];
                 List<List<double>> W = Wcell[(int)mixTypes];
                 int NY = Y.Count; // amount of rows in Y
-                                  //List<GeneralComponents.Matrix> dist = new List<GeneralComponents.Matrix> (); // distances - taken as maximum range
-                GeneralComponents.Matrix dist = new GeneralComponents.Matrix(NY, 1);
+                                  //List<Matrix2D> dist = new List<Matrix2D> (); // distances - taken as maximum range
+                Matrix2D dist = new Matrix2D(NY, 1);
                 for (int n = 0; n < NY; n++)
                 {
-                    GeneralComponents.Matrix hsvColorCurrentMatrix = new GeneralComponents.Matrix(hsvColorCurrent.ToList());
-                    GeneralComponents.Matrix Yn = new GeneralComponents.Matrix(Y[n]);
-                    GeneralComponents.Matrix temp = (hsvColorCurrentMatrix - Yn);
+                    Matrix2D hsvColorCurrentMatrix = new Matrix2D(hsvColorCurrent.ToList());
+                    Matrix2D Yn = new Matrix2D(Y[n]);
+                    Matrix2D temp = (hsvColorCurrentMatrix - Yn);
                     dist[n, 0] = (double)(temp * M * temp.Transpose());
                 }
                 int[] indexes = dist.GetIndexesForSorted();
 
-                GeneralComponents.Matrix d = new GeneralComponents.Matrix(1, K);
-                GeneralComponents.Matrix ds = new GeneralComponents.Matrix(1, K); // transposed
+                Matrix2D d = new Matrix2D(1, K);
+                Matrix2D ds = new Matrix2D(1, K); // transposed
 
                 for (int p = 0; p < K; p++)
                 {
@@ -319,12 +320,12 @@ namespace Algorithm
                     ds[0, p] = Math.Sqrt(d[p]);
                 }
 
-                GeneralComponents.Matrix D = d.MakeDiag();
+                Matrix2D D = d.MakeDiag();
                 // hsvpossible = ds'*Y(I(1:K),:)/sum(ds); 
                 List<List<double>> Y_IK = new List<List<double>>();
                 for (int i = 0; i < K; i++)
                     Y_IK.Add(Y[indexes[i]]);
-                GeneralComponents.Matrix hsvpossible = ds * (new GeneralComponents.Matrix(Y_IK)) / ds.GetSum();
+                Matrix2D hsvpossible = ds * (new Matrix2D(Y_IK)) / ds.GetSum();
                 double al = 0.7;
                 for (int i = 0; i < hsvNewColor.Length; i++)
                     hsvNewColor[i] = hsvpossible[i] * (1 - al) + hsvColorCurrent[i] * al;
@@ -336,20 +337,20 @@ namespace Algorithm
                 for (int j = 0; j < 3; j++)
                 {
 
-                    GeneralComponents.Matrix X = new GeneralComponents.Matrix(Y_IK);
+                    Matrix2D X = new Matrix2D(Y_IK);
 
-                    GeneralComponents.Matrix E = new GeneralComponents.Matrix(K, 4); // evaluated polynomial
+                    Matrix2D E = new Matrix2D(K, 4); // evaluated polynomial
                     List<List<double>> T = new List<List<double>> {
                             new List<double> { 0, 0, 0 },
                             new List<double> { 1, 0, 0 },
                             new List<double> { 0, 1, 0 },
                             new List<double> { 0, 0, 1 }
                         }; // monomial orders
-                    GeneralComponents.Matrix h = GeneralComponents.Matrix.Eye(4);
+                    Matrix2D h = Matrix2D.Eye(4);
 
                     for (int k = 0; k < 4; k++)
                     {
-                        double[] product = prod2(matrixToMatrixDegrees(X, (new GeneralComponents.Matrix(T[k])).RepeatRows(K)));
+                        double[] product = prod2(matrixToMatrixDegrees(X, (new Matrix2D(T[k])).RepeatRows(K)));
                         for (int r = 0; r < K; r++)
                         {
                             for (int c = 0; c < E.Columns; c++)
@@ -361,19 +362,19 @@ namespace Algorithm
 
                     double delt = 1e-14; // %for Tikhonov regularization
 
-                    GeneralComponents.Matrix Wj = new GeneralComponents.Matrix(K, 1);
+                    Matrix2D Wj = new Matrix2D(K, 1);
 
                     for (int k = 0; k < K; k++)
                         Wj[k] = W[indexes[k]][j];
 
                     // h = (E'*D*E)\(E'*D*W(I(1:K),j)); %WLS
-                    GeneralComponents.Matrix Etransposed = E.Transpose();
+                    Matrix2D Etransposed = E.Transpose();
 
-                    GeneralComponents.Matrix answers = Etransposed * D * Wj;
+                    Matrix2D answers = Etransposed * D * Wj;
 
-                    GeneralComponents.Matrix coefs = Etransposed * D * E + (GeneralComponents.Matrix.Eye(4)) * delt;
+                    Matrix2D coefs = Etransposed * D * E + (Matrix2D.Eye(4)) * delt;
 
-                    h = GeneralComponents.GausMethod.Solve(coefs, answers); // answers don't match, but they pretty close
+                    h = GausMethod.Solve(coefs, answers); // answers don't match, but they pretty close
 
                     // predict proportion
 
@@ -453,7 +454,7 @@ namespace Algorithm
             }
 
             int NY = Y.Count;
-            GeneralComponents.Matrix dst = new GeneralComponents.Matrix(NY, 1);
+            Matrix2D dst = new Matrix2D(NY, 1);
             for (int k = 0; k < NY; k++)
                 dst[k] = Math.Sqrt(EuclideanDistance(proportions, Y[k].ToArray()));
 
@@ -472,17 +473,17 @@ namespace Algorithm
             // take first K points
             K = Math.Min(NY, K); // decrease K if needed
 
-            GeneralComponents.Matrix X = new GeneralComponents.Matrix(K, Y[0].Count);
+            Matrix2D X = new Matrix2D(K, Y[0].Count);
 
             for (int p = 0; p < K; p++)
                 for (int q = 0; q < Y[p].Count; q++)
                     X[p, q] = Y[indexes[p]][q];
 
-            GeneralComponents.Matrix E = new GeneralComponents.Matrix(K, N, 0); // evaluated polynomial
+            Matrix2D E = new Matrix2D(K, N, 0); // evaluated polynomial
             double[][] h = Eye(N);
             for (int k = 0; k < N; k++)
             {
-                double[] product = prod2(matrixToMatrixDegrees(X, (new GeneralComponents.Matrix(T[k])).RepeatRows(K)));
+                double[] product = prod2(matrixToMatrixDegrees(X, (new Matrix2D(T[k])).RepeatRows(K)));
                 for (int r = 0; r < K; r++)
                 {
                     for (int c = 0; c < E.Columns; c++)
@@ -494,15 +495,15 @@ namespace Algorithm
 
             for (int j = 0; j < 3; j++)
             {
-                GeneralComponents.Matrix Wj = new GeneralComponents.Matrix(K, 1);
+                Matrix2D Wj = new Matrix2D(K, 1);
 
                 for (int k = 0; k < K; k++)
                     Wj[k] = W[indexes[k]][j];
 
                 // h = (E'*E)\(E'*V); %OLS
-                GeneralComponents.Matrix Etransposed = E.Transpose();
+                Matrix2D Etransposed = E.Transpose();
 
-                GeneralComponents.Matrix h2 = GeneralComponents.GausMethod.Solve(
+                Matrix2D h2 = GausMethod.Solve(
                     (Etransposed * E), (Etransposed * Wj));
 
                 // predict proportion
@@ -628,7 +629,7 @@ namespace Algorithm
             return multiplied;
         }
 
-        public static double[] prod2(GeneralComponents.Matrix matrix) // prod(matrix, 2) 
+        public static double[] prod2(Matrix2D matrix) // prod(matrix, 2) 
         {
             int length = matrix.Rows;
             double[] answer = new double[length];
@@ -1399,13 +1400,13 @@ namespace Algorithm
             return matrixcp;
         }
 
-        public static GeneralComponents.Matrix matrixToMatrixDegrees(GeneralComponents.Matrix data, GeneralComponents.Matrix degrees)
+        public static Matrix2D matrixToMatrixDegrees(Matrix2D data, Matrix2D degrees)
         {
             int rows = data.Rows;
             int columns = data.Columns;
             if (rows != degrees.Rows || columns != degrees.Columns)
                 throw new ArgumentException("matrix dimensions should match!");
-            GeneralComponents.Matrix answer = new GeneralComponents.Matrix(rows, columns);
+            Matrix2D answer = new Matrix2D(rows, columns);
             for (int i = 0; i < rows; i++)
                 for (int j = 0; j < columns; j++)
                     answer[i, j] = Math.Pow(data[i, j], degrees[i, j]);
