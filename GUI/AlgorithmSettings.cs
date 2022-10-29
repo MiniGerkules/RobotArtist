@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Reflection;
-using System.Collections.Generic;
 using System.Collections;
+using System.Collections.Generic;
 
 namespace GUI {
     internal class AlgorithmSettings : IEnumerable<(PropertyInfo, double)> {

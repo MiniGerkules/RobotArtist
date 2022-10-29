@@ -39,9 +39,8 @@ namespace GUI {
         }
 
         private void WindowLoaded(object sender, RoutedEventArgs e) {
-            Database.LoadDatabase(pathToDatabase);
-
-            if (!Database.IsLoad()) {
+            DatabaseLoader.LoadDatabase(pathToDatabase);
+            if (!DatabaseLoader.IsLoaded()) {
                 MessageBox.Show("Can't to upload a file with color data. Check the presence " +
                     "of the database file in the directory.", "Error!", MessageBoxButton.OK);
                 Close();
@@ -123,7 +122,7 @@ namespace GUI {
 
         private void ImageFileHandler(string fileName) {
             BitmapImage image = new(new Uri(fileName));
-            tracer = new(image, new(new()));
+            tracer = new(image, new(new()), DatabaseLoader.Database);
         }
 
         private void DisplayActiveBitmap(Image image) {

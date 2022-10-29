@@ -1,4 +1,6 @@
-﻿namespace GUI {
+﻿using GeneralComponents;
+
+namespace GUI {
     class Stroke {
         public Point2D Start { get; }
         public Point2D End { get; }
