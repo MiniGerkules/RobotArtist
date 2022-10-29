@@ -1,7 +1,6 @@
-﻿using NPOI.HSSF.Record;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Runtime.ExceptionServices;
+using System.Collections.Immutable;
 
 namespace GeneralComponents {
     public class Matrix2D {
@@ -44,6 +43,15 @@ namespace GeneralComponents {
             }
         }
 
+        public static Matrix2D Eye(int dimension) {
+            Matrix2D eye = new Matrix2D(dimension, dimension);
+            
+            for (int i = 0; i < dimension; i++)
+                eye[i, i] = 1;
+
+            return eye;
+        }
+
         public Matrix2D(int rows, int columns) {
             if (rows == 0 || columns == 0)
                 throw new ArgumentException("Can't create an empty matrix!");
@@ -61,7 +69,9 @@ namespace GeneralComponents {
                     this[i, j] = initVal;
         }
 
-        public Matrix2D(List<double> vector) {
+        public Matrix2D(List<double> vector) : this(vector.ToImmutableList()) { }
+
+        public Matrix2D(ImmutableList<double> vector) {
             if (vector.Count == 0)
                 throw new ArgumentException("Pass a empty list to construct " +
                     "a new matrix!");
@@ -83,7 +93,9 @@ namespace GeneralComponents {
             matrix = new Vector[] { new(vector) };
         }
 
-        public Matrix2D(List<List<double>> matrix) {
+        public Matrix2D(List<List<double>> matrix) : this(matrix.ToImmutable()) { }
+
+        public Matrix2D(ImmutableList<ImmutableList<double>> matrix) {
             if (matrix.Count == 0 || matrix[0].Count == 0)
                 throw new ArgumentException("Pass a empty list to construct " +
                     "a new matrix!");
@@ -109,7 +121,7 @@ namespace GeneralComponents {
             double[] vector = new double[Columns];
             for (int i = 0; i < Columns; ++i)
                 vector[i] = this[rowIndex, i];
-    
+
             return new(vector);
         }
 
@@ -143,9 +155,9 @@ namespace GeneralComponents {
             Matrix2D result = new(Rows, Columns * numOfRepeat);
 
             for (int i = 0; i < numOfRepeat; ++i)
-                for (int j = 0; j < Rows; ++j) 
-                    for (int k = 0; k < Columns; ++k) 
-                        result[j, i*Columns + k] = this[j, k];
+                for (int j = 0; j < Rows; ++j)
+                    for (int k = 0; k < Columns; ++k)
+                        result[j, i * Columns + k] = this[j, k];
 
             return result;
         }
@@ -156,7 +168,7 @@ namespace GeneralComponents {
             for (int i = 0; i < numOfRepeat; ++i)
                 for (int j = 0; j < Rows; ++j)
                     for (int k = 0; k < Columns; ++k)
-                        result[i*Rows + j, k] = this[j, k];
+                        result[i * Rows + j, k] = this[j, k];
 
             return result;
         }
@@ -218,9 +230,20 @@ namespace GeneralComponents {
             return result;
         }
 
+        public double GetSum() {
+            double result = 0;
+
+            for (int i = 0; i < Rows; ++i) {
+                for (int j = 0; j < Columns; ++j)
+                    result += matrix[i][j];
+            }
+            
+            return result;
+        }
+
         public Matrix2D Pow(Vector powers) {
             Matrix2D matrix = new(powers);
-            
+
             if (powers.IsRow)
                 matrix = matrix.RepeatRows(Rows);
             else
@@ -249,13 +272,8 @@ namespace GeneralComponents {
             return matrix[0];
         }
 
-        public Matrix2D Square() {
-            return DoAction(Helpers.Square);
-        }
-        public Matrix2D Sqrt()
-        {
-            return DoAction(Helpers.Sqrt);
-        }
+        public Matrix2D Square() => DoAction(MathFunctions.Square);
+        public Matrix2D Sqrt() => DoAction(MathFunctions.Sqrt);
 
         public Matrix2D DoAction(Func<double, double> action) {
             Matrix2D result = new(Rows, Columns);
@@ -273,7 +291,7 @@ namespace GeneralComponents {
         /// <param name="first"> First matrix </param>
         /// <param name="second"> Second matrix </param>
         /// <returns> The result of minux operation </returns>
-        public static Matrix2D operator -(Matrix2D first, Matrix2D second) => ByElem(first, second, Helpers.Minus);
+        public static Matrix2D operator -(Matrix2D first, Matrix2D second) => ByElem(first, second, MathFunctions.Minus);
 
         /// <summary>
         /// The method defines the plus operation
@@ -281,7 +299,7 @@ namespace GeneralComponents {
         /// <param name="first"> First matrix </param>
         /// <param name="second"> Second matrix </param>
         /// <returns> The result of plus operation </returns>
-        public static Matrix2D operator +(Matrix2D first, Matrix2D second) => ByElem(first, second, Helpers.Plus);
+        public static Matrix2D operator +(Matrix2D first, Matrix2D second) => ByElem(first, second, MathFunctions.Plus);
 
         /// <summary>
         /// The method defines the element by element multiply operation
@@ -289,7 +307,7 @@ namespace GeneralComponents {
         /// <param name="first"> First matrix </param>
         /// <param name="second"> Second matrix </param>
         /// <returns> The result of element by element multiply operation </returns>
-        public static Matrix2D operator ^(Matrix2D first, Matrix2D second) => ByElem(first, second, Helpers.Multiply);
+        public static Matrix2D operator ^(Matrix2D first, Matrix2D second) => ByElem(first, second, MathFunctions.Multiply);
 
         /// <summary>
         /// The method defines the multyply between a matrix and a number
@@ -370,8 +388,7 @@ namespace GeneralComponents {
         /// <param name="first"> First matrix </param>
         /// <param name="second"> Second matrix </param>
         /// <returns> ResultMatrix[i,j] = Matrix1[i,j] / Matrix2[i, j] </returns>
-        public static Matrix2D operator /(Matrix2D first, Matrix2D second)
-        {
+        public static Matrix2D operator /(Matrix2D first, Matrix2D second) {
             if (first.Rows != second.Rows || first.Columns != second.Columns)
                 throw new ArgumentException("Matrixes sizes don't match!");
 
@@ -391,6 +408,16 @@ namespace GeneralComponents {
                     result[i, j] = num / matrix[i, j];
 
             return result;
+        }
+
+        /// <summary>
+        /// The method defines division matrix by number
+        /// </summary>
+        /// <param name="matrix"> The matrix </param>
+        /// <param name="number"> The number to divide by </param>
+        /// <returns></returns>
+        public static Matrix2D operator /(Matrix2D matrix, double number) {
+            return matrix * (1 / number);
         }
 
         public static Matrix2D MulByRows(Matrix2D matrix) {
