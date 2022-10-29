@@ -19,7 +19,7 @@ namespace GeneralComponents {
 
             for (int i = 0; i < coefsCopy.Rows; ++i) {
                 if (IsFullNulls(coefsCopy, i))
-                    throw new ArgumentException("The system haven't one solution!");
+                    throw new ArgumentException("The system don't have one solution!");
 
                 if (Equals(coefsCopy[i, i], 0))
                     if (!TrySwap(coefsCopy, answersCopy, i, i))
@@ -38,7 +38,7 @@ namespace GeneralComponents {
             Matrix2D result = new(coefs.Columns, 1);
             for (int i = result.Rows - 1; i >= 0; i--) {
                 if (Equals(coefsCopy[i, i], 0))
-                    throw new ArgumentException("The system haven't one solution!");
+                    throw new ArgumentException("The system don't have one solution!");
 
                 double divisible = answersCopy[i];
                 for (int j = i + 1; j < coefs.Columns; ++j)
