@@ -3,6 +3,8 @@ using System.Windows.Media;
 using System.Collections.Generic;
 using System.Windows.Media.Imaging;
 
+using GUI.Colors;
+
 namespace GUI {
     internal class Picture {
         public List<(GeometryGroup, Pen)> Strokes { get; private set; } = new();

@@ -1,4 +1,5 @@
-﻿using GeneralComponents;
+﻿using GUI.Colors;
+using GeneralComponents;
 
 namespace GUI {
     class Stroke {

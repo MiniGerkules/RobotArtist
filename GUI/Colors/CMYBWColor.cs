@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 using GeneralComponents;
 
-namespace GUI {
+namespace GUI.Colors {
     /// <summary>
     /// The class describes a color based on cyan, magenta, yellow, blue and white.
     /// </summary>
@@ -20,7 +20,7 @@ namespace GUI {
 
         public CMYBWColor(string[] colors) {
             (cyan, magenta, yellow, blue, white) = colors.Select(elem => uint.Parse(elem)).ToArray() switch {
-                var arr when (minColors == arr.Length || arr.Length == maxColors) =>
+                var arr when minColors == arr.Length || arr.Length == maxColors =>
                                                                     (arr[0], arr[1], arr[2], arr[3], arr[4]),
                 _ => throw new ArgumentException("There isn't correct number of the colors!")
             };
@@ -51,11 +51,11 @@ namespace GUI {
 
             ColorMixType mixType = ColorMixType.MagentaYellow1;
             if (color.cyan + color.magenta + color.yellow > 0) {
-                if ((color.magenta > 0) && (color.yellow > 0 || color.cyan == 0)) {
+                if (color.magenta > 0 && (color.yellow > 0 || color.cyan == 0)) {
                     a = (double)color.magenta / (color.magenta + color.yellow);
                     mixType = a > 0.4 ? ColorMixType.MagentaYellow1 : ColorMixType.MagentaYellow2;
                 } else {
-                    if ((color.yellow > 0) && (color.cyan > 0 || color.magenta == 0)) {
+                    if (color.yellow > 0 && (color.cyan > 0 || color.magenta == 0)) {
                         a = (double)color.yellow / (color.cyan + color.yellow);
                         mixType = ColorMixType.YellowCyan;
                     } else {
@@ -76,7 +76,7 @@ namespace GUI {
 
             var hsv = DatabaseLoader.Database.GetHSV(mixType);
             var proportions = DatabaseLoader.Database.GetProportions(mixType);
-            
+
             int numRows = hsv.Count;
             Matrix2D distances = new(numRows, 1);
             Matrix2D props = new(new List<double> { a, b, c });
@@ -139,7 +139,7 @@ namespace GUI {
 
                     Matrix2D matrix = new(fir); // Need refactoring
                     Matrix2D mul = matrix ^ sec;
-                    p += (double)(mul);
+                    p += (double)mul;
                 }
 
                 hsvColor[i] = p;
