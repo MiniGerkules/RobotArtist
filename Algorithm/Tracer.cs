@@ -1,12 +1,11 @@
 ﻿using System;
 using GeneralComponents;
 using System.Collections.Generic;
-using System.Windows.Media.Imaging;
 
 namespace Algorithm {
     public class Tracer {
         public StrokeBrush strokeBrush { get; private set; }
-        public uint MaxAmountOfIters { get; private set; }
+        public int MaxAmountOfIters { get; private set; }
         public BitmapImage Image { get; private set; }
         public Settings settings { get; }
         public Matrix2D ColorClass { get; private set; } // #canvasgraymix first layer
@@ -15,7 +14,7 @@ namespace Algorithm {
         public Matrix3D InitialImage { get; private set; } // #img // array m x n x 3 where m x n x 0 is a red layer, m x n x 1 is a green layer, m x n x 2 is a blue layer, ignore layer alpha
         public Matrix3D Error { get; private set; } // #err
         public Matrix3D UnblurredImage { get; private set; } // #img_unblurred
-        public Matrix2D GrayInitialImage { get; private set; }
+        public Matrix2D GrayInitialImage { get; private set; } // #imggray
         public List<List<List<double>>> Ycell { get; private set; }
         public List<List<List<double>>> Wcell { get; private set; }
 
@@ -61,7 +60,7 @@ namespace Algorithm {
 
         private void doIterations() {
             int nStrokes = 0;
-            int accepted = 0;
+            bool isNewPieceAccepted = false; // #accepted
 
             int mSize = InitialImage[0].Rows;
             int nSize = InitialImage[0].Columns;
@@ -87,8 +86,8 @@ namespace Algorithm {
                             int prevY = j; // pY
 
                             //meancol is [r, g, b], col is the same but in shape of 3d array like (0,0,k) element
-                            double[] meanColorPixel = Functions.getMeanColor( // col? meancol
-                                InitialImage, prevX, prevY, strokeBrush.smallThickness,
+                            double[] meanColorPixel = Functions.getMeanColor( // #col? #meancol
+                                InitialImage, prevX, prevY, strokeBrush.smallThickness, 
                                 strokeBrush.bsQuad, mSize, nSize);
                             double[] hsvMeanColorPixel = new double[meanColorPixel.Length];
                             for (int m = 0; m < meanColorPixel.Length; m++)
@@ -99,6 +98,164 @@ namespace Algorithm {
                             ColorMixType mixTypes;
 
                             Functions.PredictProportions(out proportions, out mixTypes, hsvMeanColorPixel, Ycell, Wcell, Ycell.Count);
+
+                            // proportions of paints in real values
+                            double[] col8paints = Functions.proportions2pp(proportions, mixTypes);
+                            // the volume of white in the paint mixture for sorting smears by overlap
+                            double volumeOfWhite = col8paints[4];
+
+                            // draw a synthetic map of smears with colour
+                            // that fits the type of mixture
+
+                            double[] col2 = new double[3];
+                            var rand = new Random();
+                            rand.NextDouble();
+
+                            switch(mixTypes)
+                            {
+                                case ColorMixType.MagentaYellow1:
+                                    col2 = new double[] {0.5 + 0.5 * rand.NextDouble(), 0.5 * rand.NextDouble(), 0.5 * rand.NextDouble() };
+                                    break;
+                                case ColorMixType.MagentaYellow2:
+                                    col2 = new double[] { 0.5 + 0.5 * rand.NextDouble(), 0.5 + 0.5 * rand.NextDouble(), 0.5 * rand.NextDouble() };
+                                    break;
+                                case ColorMixType.YellowCyan:
+                                    col2 = new double[] { 0.5 * rand.NextDouble(), 0.5 + 0.5 * rand.NextDouble(), 0.5 * rand.NextDouble() };
+                                    break;
+                                case ColorMixType.CyanMagenta:
+                                    col2 = new double[] { 0, 0, 0.5 * rand.NextDouble() + 0.5 * rand.NextDouble() };
+                                    break;
+                            }
+
+                            int nPoints = 1; // amount of points in the stroke #nPts
+                            bool isStrokeEnded = false; // #endedStroke 
+
+                            List<Stroke> strokes = new List<Stroke>();
+                            strokes.Add(new Stroke(new System.Windows.Point(prevX, prevY), meanColorPixel, col8paints, proportions, mixTypes));
+
+                            while (!isStrokeEnded)
+                            {
+                                // %find new direction
+                                int counter = 0; // #ctr index
+                                StrokeCandidate candidate = new StrokeCandidate(-1, -1, Double.MaxValue);
+                                while (counter < MaxAmountOfIters)
+                                {
+                                    double cosA = 0, sinA = 0;
+                                    Functions.getDirection(new System.Drawing.Point(prevX, prevY), strokes, Gradients, out cosA, out sinA);
+                                    int r = MaxAmountOfIters - counter - 1;
+
+                                    candidate.x = prevX + Math.Round(r * cosA); // %new X
+                                    candidate.y = prevY + Math.Round(r * sinA); // %new Y 
+
+                                    // next i should write TestNewPiece function
+                                    // after that i think will be right to check all
+                                    // and push to github
+                                    // double error = 0;
+                                    isNewPieceAccepted = Functions.testNewPieceAccepted( // #accepted
+                                        startPoint: new System.Drawing.Point(prevX, prevY),
+                                        img: InitialImage,
+                                        canvasColor: settings.canvasColor,
+                                        canvasEps: settings.canvasColorFault,
+                                        canvas2: syntheticSmearMap,
+                                        ColorClass: ColorClass,
+                                        VolumeOfWhite: VolumeOfWhite,
+                                        pixTol: settings.pixTol,
+                                        pixTolAverage: settings.pixTolAverage,
+                                        meanColorPixel: meanColorPixel,
+                                        mSize: mSize,
+                                        nSize: nSize,
+                                        overlap: overlap,
+                                        bs2: strokeBrush.smallThickness,
+                                        bsQuad: strokeBrush.bsQuad,
+                                        mixTypes: mixTypes,
+                                        volumeOfWhite: volumeOfWhite,
+                                        ref candidate
+                                    );
+
+                                    // #### to here all is OK ####
+
+                                    if (isNewPieceAccepted) //%if error is small, accept the stroke immediately
+                                        counter = MaxAmountOfIters;
+                                    else
+                                    {
+                                        //% also try opposite direction
+                                        candidate.x = prevX - Math.Round(r * cosA); // % new X
+                                        candidate.y = prevY - Math.Round(r * sinA); // % new Y
+
+                                        // % test new fragment of the stroke
+
+                                        isNewPieceAccepted = Functions.testNewPieceAccepted( // #accepted
+                                            startPoint: new System.Drawing.Point(prevX, prevY),
+                                            img: InitialImage,
+                                            canvasColor: settings.canvasColor,
+                                            canvasEps: settings.canvasColorFault,
+                                            canvas2: syntheticSmearMap,
+                                            ColorClass: ColorClass,
+                                            VolumeOfWhite: VolumeOfWhite,
+                                            pixTol: settings.pixTol,
+                                            pixTolAverage: settings.pixTolAverage,
+                                            meanColorPixel: meanColorPixel,
+                                            mSize: mSize,
+                                            nSize: nSize,
+                                            overlap: overlap,
+                                            bs2: strokeBrush.smallThickness,
+                                            bsQuad: strokeBrush.bsQuad,
+                                            mixTypes: mixTypes,
+                                            volumeOfWhite: volumeOfWhite,
+                                            ref candidate
+                                        );
+
+                                        if (isNewPieceAccepted) //%if error is small, accept the stroke immediately
+                                         counter = MaxAmountOfIters;
+                                    }
+                                    counter++;
+                                }
+                                // %draw the stroke fragment
+
+                                if(isNewPieceAccepted)
+                                {
+                                    Matrix3D coloredCanvas = ColoredCanvas;
+                                    Matrix2D colorClass = ColorClass;
+                                    Matrix2D volOfWhite = VolumeOfWhite;
+
+                                    Matrix2D err = Functions.drawPiece(
+                                            startPoint: new System.Drawing.Point(prevX, prevY),
+                                            candidate: candidate,
+                                            bs2: strokeBrush.smallThickness,
+                                            bsQuad: strokeBrush.bsQuad,
+                                            canvas: ref coloredCanvas,
+                                            canvas2: ref syntheticSmearMap,
+                                            ColorClass: ref colorClass,
+                                            VolumeOfWhite: ref volOfWhite,
+                                            meanColorPixel: meanColorPixel,
+                                            col2: col2,
+                                            imggray: GrayInitialImage,
+                                            mSize: mSize,
+                                            nSize: nSize,
+                                            mixTypes: mixTypes,
+                                            volumeOfWhite: volumeOfWhite
+                                        );
+
+                                   // % determine new length
+                                    var dlen = Math.Sqrt((prevX - candidate.x) * (prevX - candidate.x) + (prevY - candidate.y) * (prevY - candidate.y));
+                                    strokes.Capacity = strokes.Count + (int)dlen;
+
+                                    // %if length is too large
+                                    if (strokes.Capacity >= strokeBrush.maxStrokeLength)
+                                        isStrokeEnded = true;
+
+                                    double vX = candidate.x;
+                                    double vY = candidate.y;
+                                    double pX = candidate.x; 
+                                    double pY = candidate.y;
+
+                                    // тут я чет не врубаюсь, что происходит
+                                    //strokes.points = [strokes.x, vX];
+                                    //strokes.y = [strokes.y, vY];
+                                    //nPoints++;
+                                }
+
+                            }
 
                         }
                     }

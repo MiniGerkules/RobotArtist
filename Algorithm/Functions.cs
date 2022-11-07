@@ -5,12 +5,216 @@ using System.Windows.Media.Imaging;
 using System.Collections.Generic;
 
 using GeneralComponents;
+using System.Drawing;
+using Microsoft.VisualBasic;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Algorithm
 {
     public static class Functions
     {
+        public static Matrix2D drawPiece(Point startPoint, StrokeCandidate candidate, double bs2, double bsQuad, 
+            ref Matrix3D canvas, ref Matrix3D canvas2, ref Matrix2D ColorClass, ref Matrix2D VolumeOfWhite, double[] meanColorPixel, double[] col2,
+            Matrix2D imggray, int mSize, int nSize, ColorMixType mixTypes, double volumeOfWhite)
+        {
+            double N = Math.Max(Math.Abs(startPoint.X - candidate.x), Math.Abs(startPoint.Y - candidate.y));
+            double bsQuad12 = ((double)(bs2) / 2) * ((double)(bs2) / 2);
 
+            Matrix3D canvasOut = canvas;
+            Matrix2D colorClass = ColorClass;
+            Matrix2D volOfWhite = VolumeOfWhite;
+            Matrix3D canvas2Out = canvas2;
+
+            for (double t = 0; t <= 1; t += (1 / N))
+            {
+                double xo = Math.Round(candidate.x + (startPoint.X - candidate.x) * t);
+                double yo = Math.Round(candidate.y + (startPoint.Y - candidate.y) * t);
+                for (double Xl = Math.Round(xo - bs2); Xl <= Math.Round(xo + bs2); Xl++)
+                {
+                    for (double Yl = Math.Round(yo - bs2); Yl <= Math.Round(yo + bs2); Yl++)
+                    {
+                        if (Xl >= 0 && Xl < mSize && Yl >= 0 && Yl < nSize)
+                        {
+                            if ((Xl - xo) * (Xl - xo) + (Yl - yo) * (Yl - yo) < bsQuad)
+                            {
+                                // % test for overlap: number of mixtype is >=, and
+                                // % amount of white is lower
+                                if (((int)ColorClass[(int)Xl, (int)Yl] == (int)mixTypes) && (VolumeOfWhite[(int)Xl, (int)Yl] < volumeOfWhite)
+                                    || ((int)ColorClass[(int)Xl, (int)Yl] == 0) || ((int)ColorClass[(int)Xl, (int)Yl] < (int)mixTypes)); 
+                                // %if canvas is free
+                                for (int i = 0; i < meanColorPixel.Length; i++)
+                                    canvasOut[(int)Xl, (int)Yl, i] = meanColorPixel[i];
+                                colorClass[(int)Xl, (int)Yl] = (int)mixTypes;
+                                volOfWhite[(int)Xl, (int)Yl] = volumeOfWhite;
+
+                                for (int i = 0; i < col2.Length; i++)
+                                    canvas2Out[(int)Xl, (int)Yl, i] = col2[i]; // % new variant
+                            }
+                        }
+
+                    }
+
+                }
+            }
+
+            canvas = canvasOut;
+            ColorClass = colorClass;
+            VolumeOfWhite = volOfWhite;
+            canvas2 = canvas2Out;
+
+            return (canvasOut.mean() - imggray).Abs();
+        }
+
+
+        // startPoint .X and .Y are #pX and #pY
+        // #testNewPiece
+        public static bool testNewPieceAccepted(Point startPoint, Matrix3D img, byte canvasColor, 
+            double canvasEps, Matrix3D canvas2, Matrix2D ColorClass, Matrix2D VolumeOfWhite,
+            double pixTol, double pixTolAverage, double[] meanColorPixel, int mSize, int nSize,
+            double overlap, double bs2, double bsQuad, ColorMixType mixTypes, double volumeOfWhite, 
+            ref StrokeCandidate candidate/*, out double error*/) // #candidate_out = #candidate = candidate
+        { // it seems like there is no need in error
+            
+            bool accepted = false;
+            // StrokeCandidate candidate_out = candidate;
+            if ((candidate.x < 0 || candidate.y < 0 || candidate.x >= mSize || candidate.y >= nSize))
+                candidate.error = double.MaxValue; // changed!
+            else
+            {
+                // if dot is with small error and doen't match with canvas color on tha data picture
+                int nX = (int)candidate.x;
+                int nY = (int)candidate.y;
+                double[] doublePix = new double[] { img[nX, nY, 0], img[nX, nY, 1], img[nX, nY, 2] }; // one pixel
+                List<double> averageModule = new List<double>();
+                for (int i = 0; i < doublePix.Length; i++)
+                    averageModule.Add(Math.Abs(meanColorPixel[i] - doublePix[i]));
+                double errPix = averageModule.Average();
+                double avrcol = 0; // average color
+                double meanOfDoublePix = doublePix.ToList().Average();
+                if ((errPix <= pixTol) && (canvas2[nX, nY, 1] == 0) && 
+                    ((meanOfDoublePix > canvasColor + canvasEps) || (meanOfDoublePix < canvasColor - canvasEps)))
+                {
+                    int ncol = 0;
+                    double[] colSum = new double[3];
+                    double currentOverlap = 0; // #overlap
+                    // %line
+                    double N = Math.Max(Math.Abs(startPoint.X - nX), Math.Abs(startPoint.Y - nY));
+                    if (N == 0)
+                        N = 1;
+                    for (double t = 0; t <= 1; t += 1 / N)
+                    {
+                        double xo = Math.Round(nX + (startPoint.X - nX) * t);
+                        double yo = Math.Round(nY + (startPoint.Y - nY) * t);
+
+                        for (int X1 = (int)Math.Round(xo - bs2); X1 <= Math.Round(xo + bs2); X1++)
+                        {
+                            for (int Y1 = (int)Math.Round(yo - bs2); Y1 <= Math.Round(yo + bs2); Y1++)
+                            {
+                                if ((X1 >= 0) && (X1 < mSize) && (Y1 >= 0) && (Y1 < nSize))
+                                {
+                                    // %test for overlap: number of mixtype is >=, and
+                                    // %amount of white is lower
+                                    if (((ColorClass[X1, Y1] == (int)mixTypes) && 
+                                        (VolumeOfWhite[X1, Y1] < volumeOfWhite)) || 
+                                        (ColorClass[X1, Y1] == 0) || 
+                                        (ColorClass[X1, Y1] < (int)mixTypes)) //don't enter when should!!!!
+                                    { // %if canvas is free
+                                        double r2 = ((double)X1 - xo) * ((double)X1 - xo) + ((double)Y1 - yo) * ((double)Y1 - yo);
+                                        if (r2 < bsQuad)
+                                        {
+                                            for (int i = 0; i < 3; i++)
+                                                colSum[i] += img[X1, Y1, i];
+                                            ncol++;
+                                            if (canvas2[X1, Y1, 0] != 0)
+                                                currentOverlap++; // #overlap
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    if (ncol > 0)
+                    {
+                        for (int i = 0; i < 3; i++)
+                            avrcol += colSum[i] / ncol;
+
+                        avrcol /= 3;
+                        currentOverlap /= ncol;
+                    }
+                    else
+                        currentOverlap = overlap + 1; // large enough to not accept the pixel
+                    // if the average color of the stroke
+                    // is in limits of acceptable
+                    double meanColor = meanColorPixel.ToList().Average();
+                    if ((Math.Abs(avrcol - meanColor) <= pixTolAverage) && (currentOverlap <= overlap))
+                    {
+                        double errCand = Math.Abs(avrcol - meanColor) + currentOverlap / ncol;
+                        if (errCand < candidate.error)
+                        {
+                            accepted = true;
+                            candidate.x = nX; // was candidate_out
+                            candidate.y = nY; // was candidate_out
+                            candidate.error = errCand; // was candidate_out
+                        }
+                    }
+                }
+                //error = candidate_out.error;
+                //candidate = candidate_out;
+            }
+            return accepted;
+        }
+
+        public static void getDirection (Point startPoint, List<Stroke> strokePoints, Gradient gradient, out double cosA, out double sinA)
+        {
+            if (strokePoints == null)
+                throw new ArgumentNullException();
+            cosA = -gradient.U[startPoint.X, startPoint.Y];
+            sinA = gradient.V[startPoint.X, startPoint.Y]; // %normally to gradient
+            if (strokePoints.Count > 1) // %if not a single point, get previous direction
+            {
+                double dX = startPoint.X - strokePoints[strokePoints.Count - 1].points[0].X;
+                double dY = startPoint.Y - strokePoints[strokePoints.Count - 1].points[0].Y;
+
+                // %get scalar product
+                double scalar = cosA * dX + sinA * dY;
+                if (scalar < 0) // %if in opposite direction
+                {
+                    cosA = -cosA;
+                    sinA = -sinA;
+                }
+            }
+        }
+
+        public static double[] proportions2pp(double[] proportions, ColorMixType mixTypes) // #prop2pp
+        {
+            int vTotal = 3000;
+            double C = 0, M = 0, Y = 0; //% initiate colors
+            double a = proportions[0];
+            double b = proportions[1];
+            double c = proportions[2];
+            double C1 = Math.Floor(a * c * vTotal);
+            double C2 = Math.Floor((1 - a) * c * vTotal);
+            double B = Math.Floor((1 - c) * b * vTotal);
+            double W = Math.Floor((1 - b) * (1 - c) * vTotal);
+            switch(mixTypes)
+            {
+                case ColorMixType.MagentaYellow1: // fall through
+                case ColorMixType.MagentaYellow2:
+                    M = C1;
+                    Y = C2;
+                    break;
+                case ColorMixType.YellowCyan:
+                    Y = C1;
+                    C = C2;
+                    break;
+                case ColorMixType.CyanMagenta:
+                    C = C1; 
+                    M = C2;
+                    break;
+            }
+
+            return new double[] { C, M, Y, B, W, 0, 0, 0 };
+        }
         public static Matrix3D imageToMatrix3D(BitmapImage image)
         {
             FormatConvertedBitmap imageInRGB24 = new FormatConvertedBitmap(image, PixelFormats.Rgb24, BitmapPalettes.Halftone256, 0);
@@ -503,7 +707,7 @@ namespace Algorithm
                 // h = (E'*E)\(E'*V); %OLS
                 Matrix2D Etransposed = E.Transpose();
 
-                Matrix2D h2 = GausMethod.Solve(
+                GeneralComponents.Matrix h2 = GeneralComponents.GausMethod.Solve(
                     (Etransposed * E), (Etransposed * Wj));
 
                 // predict proportion
