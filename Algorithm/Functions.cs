@@ -215,6 +215,7 @@ namespace Algorithm
 
             return new double[] { C, M, Y, B, W, 0, 0, 0 };
         }
+
         public static Matrix3D imageToMatrix3D(BitmapImage image)
         {
             FormatConvertedBitmap imageInRGB24 = new FormatConvertedBitmap(image, PixelFormats.Rgb24, BitmapPalettes.Halftone256, 0);
