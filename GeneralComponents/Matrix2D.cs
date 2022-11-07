@@ -290,34 +290,6 @@ namespace GeneralComponents {
             return result;
         }
 
-        public static Matrix2D Eye(int dimension)
-        {
-            Matrix2D eye = new Matrix2D(dimension, dimension);
-            for (int i = 0; i < dimension; i++)
-                eye[i, i] = 1;
-            return eye;
-        }
-
-        public double GetSum()
-        {
-            double result = 0;
-            for (int i = 0; i < Rows; ++i)
-                for (int j = 0; j < Columns; ++j)
-                    result += matrix[i][j];
-            return result;
-        }
-
-        /// <summary>
-        /// The method defines division matrix by number
-        /// </summary>
-        /// <param name="matrix"> The matrix </param>
-        /// <param name="number"> The number to divide by </param>
-        /// <returns></returns>
-        public static Matrix2D operator /(Matrix2D matrix, double number)
-        {
-            return matrix * (1 / number);
-        }
-
         /// <summary>
         /// The method defines the unary minus operation
         /// </summary>
