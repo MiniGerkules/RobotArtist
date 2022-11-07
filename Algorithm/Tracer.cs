@@ -1,18 +1,10 @@
 ﻿using System;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
 using GeneralComponents;
 using System.Collections.Generic;
-using System.Net.Http.Headers;
-using System.Windows.Controls;
-using static System.Net.Mime.MediaTypeNames;
-using System.Runtime.ConstrainedExecution;
-using System.Windows.Ink;
+using System.Windows.Media.Imaging;
 
-namespace Algorithm
-{
-    public class Tracer
-    {
+namespace Algorithm {
+    public class Tracer {
         public StrokeBrush strokeBrush { get; private set; }
         public int MaxAmountOfIters { get; private set; }
         public BitmapImage Image { get; private set; }
@@ -28,8 +20,8 @@ namespace Algorithm
         public List<List<List<double>>> Wcell { get; private set; }
 
         public Gradient Gradients; // stores Gradients (pairs U and V for every pixel) for all picture
-        
-        public Tracer(BitmapImage img, Settings settings) // settings shouldn't be null! 
+
+        public Tracer(BitmapImage img, Settings settings, Database database) // settings shouldn't be null! 
         {
             if (settings == null) // i would like to throw exception here or to make sure of parameters by default
                 settings = new Settings(new GUITrace());
@@ -44,19 +36,8 @@ namespace Algorithm
             MaxAmountOfIters = strokeBrush.thickness;
             InitialImage = Functions.imageToMatrix3D(Image);
 
-            
-            Database.LoadDatabase("C:\\Users\\varka\\Documents\\3course2sem\\NIR\\NIRgit\\GeneralComponents\\resources\\ModelTable600.xls");
-            if (!Database.IsLoad())
-            {
-                throw new ArgumentException("Path to color model table is not valid");
-            }
-
-            List<List<List<double>>> ycell, wcell;
-
-            Functions.getYcellWcell(Database.Data, out ycell, out wcell);
-
-            Ycell = ycell;
-            Wcell = wcell;
+            Ycell = database.GetHSV().Copy();
+            Wcell = database.GetProportions().Copy();
 
             ColorClass = new Matrix2D(Image.PixelHeight, Image.PixelWidth); // ColorMixType only
             VolumeOfWhite = new Matrix2D(Image.PixelHeight, Image.PixelWidth);
@@ -65,22 +46,20 @@ namespace Algorithm
 
             UnblurredImage = InitialImage;
 
-            if (settings.doBlur)
-            {
+            if (settings.doBlur) {
                 double[,] H = Functions.fspecial((int)strokeBrush.smallThickness);
                 InitialImage = Functions.conv2(InitialImage, H, "replicate");
             }
 
             GrayInitialImage = InitialImage.rgb2gray();
-            
+
             Gradients = new Gradient(GrayInitialImage, strokeBrush.thickness);
 
             // ale iterations
             doIterations();
         }
 
-        private void doIterations()
-        {
+        private void doIterations() {
             int nStrokes = 0;
             bool isNewPieceAccepted = false; // #accepted
 
@@ -90,8 +69,7 @@ namespace Algorithm
 
             Matrix3D syntheticSmearMap = new Matrix3D(mSize, nSize, kSize); // #canvas2
 
-            for (int kk = 0; kk < settings.amountOfTotalIters; kk++)
-            {
+            for (int kk = 0; kk < settings.amountOfTotalIters; kk++) {
                 double overlap = settings.minInitOverlapRatio;
 
                 if (kk == 2)
@@ -102,16 +80,14 @@ namespace Algorithm
                 else
                     overlap = settings.minInitOverlapRatio;
 
-                for (int i = 0; i < mSize; i++) 
-                {
-                    for (int j = 0; j < nSize; j++)
-                    {
-                        if ((Error[i, j, 0] > settings.pixTolAccept) || (syntheticSmearMap[i, j, 0] == 0)) 
-                        {
+                for (int i = 0; i < mSize; i++) {
+                    for (int j = 0; j < nSize; j++) {
+                        if ((Error[i, j, 0] > settings.pixTolAccept) || (syntheticSmearMap[i, j, 0] == 0)) {
                             int prevX = i; // pX
                             int prevY = j; // pY
 
                             //meancol is [r, g, b], col is the same but in shape of 3d array like (0,0,k) element
+
                             double[] meanColorPixel = Functions.getMeanColor( // #col? #meancol
                                 InitialImage, prevX, prevY, strokeBrush.smallThickness, 
                                 strokeBrush.bsQuad, mSize, nSize);
