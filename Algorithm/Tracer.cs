@@ -86,6 +86,7 @@ namespace Algorithm {
                             int prevY = j; // pY
 
                             //meancol is [r, g, b], col is the same but in shape of 3d array like (0,0,k) element
+
                             double[] meanColorPixel = Functions.getMeanColor( // #col? #meancol
                                 InitialImage, prevX, prevY, strokeBrush.smallThickness, 
                                 strokeBrush.bsQuad, mSize, nSize);
