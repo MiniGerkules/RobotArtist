@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 
 namespace GeneralComponents {
     public class Vector {
@@ -29,11 +31,14 @@ namespace GeneralComponents {
             Array.Copy(vector, this.vector, vector.Length);
         }
 
-        public Vector(List<double> vector, bool isRow = true) {
+        public Vector(List<double> vector, bool isRow = true) : this(vector.ToImmutableList(), isRow) { }
+
+        public Vector(ImmutableList<double> vector, bool isRow = true) {
             if (vector.Count == 0)
                 throw new ArgumentException("Can't create an empty vector!");
 
-            this.vector = vector.ToArray();
+            this.vector = new double[vector.Count];
+            vector.CopyTo(this.vector);
             IsRow = isRow;
         }
 
