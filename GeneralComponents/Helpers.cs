@@ -70,6 +70,7 @@ namespace GeneralComponents
             return label;
         }
 
+        public static double UnaryMinus(double a) => -a;
         public static double Plus(double a, double b) => a + b;
         public static double Minus(double a, double b) => a - b;
         public static double Multiply(double a, double b) => a * b;

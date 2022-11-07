@@ -17,8 +17,8 @@ namespace Algorithm
      **/
     public struct Gradient
     {
-        Matrix2D U;
-        Matrix2D V;
+        public Matrix2D U { get; private set; }
+        public Matrix2D V { get; private set; }
 
        private Gradient(Matrix2D u, Matrix2D v)
        {
@@ -26,7 +26,7 @@ namespace Algorithm
             V = v;
        }
 
-        public Gradient(Matrix2D imgGray, uint brushThickness) // GetGradientByTensor function
+        public Gradient(Matrix2D imgGray, int brushThickness) // GetGradientByTensor function
         {
             int g = (int)brushThickness * 4; // filter parameter
             double p1 = 0.183;
@@ -53,7 +53,7 @@ namespace Algorithm
             //new List<double> {         0,        0,         0 },
             //new List<double> {  0.5 * p1, 0.5 - p1,  0.5 * p1 }
             //});
-            
+
             Matrix2D fx = Functions.conv2(imgGray, Dx, "full");
             Matrix2D fy = Functions.conv2(imgGray, Dy, "full");
 

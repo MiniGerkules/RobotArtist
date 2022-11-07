@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Collections.Generic;
 using System.Windows.Media;
+using System.Windows.Media.Media3D;
 
 namespace GeneralComponents
 {
@@ -112,68 +113,68 @@ namespace GeneralComponents
             }
 
             int numRows = hsv.Count;
-            Matrix distances = new(numRows, 1);
-            Matrix props = new(new List<double> { a, b, c });
+            Matrix2D distances = new(numRows, 1);
+            Matrix2D props = new(new List<double> { a, b, c });
 
             for (int i = 0; i < numRows; ++i) {
-                Matrix matrix = new(proportions[i]);
+                Matrix2D Matrix2D = new(proportions[i]);
                 // squared Euclidean distance
-                distances[i] = (double)((props - matrix) * (props - matrix).Transpose());
+                distances[i] = (double)((props - Matrix2D) * (props - Matrix2D).Transpose());
             }
 
             int[] indexes = distances.GetIndexesForSorted();
             int numOfColors = Math.Min(250, numRows);
 
-            Matrix D = (1 / distances.GetByIndexes(indexes[..numOfColors])).MakeDiag();
-            Matrix nearestPoints = new(Helpers.GetByIndexes(hsv, indexes[..numOfColors]));
-            Matrix propsOfNearestPoints = new(Helpers.GetByIndexes(proportions, indexes[..numOfColors]));
+            Matrix2D D = (1 / distances.GetByIndexes(indexes[..numOfColors])).MakeDiag();
+            Matrix2D nearestPoints = new(Helpers.GetByIndexes(hsv, indexes[..numOfColors]));
+            Matrix2D propsOfNearestPoints = new(Helpers.GetByIndexes(proportions, indexes[..numOfColors]));
 
-            Matrix E = new(numOfColors, 4, 0); // evaluated polynomial
-            Matrix T = new(4, 3); // monomial orders
+            Matrix2D E = new(numOfColors, 4, 0); // evaluated polynomial
+            Matrix2D T = new(4, 3); // monomial orders
             T.MakeUnit(1);
                 
-            Matrix h = new(4, 4);
+            Matrix2D h = new(4, 4);
             h.MakeUnit(0);
 
             for (int i = 0; i < 4; ++i)
             {
-                Matrix fir = h.GetRow(i);
-                Matrix sec = Matrix.MulByRows(propsOfNearestPoints.Pow(T.GetRow(i)));
+                Matrix2D fir = new Matrix2D(h.GetRow(i));
+                Matrix2D sec = Matrix2D.MulByRows(propsOfNearestPoints.Pow(T.GetRow(i)));
                     
                 int columnRepeat = fir.Columns;
                 int rowsRepeat = sec.Rows;
                 fir = fir.RepeatRows(rowsRepeat);
                 sec = sec.RepeatColumns(columnRepeat);
 
-                Matrix mul = fir ^ sec;
+                Matrix2D mul = fir ^ sec;
                 E = E + mul;
             }
 
             double[] hsvColor = new double[3];
-            Matrix hsvOfNearestPoints = new(Helpers.GetByIndexes(hsv, indexes[..numOfColors]));
+            Matrix2D hsvOfNearestPoints = new(Helpers.GetByIndexes(hsv, indexes[..numOfColors]));
 
             for (int i = 0; i < hsvColor.Length; ++i)
             {
-                //Matrix coefs = E.Transpose() * E;
-                //Matrix answers = E.Transpose() * nearestPoints.GetColumn(i);
+                //Matrix2D coefs = E.Transpose() * E;
+                //Matrix2D answers = E.Transpose() * nearestPoints.GetColumn(i);
                 //h = GausMethod.Solve(coefs, answers); // OLS
 
-                Matrix V = hsvOfNearestPoints.GetColumn(i);
+                Matrix2D V = new Matrix2D(hsvOfNearestPoints.GetColumn(i));
 
-                Matrix coefs = E.Transpose() * D * E;
-                Matrix answers = E.Transpose() * D * V;
+                Matrix2D coefs = E.Transpose() * D * E;
+                Matrix2D answers = E.Transpose() * D * V;
                 h = GausMethod.Solve(coefs, answers);
 
                 // Predict proportion
                 double p = 0;
-                Matrix X = props;
+                Matrix2D X = props;
 
                 for (int k = 0; k < 4; ++k)
                 {
-                    Matrix fir = h.GetRow(k);
-                    Matrix sec = Matrix.MulByRows(X.Pow(T.GetRow(k)));
+                    Matrix2D fir = new Matrix2D(h.GetRow(k));
+                    Matrix2D sec = Matrix2D.MulByRows(X.Pow(T.GetRow(k)));
 
-                    Matrix mul = fir ^ sec;
+                    Matrix2D mul = fir ^ sec;
                     p += (double)(mul);
                 }
 

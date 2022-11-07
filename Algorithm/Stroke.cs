@@ -2,31 +2,38 @@
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Collections.Generic;
+using GeneralComponents;
 
 namespace Algorithm
 {
-    public struct Strokes
+    public struct Stroke
     {
-        Color color;
-        List<int> beginXPositions;
-        List<int> beginYPositions;
-        int length;
-        public Strokes(Color col, int len = 0)
+        public List<System.Windows.Point> points;
+        double[] color;
+        double[] col8paints;
+        double[] proportions;
+        ColorMixType mixType;
+        double length = 0;
+        public Stroke(System.Windows.Point point, double[] col, double[] col8paints, 
+            double[] proportions, ColorMixType mixType, int length = 0)
         {
+            points = new List<System.Windows.Point>();
+            points.Add(point);
             color = col;
-            beginXPositions = new List<int>();
-            beginYPositions = new List<int>();
-            length = len;
+            this.col8paints = col8paints;
+            this.proportions = proportions;
+            this.mixType = mixType;
+            this.length = length;
         }
     }
 
     public struct StrokeCandidate
     {
-        int x;
-        int y;
-        double error;
+        public double x;
+        public double y;
+        public double error;
 
-        public StrokeCandidate (int newX, int newY, double err = double.MaxValue)
+        public StrokeCandidate (double newX, double newY, double err = double.MaxValue)
         {
             x = newX;
             y = newY;

@@ -51,7 +51,7 @@
         private static Matrix3D ByElem(Matrix3D first, Matrix3D second,
     Func<double, double, double> action)
         {
-            if (first.Layers != second.Layers || first[0].Rows != second[0].Rows 
+            if (first.Layers != second.Layers || first[0].Rows != second[0].Rows
                 || first[0].Columns != second[0].Columns)
                 throw new ArgumentException("Dimensions of matrixes is different!");
 
@@ -83,6 +83,26 @@
                 }
             }
             return result;
+        }
+
+        public Matrix2D mean()
+        {
+            Matrix2D answer = new Matrix2D(matrix[0].Rows, matrix[0].Columns);
+            if (this.Layers > 1)
+            {
+                for (int i = 0; i < matrix[0].Rows; i++)
+                {
+                    for (int j = 0; j < matrix[0].Columns; j++)
+                    {
+                        for (int k = 0; k < Layers; k++)
+                            answer[i, j] += matrix[k][i, j];
+                        answer[i, j] /= 3d;
+                    }
+                }
+            }
+            else
+                answer = matrix[0];
+            return answer;
         }
 
     }
