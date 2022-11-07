@@ -1,8 +1,9 @@
 ﻿using System;
+using System.Linq;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Collections.Generic;
-using System.Linq;
+
 using GeneralComponents;
 using System.Drawing;
 using Microsoft.VisualBasic;
@@ -214,6 +215,7 @@ namespace Algorithm
 
             return new double[] { C, M, Y, B, W, 0, 0, 0 };
         }
+
         public static Matrix3D imageToMatrix3D(BitmapImage image)
         {
             FormatConvertedBitmap imageInRGB24 = new FormatConvertedBitmap(image, PixelFormats.Rgb24, BitmapPalettes.Halftone256, 0);
@@ -257,7 +259,7 @@ namespace Algorithm
             int columnsAmount = matrix.GetLength(1);
 
             if (rowsAmount != columnsAmount)
-                throw new ArgumentException("Matrix should be square!");
+                throw new ArgumentException("Matrix2D should be square!");
 
             for (int i = 0; i < rowsAmount; i++) // ходим по строкам
             {
@@ -577,7 +579,7 @@ namespace Algorithm
 
                     Matrix2D coefs = Etransposed * D * E + (Matrix2D.Eye(4)) * delt;
 
-                    h = GeneralComponents.GausMethod.Solve(coefs, answers); // answers don't match, but they pretty close
+                    h = GausMethod.Solve(coefs, answers); // answers don't match, but they pretty close
 
                     // predict proportion
 
@@ -706,7 +708,7 @@ namespace Algorithm
                 // h = (E'*E)\(E'*V); %OLS
                 Matrix2D Etransposed = E.Transpose();
 
-                Matrix2D h2 = GeneralComponents.GausMethod.Solve(
+                Matrix2D h2 = GausMethod.Solve(
                     (Etransposed * E), (Etransposed * Wj));
 
                 // predict proportion
