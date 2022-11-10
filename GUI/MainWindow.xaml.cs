@@ -39,9 +39,8 @@ namespace GUI {
         }
 
         private void WindowLoaded(object sender, RoutedEventArgs e) {
-            Database.LoadDatabase(pathToDatabase);
-
-            if (!Database.IsLoad()) {
+            DatabaseLoader.LoadDatabase(pathToDatabase);
+            if (!DatabaseLoader.IsLoaded()) {
                 MessageBox.Show("Can't to upload a file with color data. Check the presence " +
                     "of the database file in the directory.", "Error!", MessageBoxButton.OK);
                 Close();
@@ -62,22 +61,17 @@ namespace GUI {
             if (IsFileAlreadyOpened(fileName))
                 return;
 
-            //try
-            //{
-            if (fileName.EndsWith(".plt"))
-                PLTFileHandler(fileName);
-            else
-                ImageFileHandler(fileName);
-            //}
-            //catch (ArgumentException Error)
-            //{
-            //    MessageBox.Show($"Can't process file!\n{Error.Message}",
-            //                    "Error!", MessageBoxButton.OK);
-            //    return;
-            //}
+            try {
+                if (fileName.EndsWith(".plt")) PLTFileHandler(fileName);
+                else ImageFileHandler(fileName);
+            } catch (ArgumentException Error) {
+                MessageBox.Show($"Can't process file!\n{Error.Message}",
+                                "Error!", MessageBoxButton.OK);
+                return;
+            }
 
             AddNewOpenedFile(fileName);
-            ChangeActive(Active.ViewGrid);
+            ChangeActive(ActiveGrid.ViewGrid);
             DisplayActiveBitmap(viewImage);
         }
 
@@ -106,7 +100,7 @@ namespace GUI {
         }
 
         private void UpdateOutputImage(string fileName) {
-            ChangeActive(Active.ViewGrid);
+            ChangeActive(ActiveGrid.ViewGrid);
             pathToActiveFile = fileName;
             DisplayActiveBitmap(viewImage);
         }
@@ -123,7 +117,7 @@ namespace GUI {
 
         private void ImageFileHandler(string fileName) {
             BitmapImage image = new(new Uri(fileName));
-            tracer = new(image, new(new()));
+            tracer = new(image, new(new()), DatabaseLoader.Database);
         }
 
         private void DisplayActiveBitmap(Image image) {
@@ -148,7 +142,7 @@ namespace GUI {
             if (pathToActiveFile == null || (viewButton.Background as SolidColorBrush).Color == DefaultGUISettings.activeButton.Color)
                 return;
 
-            ChangeActive(Active.ViewGrid);
+            ChangeActive(ActiveGrid.ViewGrid);
             DisplayActiveBitmap(viewImage);
         }
 
@@ -156,7 +150,7 @@ namespace GUI {
             if (pathToActiveFile == null || (settingsButton.Background as SolidColorBrush).Color == DefaultGUISettings.activeButton.Color)
                 return;
 
-            ChangeActive(Active.SettingsGrid);
+            ChangeActive(ActiveGrid.SettingsGrid);
             DisplayActiveBitmap(settingsImage);
             settingsManager.DisplaySettings(settingsFields, files[pathToActiveFile].Settings);
         }
@@ -165,7 +159,7 @@ namespace GUI {
             if (pathToActiveFile == null || (infoButton.Background as SolidColorBrush).Color == DefaultGUISettings.activeButton.Color)
                 return;
 
-            ChangeActive(Active.InfoGreed);
+            ChangeActive(ActiveGrid.InfoGreed);
             var settings = files[pathToActiveFile].Settings;
             List<UIElement> elements = new(settings.numOfSettings);
 
@@ -184,9 +178,9 @@ namespace GUI {
             displayer.DisplayElemByRow(elements);
         }
 
-        private void ChangeActive(Active active) {
+        private void ChangeActive(ActiveGrid active) {
             switch (active) {
-                case Active.ViewGrid:
+                case ActiveGrid.ViewGrid:
                     viewGrid.Visibility = Visibility.Visible;
                     settingsGrid.Visibility = Visibility.Collapsed;
                     infoGrid.Visibility = Visibility.Collapsed;
@@ -194,7 +188,7 @@ namespace GUI {
                     settingsButton.Background = DefaultGUISettings.inactiveButton;
                     infoButton.Background = DefaultGUISettings.inactiveButton;
                     break;
-                case Active.SettingsGrid:
+                case ActiveGrid.SettingsGrid:
                     viewGrid.Visibility = Visibility.Collapsed;
                     settingsGrid.Visibility = Visibility.Visible;
                     infoGrid.Visibility = Visibility.Collapsed;
@@ -202,7 +196,7 @@ namespace GUI {
                     settingsButton.Background = DefaultGUISettings.activeButton;
                     infoButton.Background = DefaultGUISettings.inactiveButton;
                     break;
-                case Active.InfoGreed:
+                case ActiveGrid.InfoGreed:
                     viewGrid.Visibility = Visibility.Collapsed;
                     settingsGrid.Visibility = Visibility.Collapsed;
                     infoGrid.Visibility = Visibility.Visible;

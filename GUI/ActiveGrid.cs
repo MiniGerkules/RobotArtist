@@ -1,5 +1,5 @@
 ﻿namespace GUI {
-    internal enum Active {
+    internal enum ActiveGrid {
         ViewGrid,
         SettingsGrid,
         InfoGreed

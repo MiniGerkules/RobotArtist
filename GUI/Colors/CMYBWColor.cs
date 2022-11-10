@@ -1,16 +1,18 @@
 ﻿using System;
 using System.Linq;
-using System.Collections.Generic;
 using System.Windows.Media;
+using System.Collections.Generic;
 
-namespace GUI {
+using GeneralComponents;
+
+namespace GUI.Colors {
     /// <summary>
     /// The class describes a color based on cyan, magenta, yellow, blue and white.
     /// </summary>
     internal class CMYBWColor : PLTColor {
-        private static uint minColors = 5; // White/black pictures
-        private static uint maxColors = 8; // Color pictures
-        private uint cyan, magenta, yellow, blue, white;
+        private readonly static uint minColors = 5; // White/black pictures
+        private readonly static uint maxColors = 8; // Color pictures
+        private readonly uint cyan, magenta, yellow, blue, white;
 
         private (uint, uint, uint, uint, uint) GetColors() {
             return (cyan, magenta, yellow, blue, white);
@@ -18,7 +20,7 @@ namespace GUI {
 
         public CMYBWColor(string[] colors) {
             (cyan, magenta, yellow, blue, white) = colors.Select(elem => uint.Parse(elem)).ToArray() switch {
-                var arr when (minColors == arr.Length || arr.Length == maxColors) =>
+                var arr when minColors == arr.Length || arr.Length == maxColors =>
                                                                     (arr[0], arr[1], arr[2], arr[3], arr[4]),
                 _ => throw new ArgumentException("There isn't correct number of the colors!")
             };
@@ -49,11 +51,11 @@ namespace GUI {
 
             ColorMixType mixType = ColorMixType.MagentaYellow1;
             if (color.cyan + color.magenta + color.yellow > 0) {
-                if ((color.magenta > 0) && (color.yellow > 0 || color.cyan == 0)) {
+                if (color.magenta > 0 && (color.yellow > 0 || color.cyan == 0)) {
                     a = (double)color.magenta / (color.magenta + color.yellow);
                     mixType = a > 0.4 ? ColorMixType.MagentaYellow1 : ColorMixType.MagentaYellow2;
                 } else {
-                    if ((color.yellow > 0) && (color.cyan > 0 || color.magenta == 0)) {
+                    if (color.yellow > 0 && (color.cyan > 0 || color.magenta == 0)) {
                         a = (double)color.yellow / (color.cyan + color.yellow);
                         mixType = ColorMixType.YellowCyan;
                     } else {
@@ -72,24 +74,8 @@ namespace GUI {
             uint vTotal = hue + color.blue + color.white;
             c = (double)hue / vTotal;
 
-            List<List<double>> hsv;
-            List<List<double>> proportions;
-            if (mixType == ColorMixType.MagentaYellow1 || mixType == ColorMixType.MagentaYellow2) {
-                hsv = new(Database.Data[0].Count + Database.Data[1].Count);
-                hsv.AddRange(Database.Data[0].Select(elem => elem.GetRange(0, 3)));
-                hsv.ForEach(elem => elem[0] -= 1);
-                hsv.AddRange(Database.Data[1].Select(elem => elem.GetRange(0, 3)));
-
-                proportions = new(Database.Data[0].Count + Database.Data[1].Count);
-                proportions.AddRange(Database.Data[0].Select(elem => elem.GetRange(3, 3)));
-                proportions.AddRange(Database.Data[1].Select(elem => elem.GetRange(3, 3)));
-            } else {
-                hsv = new(Database.Data[(int)mixType].Count);
-                hsv.AddRange(Database.Data[(int)mixType].Select(elem => elem.GetRange(0, 3)));
-
-                proportions = new(Database.Data[(int)mixType].Count);
-                proportions.AddRange(Database.Data[(int)mixType].Select(elem => elem.GetRange(3, 3)));
-            }
+            var hsv = DatabaseLoader.Database.GetHSV(mixType);
+            var proportions = DatabaseLoader.Database.GetProportions(mixType);
 
             int numRows = hsv.Count;
             Matrix2D distances = new(numRows, 1);
@@ -105,8 +91,8 @@ namespace GUI {
             int numOfColors = Math.Min(250, numRows);
 
             Matrix2D D = (1 / distances.GetByIndexes(indexes[..numOfColors])).MakeDiag();
-            Matrix2D nearestPoints = new(Helpers.GetByIndexes(hsv, indexes[..numOfColors]));
-            Matrix2D propsOfNearestPoints = new(Helpers.GetByIndexes(proportions, indexes[..numOfColors]));
+            Matrix2D nearestPoints = new(hsv.GetByIndexes(indexes[..numOfColors]));
+            Matrix2D propsOfNearestPoints = new(proportions.GetByIndexes(indexes[..numOfColors]));
 
             Matrix2D E = new(numOfColors, 4, 0); // evaluated polynomial
             Matrix2D T = new(4, 3); // monomial orders
@@ -130,7 +116,7 @@ namespace GUI {
             }
 
             double[] hsvColor = new double[3];
-            Matrix2D hsvOfNearestPoints = new(Helpers.GetByIndexes(hsv, indexes[..numOfColors]));
+            Matrix2D hsvOfNearestPoints = new(hsv.GetByIndexes(indexes[..numOfColors]));
 
             for (int i = 0; i < hsvColor.Length; ++i) {
                 //Matrix coefs = E.Transpose() * E;
@@ -153,7 +139,7 @@ namespace GUI {
 
                     Matrix2D matrix = new(fir); // Need refactoring
                     Matrix2D mul = matrix ^ sec;
-                    p += (double)(mul);
+                    p += (double)mul;
                 }
 
                 hsvColor[i] = p;
@@ -165,7 +151,7 @@ namespace GUI {
             for (int i = 0; i < hsvColor.Length; ++i)
                 hsvColor[i] = Math.Min(Math.Max(hsvColor[i], 0), 1); // Get into ranges[0, 1]
 
-            HSVColor col = new HSVColor(hsvColor);
+            HSVColor col = new(hsvColor);
             return col;
         }
     }

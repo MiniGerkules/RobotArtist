@@ -87,9 +87,8 @@ namespace Algorithm {
                             int prevY = j; // pY
 
                             //meancol is [r, g, b], col is the same but in shape of 3d array like (0,0,k) element
-
-                            double[] meanColorPixel = Functions.getMeanColor( // #col? #meancol
-                                InitialImage, prevX, prevY, strokeBrush.smallThickness, 
+                            double[] meanColorPixel = Functions.getMeanColor( // col? meancol
+                                InitialImage, prevX, prevY, strokeBrush.smallThickness,
                                 strokeBrush.bsQuad, mSize, nSize);
                             double[] hsvMeanColorPixel = new double[meanColorPixel.Length];
                             for (int m = 0; m < meanColorPixel.Length; m++)

@@ -3,6 +3,9 @@ using System.IO;
 using System.Linq;
 using System.Collections.Generic;
 
+using GUI.Colors;
+using GeneralComponents;
+
 namespace GUI {
     /// <summary>
     /// The class describes the plt code decoder

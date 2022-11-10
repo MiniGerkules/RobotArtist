@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Algorithm", "Algorithm\Algo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestMatlabFunctionsAndOperations", "TestMatlabFunctionsAndOperations\TestMatlabFunctionsAndOperations.csproj", "{3A81E5A4-E8F0-4454-BE7C-989F49FE1CC4}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GeneralComponents", "GeneralComponents\GeneralComponents.csproj", "{6E8360A4-7844-4381-83D9-6D35556846A6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GeneralComponents", "GeneralComponents\GeneralComponents.csproj", "{5964BA5A-6743-4F55-9556-EA9B5A12D70D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,10 +29,10 @@ Global
 		{3A81E5A4-E8F0-4454-BE7C-989F49FE1CC4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3A81E5A4-E8F0-4454-BE7C-989F49FE1CC4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3A81E5A4-E8F0-4454-BE7C-989F49FE1CC4}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6E8360A4-7844-4381-83D9-6D35556846A6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6E8360A4-7844-4381-83D9-6D35556846A6}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6E8360A4-7844-4381-83D9-6D35556846A6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6E8360A4-7844-4381-83D9-6D35556846A6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5964BA5A-6743-4F55-9556-EA9B5A12D70D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5964BA5A-6743-4F55-9556-EA9B5A12D70D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5964BA5A-6743-4F55-9556-EA9B5A12D70D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5964BA5A-6743-4F55-9556-EA9B5A12D70D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

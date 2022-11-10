@@ -1,6 +1,6 @@
 ﻿using System.Windows.Media;
 
-namespace GUI {
+namespace GUI.Colors {
     internal abstract class PLTColor {
         public abstract Color ToColor();
     }
