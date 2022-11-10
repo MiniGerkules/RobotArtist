@@ -1,5 +1,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Algorithm;
+using GeneralComponents;
 namespace TestMatlabFunctionsAndOperations
 {
     [TestClass]
@@ -370,12 +371,12 @@ namespace TestMatlabFunctionsAndOperations
         [TestMethod]
         public void TestFunction_conv2_full()
         {
-            double[,] A = {
+            Matrix2D A = new Matrix2D(new List<List<double>>{
 
-                { 0.4732,   0.2214,   0.3632 },
-                { 0.2649,   0.8177,   0.4528 },
-                { 0.8845,   0.6648,   0.1139 }
-            };
+                new List<double>{ 0.4732,   0.2214,   0.3632 },
+                new List<double>{ 0.2649,   0.8177,   0.4528 },
+                new List<double>{ 0.8845,   0.6648,   0.1139 }
+            });
             double[,] B = {
                 { 0.467242,   0.929308,   0.066337,   0.714990 },
                 { 0.708175,   0.802291,   0.163014,   0.766517 },
@@ -390,9 +391,9 @@ namespace TestMatlabFunctionsAndOperations
                 { 0.458893,   1.401811,   2.276601,   1.834387,   0.876474,   0.200470 },
                 { 0.710912,   1.260911,   1.420542,   1.063268,   0.387361,   0.049080 },
             };
-            double[,] conv2result = Functions.conv2(A, B, "full");
-            int sizeX = A.GetLength(0) + B.GetLength(0) - 1;
-            int sizeY = A.GetLength(1) + B.GetLength(1) - 1;
+            Matrix2D conv2result = Functions.conv2(A, B, "full");
+            int sizeX = A.Rows + B.GetLength(0) - 1;
+            int sizeY = A.Columns + B.GetLength(1) - 1;
             Assert.AreEqual(sizeX, fullResult.GetLength(0), "amount of rows is wrong");
             Assert.AreEqual(sizeY, fullResult.GetLength(1), "amount of colomns is wrong");
             for (int i = 0; i < sizeX; i++)
@@ -407,12 +408,12 @@ namespace TestMatlabFunctionsAndOperations
         [TestMethod]
         public void TestFunction_conv2_same()
         {
-            double[,] A = {
+            Matrix2D A = new Matrix2D(new List<List<double>>{
 
-                { 0.4732,   0.2214,   0.3632 },
-                { 0.2649,   0.8177,   0.4528 },
-                { 0.8845,   0.6648,   0.1139 }
-            };
+                new List<double>{ 0.4732,   0.2214,   0.3632 },
+                new List<double>{ 0.2649,   0.8177,   0.4528 },
+                new List<double>{ 0.8845,   0.6648,   0.1139 }
+            });
             double[,] B = {
                 { 0.467242,   0.929308,   0.066337,   0.714990 },
                 { 0.708175,   0.802291,   0.163014,   0.766517 },
@@ -424,9 +425,9 @@ namespace TestMatlabFunctionsAndOperations
                 { 2.2937906491000004116642685403349,   1.963874567399999770955787425919,   1.6122367208000001337353523922502 },
                 { 1.5294693090999997853174363626749,   2.0920160898999999865566223888891,  1.3650301306999998995905798437889 } // first is 1.5295 because of rounds
             };
-            double[,] conv2result = Functions.conv2(A, B, "same");
-            int sizeX = A.GetLength(0);
-            int sizeY = A.GetLength(1);
+            Matrix2D conv2result = Functions.conv2(A, B, "same");
+            int sizeX = A.Rows;
+            int sizeY = A.Columns;
             Assert.AreEqual(sizeX, sameResult.GetLength(0), "amount of rows is wrong");
             Assert.AreEqual(sizeY, sameResult.GetLength(1), "amount of colomns is wrong");
             for (int i = 0; i < sizeX; i++)
@@ -441,14 +442,14 @@ namespace TestMatlabFunctionsAndOperations
         [TestMethod]
         public void TestFunction_conv2_replicate_squares()
         {
-            double[,] A = {
+            Matrix2D A = new Matrix2D(new List<List<double>>{
 
-                   { 17,   24,    1,    8,   15 },
-                   { 23,    5,    7,   14,   16 },
-                   {  4,    6,   13,   20,   22 },
-                   { 10,   12,   19,   21,    3 },
-                   { 11,   18,   25,    2,    9 }
-            };
+                   new List<double>{ 17,   24,    1,    8,   15 },
+                   new List<double>{ 23,    5,    7,   14,   16 },
+                   new List<double>{  4,    6,   13,   20,   22 },
+                   new List<double>{ 10,   12,   19,   21,    3 },
+                   new List<double>{ 11,   18,   25,    2,    9 }
+            });
             double[,] B = {
                 {  1,   2,  -1 },
                 {  0,   2,   3 },
@@ -461,9 +462,9 @@ namespace TestMatlabFunctionsAndOperations
                 { 66,   109,   175,    31,    80 },
                 { 98,   151,   147,    38,    92 }
             };
-            double[,] conv2result = Functions.conv2(A, B, "replicate");
-            int sizeX = A.GetLength(0);
-            int sizeY = A.GetLength(1);
+            Matrix2D conv2result = Functions.conv2(A, B, "replicate");
+            int sizeX = A.Rows;
+            int sizeY = A.Columns;
             Assert.AreEqual(sizeX, replicateResult.GetLength(0), "amount of rows is wrong");
             Assert.AreEqual(sizeY, replicateResult.GetLength(1), "amount of colomns is wrong");
             for (int i = 0; i < sizeX; i++)
@@ -478,12 +479,12 @@ namespace TestMatlabFunctionsAndOperations
         [TestMethod]
         public void TestFunction_conv2_same_int()
         {
-            double[,] A = {
-                   { 4,  8,  3,  1,  1 },
-                   { 7,  2,  8,  6,  9 },
-                   { 1,  5,  1,  5,  4 },
-                   { 3,  8,  8,  2,  5 }
-            };
+            Matrix2D A = new Matrix2D(new List<List<double>>{
+                   new List<double>{ 4,  8,  3,  1,  1 },
+                   new List<double>{ 7,  2,  8,  6,  9 },
+                   new List<double>{ 1,  5,  1,  5,  4 },
+                   new List<double>{ 3,  8,  8,  2,  5 }
+            });
             double[,] B = {
                   { 9,  6 },
                   { 8,  1 },
@@ -495,9 +496,9 @@ namespace TestMatlabFunctionsAndOperations
                   {  128,  147,   131,  177,  113 }, // incorrect all
                   {  71,   123,   105,   90,  76 }
             };
-            double[,] conv2result = Functions.conv2(A, B, "same");
-            int sizeX = A.GetLength(0);
-            int sizeY = A.GetLength(1);
+            Matrix2D conv2result = Functions.conv2(A, B, "same");
+            int sizeX = A.Rows;
+            int sizeY = A.Columns;
             Assert.AreEqual(sizeX, sameResult.GetLength(0), "amount of rows is wrong");
             Assert.AreEqual(sizeY, sameResult.GetLength(1), "amount of colomns is wrong");
             for (int i = 0; i < sizeX; i++)
@@ -512,12 +513,12 @@ namespace TestMatlabFunctionsAndOperations
         [TestMethod]
         public void TestFunction_conv2_replicate_int()
         {
-            double[,] A = {
-                   { 4,  8,  3,  1,  1 },
-                   { 7,  2,  8,  6,  9 },
-                   { 1,  5,  1,  5,  4 },
-                   { 3,  8,  8,  2,  5 }
-            };
+            Matrix2D A = new Matrix2D(new List<List<double>>{
+                   new List<double>{ 4,  8,  3,  1,  1 },
+                   new List<double>{ 7,  2,  8,  6,  9 },
+                   new List<double>{ 1,  5,  1,  5,  4 },
+                   new List<double>{ 3,  8,  8,  2,  5 }
+            });
             double[,] B = {
                   { 9,  6 },
                   { 8,  1 },
@@ -529,9 +530,9 @@ namespace TestMatlabFunctionsAndOperations
                   { 128,  147,  131,  177,  196 },
                   { 111,  163,  115,  115,  130 }
             };
-            double[,] conv2result = Functions.conv2(A, B, "replicate");
-            int sizeX = A.GetLength(0);
-            int sizeY = A.GetLength(1);
+            Matrix2D conv2result = Functions.conv2(A, B, "replicate");
+            int sizeX = A.Rows;
+            int sizeY = A.Columns;
             Assert.AreEqual(sizeX, replicateResult.GetLength(0), "amount of rows is wrong");
             Assert.AreEqual(sizeY, replicateResult.GetLength(1), "amount of colomns is wrong");
             for (int i = 0; i < sizeX; i++)
@@ -547,15 +548,15 @@ namespace TestMatlabFunctionsAndOperations
         [TestMethod]
         public void TestFunction_conv2_replicate_double() // don't pass with big round because rounds are not equal
         {
-            double[,] A = {
+            Matrix2D A = new Matrix2D(new List<List<double>>{
 
-                      { 0.629613,   0.754613,   0.782659,   0.725452,   0.297485,   0.594475,   0.183090 },
-                      { 0.736023,   0.792248,   0.026958,   0.275014,   0.796442,   0.694579,   0.177453 },
-                      { 0.560366,   0.569297,   0.311960,   0.428138,   0.646303,   0.470123,   0.096446 },
-                      { 0.320281,   0.311513,   0.073803,   0.944514,   0.457346,   0.663887,   0.128626 },
-                      { 0.579592,   0.412875,   0.521244,   0.060756,   0.133461,   0.744121,   0.086037 },
-                      { 0.369368,   0.944330,   0.071442,   0.040557,   0.931072,   0.788090,   0.152904 }
-            };
+                      new List<double>{ 0.629613,   0.754613,   0.782659,   0.725452,   0.297485,   0.594475,   0.183090 },
+                      new List<double>{ 0.736023,   0.792248,   0.026958,   0.275014,   0.796442,   0.694579,   0.177453 },
+                      new List<double>{ 0.560366,   0.569297,   0.311960,   0.428138,   0.646303,   0.470123,   0.096446 },
+                      new List<double>{ 0.320281,   0.311513,   0.073803,   0.944514,   0.457346,   0.663887,   0.128626 },
+                      new List<double>{ 0.579592,   0.412875,   0.521244,   0.060756,   0.133461,   0.744121,   0.086037 },
+                      new List<double>{ 0.369368,   0.944330,   0.071442,   0.040557,   0.931072,   0.788090,   0.152904 }
+            });
             double[,] B = {
                 { 0.2373,   0.7980 },
                 { 0.5794,   0.8573 },
@@ -569,9 +570,9 @@ namespace TestMatlabFunctionsAndOperations
                    { 1.5832,   1.7332,   1.2026,   0.9918,   2.4204,   1.5497,   0.4374 },
                    { 2.0594,   2.0367,   0.3256,   1.1957,   2.9074,   1.6175,   0.4894 }
             };
-            double[,] conv2result = Functions.conv2(A, B, "replicate");
-            int sizeX = A.GetLength(0);
-            int sizeY = A.GetLength(1);
+            Matrix2D conv2result = Functions.conv2(A, B, "replicate");
+            int sizeX = A.Rows;
+            int sizeY = A.Columns;
             Assert.AreEqual(sizeX, replicateResult.GetLength(0), "amount of rows is wrong");
             Assert.AreEqual(sizeY, replicateResult.GetLength(1), "amount of colomns is wrong");
             for (int i = 0; i < sizeX; i++)
