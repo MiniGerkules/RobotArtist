@@ -295,7 +295,7 @@ namespace GeneralComponents {
         /// </summary>
         /// <param name="first"> First matrix </param>
         /// <returns> The result of unary minus operation </returns>
-        public static Matrix2D operator -(Matrix2D first) => ByElem(first, Helpers.UnaryMinus);
+        public static Matrix2D operator -(Matrix2D first) => ByElem(first, MathFunctions.UnaryMinus);
 
 
         /// <summary>
