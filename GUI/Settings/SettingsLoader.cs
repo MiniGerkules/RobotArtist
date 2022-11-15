@@ -6,10 +6,7 @@ using System.Text.Json.Nodes;
 using System.Collections.Generic;
 
 namespace GUI.Settings {
-    internal class SettingsLoader {
-        private static string defaultConfDir = "configs";
-        private static string defaultFile = "default.json";
-
+    internal class SettingsLoader : SettingsManipulator {
         public static AlgorithmSettings LoadSettings() {
             OpenFileDialog fileDialog = new() {
                 Filter = "Algorithm settings|*.json",
@@ -55,13 +52,6 @@ namespace GUI.Settings {
             }
 
             return (AlgorithmSettings)constructor.Invoke(new object[] { values });
-        }
-
-        private static string GetPathToConfigsDir() {
-            string initDir = Assembly.GetExecutingAssembly().Location;
-            initDir = initDir.Remove(initDir.LastIndexOf(Path.DirectorySeparatorChar));
-
-            return Path.Combine(initDir, defaultConfDir);
         }
     }
 }
