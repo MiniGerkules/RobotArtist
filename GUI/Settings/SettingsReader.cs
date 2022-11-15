@@ -5,26 +5,31 @@ using System.Reflection;
 using System.Text.Json.Nodes;
 using System.Collections.Generic;
 
-namespace GUI {
-    internal class SettingsLoader {
-        public static AlgorithmSettings LoadSettings() {
-            OpenFileDialog fileDialog = new();
-            fileDialog.Filter = "Algorithm settings|*.json";
-
-            string initDir = Assembly.GetExecutingAssembly().Location;
-            initDir = initDir.Remove(initDir.LastIndexOf(Path.DirectorySeparatorChar));
-            fileDialog.InitialDirectory = Path.Combine(initDir, "configs");
-
+namespace GUI.Settings {
+    internal class SettingsReader : SettingsManipulator {
+        public static AlgorithmSettings ReadSettings() {
+            OpenFileDialog fileDialog = new() {
+                Filter = "Algorithm settings|*.json",
+                InitialDirectory = GetPathToConfigsDir(),
+            };
+            
             if (fileDialog.ShowDialog() == false)
-                throw new Exception("You don't choose the file with settings!");
+                return null;
 
-            string jsonContent = File.ReadAllText(fileDialog.FileName);
-            JsonNode json = JsonNode.Parse(jsonContent);
-
-            return ParseJSON(json);
+            return ReadSettingsFrom(fileDialog.FileName);
         }
 
-        private static AlgorithmSettings ParseJSON(JsonNode json) {
+        public static AlgorithmSettings ReadDefaultSettings() {
+            var pathToFile = GetPathToDefaultConf();
+
+            if (File.Exists(pathToFile)) return ReadSettingsFrom(pathToFile);
+            else return new();
+        }
+
+        private static AlgorithmSettings ReadSettingsFrom(string fileName) {
+            string jsonContent = File.ReadAllText(fileName);
+            var json = JsonNode.Parse(jsonContent);
+
             Type settingsType = typeof(AlgorithmSettings);
             var constructor = settingsType.GetConstructor(
                 BindingFlags.Instance | BindingFlags.Public,

@@ -8,6 +8,9 @@ using System.Windows.Controls;
 using System.Collections.Generic;
 using System.Windows.Media.Imaging;
 
+using GUI.PLT;
+using GUI.Settings;
+
 namespace GUI {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
@@ -24,6 +27,8 @@ namespace GUI {
         private readonly SettingsManager settingsManager;
 
         private readonly string pathToDatabase = @"resources/ModelTable600.xls";
+
+        private AlgorithmSettings curSettings = null;
 
         public MainWindow() {
             InitializeComponent();
@@ -108,7 +113,8 @@ namespace GUI {
         private void PLTFileHandler(string fileName) {
             List<Stroke> strokes = pltDecoder.Decode(fileName);
 
-            Picture picture = new(SettingsLoader.LoadSettings());
+            curSettings ??= SettingsReader.ReadDefaultSettings();
+            Picture picture = new(curSettings);
             picture.ProcessStrokes(strokes, pltDecoder.MaxX, pltDecoder.MaxY);
 
             pathToActiveFile = new(fileName);
@@ -146,13 +152,36 @@ namespace GUI {
             DisplayActiveBitmap(viewImage);
         }
 
-        private void SettingsClick(object sender, RoutedEventArgs e) {
+        private void EditCurPicSettings(object sender, RoutedEventArgs e) {
             if (pathToActiveFile == null || (settingsButton.Background as SolidColorBrush).Color == DefaultGUISettings.activeButton.Color)
                 return;
 
             ChangeActive(ActiveGrid.SettingsGrid);
             DisplayActiveBitmap(settingsImage);
             settingsManager.DisplaySettings(settingsFields, files[pathToActiveFile].Settings);
+        }
+
+        private void SaveCurrentSettings(object sender, RoutedEventArgs e) {
+            if (curSettings == null) return;
+            SettingsWriter.WriteSettings(curSettings);
+        }
+
+        private void LoadSettingsFromFile(object sender, RoutedEventArgs e) {
+            var newSettings = SettingsReader.ReadSettings();
+
+            if (newSettings != null)
+                curSettings = newSettings;
+            else
+                MessageBox.Show("You didn't choose the file!", "Error!", MessageBoxButton.OK);
+        }
+
+        private void SaveSettingsAsDefault(object sender, RoutedEventArgs e) {
+            if (curSettings != null)
+                SettingsWriter.WriteSettingsToDefaultConf(curSettings);
+        }
+
+        private void ResetSettings(object sender, RoutedEventArgs e) {
+            curSettings = SettingsReader.ReadDefaultSettings();
         }
 
         private void InfoClick(object sender, RoutedEventArgs e) {

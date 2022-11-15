@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using GUI.Colors;
 using GeneralComponents;
 
-namespace GUI {
+namespace GUI.PLT {
     /// <summary>
     /// The class describes the plt code decoder
     /// </summary>

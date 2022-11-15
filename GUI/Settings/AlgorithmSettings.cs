@@ -3,7 +3,7 @@ using System.Reflection;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace GUI {
+namespace GUI.Settings {
     internal class AlgorithmSettings : IEnumerable<(PropertyInfo, double)> {
         public double ItersMinOverlap { get; private set; } // Number of iterations
         public double MinOverlap { get; private set; }      // Minimum overlap coefficient
