@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Text.Json;
 using Microsoft.Win32;
+using System.Text.Json;
+using System.Collections.Generic;
 
 namespace GUI.Settings {
     internal class SettingsWriter : SettingsManipulator {
@@ -14,8 +14,22 @@ namespace GUI.Settings {
                 InitialDirectory = GetPathToConfigsDir(),
             };
 
-            if (saveDialog.ShowDialog() != true) return false;
+            if (saveDialog.ShowDialog() == true) {
+                WriteSettingsTo(saveDialog.FileName, settings);
+                return true;
+            } else {
+                return false;
+            }
+        }
 
+        public static void WriteSettingsToDefaultConf(AlgorithmSettings settings) {
+            if (settings == null) return;
+
+            var pathToFile = GetPathToDefaultConf();
+            WriteSettingsTo(pathToFile, settings);
+        }
+
+        private static void WriteSettingsTo(string pathToFile, AlgorithmSettings settings) {
             Dictionary<string, double> vals = new();
             var props = typeof(AlgorithmSettings).GetProperties();
             foreach (var prop in props)
@@ -23,9 +37,8 @@ namespace GUI.Settings {
 
             var options = new JsonSerializerOptions() { WriteIndented = true };
             var json = JsonSerializer.Serialize(vals, options);
-            File.WriteAllText(saveDialog.FileName, json);
 
-            return true;
+            File.WriteAllText(pathToFile, json);
         }
     }
 }
