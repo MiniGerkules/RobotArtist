@@ -24,6 +24,7 @@
             <MenuItem x:Name="viewButton" Header="Viewing" Click="ViewClick"/>
             <MenuItem x:Name="settingsButton" Header="Settings">
                 <MenuItem Header="Edit current picture settings" Click="EditCurPicSettings"/>
+                <MenuItem Header="Save settings to a file" Click="SaveCurrentSettings"/>
                 <MenuItem Header="Load settings from a file" Click="LoadSettingsFromFile"/>
             </MenuItem>
             <MenuItem x:Name="infoButton" Header="Information about the painting" Click="InfoClick"/>

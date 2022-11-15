@@ -161,6 +161,11 @@ namespace GUI {
             settingsManager.DisplaySettings(settingsFields, files[pathToActiveFile].Settings);
         }
 
+        private void SaveCurrentSettings(object sender, RoutedEventArgs e) {
+            if (curSettings == null) return;
+            SettingsWriter.WriteSettings(curSettings);
+        }
+
         private void LoadSettingsFromFile(object sender, RoutedEventArgs e) {
             var newSettings = SettingsLoader.LoadSettings();
 
