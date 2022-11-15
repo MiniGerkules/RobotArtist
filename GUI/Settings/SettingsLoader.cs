@@ -7,25 +7,33 @@ using System.Collections.Generic;
 
 namespace GUI.Settings {
     internal class SettingsLoader {
+        private static string defaultConfDir = "configs";
+        private static string defaultFile = "default.json";
+
         public static AlgorithmSettings LoadSettings() {
-            OpenFileDialog fileDialog = new();
-            fileDialog.Filter = "Algorithm settings|*.json";
-
-            string initDir = Assembly.GetExecutingAssembly().Location;
-            initDir = initDir.Remove(initDir.LastIndexOf(Path.DirectorySeparatorChar));
-            fileDialog.InitialDirectory = Path.Combine(initDir, "configs1");
-
+            OpenFileDialog fileDialog = new() {
+                Filter = "Algorithm settings|*.json",
+                InitialDirectory = GetPathToConfigsDir(),
+            };
+            
             if (fileDialog.ShowDialog() == false)
-                throw new Exception("You don't choose the file with settings!");
+                return null;
 
-            string jsonContent = File.ReadAllText(fileDialog.FileName);
-            JsonNode json = JsonNode.Parse(jsonContent);
-
+            var json = GetJsonFrom(fileDialog.FileName);
             return ParseJSON(json);
         }
 
         public static AlgorithmSettings LoadDefaultSettings() {
-            throw new NotImplementedException();
+            var pathToConfDir = GetPathToConfigsDir();
+            var fileName = Path.Combine(pathToConfDir, defaultFile);
+
+            if (File.Exists(fileName)) return ParseJSON(GetJsonFrom(fileName));
+            else return new();
+        }
+
+        private static JsonNode GetJsonFrom(string fileName) {
+            string jsonContent = File.ReadAllText(fileName);
+            return JsonNode.Parse(jsonContent);
         }
 
         private static AlgorithmSettings ParseJSON(JsonNode json) {
@@ -47,6 +55,13 @@ namespace GUI.Settings {
             }
 
             return (AlgorithmSettings)constructor.Invoke(new object[] { values });
+        }
+
+        private static string GetPathToConfigsDir() {
+            string initDir = Assembly.GetExecutingAssembly().Location;
+            initDir = initDir.Remove(initDir.LastIndexOf(Path.DirectorySeparatorChar));
+
+            return Path.Combine(initDir, defaultConfDir);
         }
     }
 }
