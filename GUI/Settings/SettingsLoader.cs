@@ -5,7 +5,7 @@ using System.Reflection;
 using System.Text.Json.Nodes;
 using System.Collections.Generic;
 
-namespace GUI {
+namespace GUI.Settings {
     internal class SettingsLoader {
         public static AlgorithmSettings LoadSettings() {
             OpenFileDialog fileDialog = new();
@@ -13,7 +13,7 @@ namespace GUI {
 
             string initDir = Assembly.GetExecutingAssembly().Location;
             initDir = initDir.Remove(initDir.LastIndexOf(Path.DirectorySeparatorChar));
-            fileDialog.InitialDirectory = Path.Combine(initDir, "configs");
+            fileDialog.InitialDirectory = Path.Combine(initDir, "configs1");
 
             if (fileDialog.ShowDialog() == false)
                 throw new Exception("You don't choose the file with settings!");
@@ -22,6 +22,10 @@ namespace GUI {
             JsonNode json = JsonNode.Parse(jsonContent);
 
             return ParseJSON(json);
+        }
+
+        public static AlgorithmSettings LoadDefaultSettings() {
+            throw new NotImplementedException();
         }
 
         private static AlgorithmSettings ParseJSON(JsonNode json) {
