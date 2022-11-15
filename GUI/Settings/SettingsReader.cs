@@ -16,24 +16,20 @@ namespace GUI.Settings {
             if (fileDialog.ShowDialog() == false)
                 return null;
 
-            var json = GetJsonFrom(fileDialog.FileName);
-            return ParseJSON(json);
+            return ReadSettingsFrom(fileDialog.FileName);
         }
 
         public static AlgorithmSettings ReadDefaultSettings() {
-            var pathToConfDir = GetPathToConfigsDir();
-            var fileName = Path.Combine(pathToConfDir, defaultFile);
+            var pathToFile = GetPathToDefaultConf();
 
-            if (File.Exists(fileName)) return ParseJSON(GetJsonFrom(fileName));
+            if (File.Exists(pathToFile)) return ReadSettingsFrom(pathToFile);
             else return new();
         }
 
-        private static JsonNode GetJsonFrom(string fileName) {
+        private static AlgorithmSettings ReadSettingsFrom(string fileName) {
             string jsonContent = File.ReadAllText(fileName);
-            return JsonNode.Parse(jsonContent);
-        }
+            var json = JsonNode.Parse(jsonContent);
 
-        private static AlgorithmSettings ParseJSON(JsonNode json) {
             Type settingsType = typeof(AlgorithmSettings);
             var constructor = settingsType.GetConstructor(
                 BindingFlags.Instance | BindingFlags.Public,
