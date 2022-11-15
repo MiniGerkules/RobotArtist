@@ -28,6 +28,8 @@ namespace GUI {
 
         private readonly string pathToDatabase = @"resources/ModelTable600.xls";
 
+        private AlgorithmSettings curSettings = null;
+
         public MainWindow() {
             InitializeComponent();
 
@@ -111,7 +113,8 @@ namespace GUI {
         private void PLTFileHandler(string fileName) {
             List<Stroke> strokes = pltDecoder.Decode(fileName);
 
-            Picture picture = new(SettingsLoader.LoadSettings());
+            curSettings ??= SettingsLoader.LoadDefaultSettings();
+            Picture picture = new(curSettings);
             picture.ProcessStrokes(strokes, pltDecoder.MaxX, pltDecoder.MaxY);
 
             pathToActiveFile = new(fileName);
@@ -149,13 +152,22 @@ namespace GUI {
             DisplayActiveBitmap(viewImage);
         }
 
-        private void SettingsClick(object sender, RoutedEventArgs e) {
+        private void EditCurPicSettings(object sender, RoutedEventArgs e) {
             if (pathToActiveFile == null || (settingsButton.Background as SolidColorBrush).Color == DefaultGUISettings.activeButton.Color)
                 return;
 
             ChangeActive(ActiveGrid.SettingsGrid);
             DisplayActiveBitmap(settingsImage);
             settingsManager.DisplaySettings(settingsFields, files[pathToActiveFile].Settings);
+        }
+
+        private void LoadSettingsFromFile(object sender, RoutedEventArgs e) {
+            var newSettings = SettingsLoader.LoadSettings();
+
+            if (newSettings != null)
+                curSettings = newSettings;
+            else
+                MessageBox.Show("You didn't choose the file!", "Error!", MessageBoxButton.OK);
         }
 
         private void InfoClick(object sender, RoutedEventArgs e) {
