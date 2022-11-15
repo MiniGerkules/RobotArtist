@@ -6,7 +6,7 @@ using System.Text.Json.Nodes;
 using System.Collections.Generic;
 
 namespace GUI.Settings {
-    internal class SettingsLoader : SettingsManipulator {
+    internal class SettingsReader : SettingsManipulator {
         public static AlgorithmSettings LoadSettings() {
             OpenFileDialog fileDialog = new() {
                 Filter = "Algorithm settings|*.json",
