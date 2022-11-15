@@ -113,7 +113,7 @@ namespace GUI {
         private void PLTFileHandler(string fileName) {
             List<Stroke> strokes = pltDecoder.Decode(fileName);
 
-            curSettings ??= SettingsReader.LoadDefaultSettings();
+            curSettings ??= SettingsReader.ReadDefaultSettings();
             Picture picture = new(curSettings);
             picture.ProcessStrokes(strokes, pltDecoder.MaxX, pltDecoder.MaxY);
 
@@ -167,7 +167,7 @@ namespace GUI {
         }
 
         private void LoadSettingsFromFile(object sender, RoutedEventArgs e) {
-            var newSettings = SettingsReader.LoadSettings();
+            var newSettings = SettingsReader.ReadSettings();
 
             if (newSettings != null)
                 curSettings = newSettings;

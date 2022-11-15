@@ -7,7 +7,7 @@ using System.Collections.Generic;
 
 namespace GUI.Settings {
     internal class SettingsReader : SettingsManipulator {
-        public static AlgorithmSettings LoadSettings() {
+        public static AlgorithmSettings ReadSettings() {
             OpenFileDialog fileDialog = new() {
                 Filter = "Algorithm settings|*.json",
                 InitialDirectory = GetPathToConfigsDir(),
@@ -20,7 +20,7 @@ namespace GUI.Settings {
             return ParseJSON(json);
         }
 
-        public static AlgorithmSettings LoadDefaultSettings() {
+        public static AlgorithmSettings ReadDefaultSettings() {
             var pathToConfDir = GetPathToConfigsDir();
             var fileName = Path.Combine(pathToConfDir, defaultFile);
 
