@@ -175,6 +175,15 @@ namespace GUI {
                 MessageBox.Show("You didn't choose the file!", "Error!", MessageBoxButton.OK);
         }
 
+        private void SaveSettingsAsDefault(object sender, RoutedEventArgs e) {
+            if (curSettings != null)
+                SettingsWriter.WriteSettingsToDefaultConf(curSettings);
+        }
+
+        private void ResetSettings(object sender, RoutedEventArgs e) {
+            curSettings = SettingsReader.ReadDefaultSettings();
+        }
+
         private void InfoClick(object sender, RoutedEventArgs e) {
             if (pathToActiveFile == null || (infoButton.Background as SolidColorBrush).Color == DefaultGUISettings.activeButton.Color)
                 return;
