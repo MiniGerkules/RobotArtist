@@ -3,9 +3,12 @@ using System.Windows.Media;
 using System.Collections.Generic;
 using System.Windows.Media.Imaging;
 
+using GUI.PLT;
 using GUI.Colors;
+using GUI.Settings;
 
-namespace GUI {
+namespace GUI
+{
     internal class Picture {
         public List<(GeometryGroup, Pen)> Strokes { get; private set; } = new();
         public BitmapSource RenderedPicture { get; private set; } = null;

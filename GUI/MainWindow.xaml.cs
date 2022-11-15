@@ -8,6 +8,9 @@ using System.Windows.Controls;
 using System.Collections.Generic;
 using System.Windows.Media.Imaging;
 
+using GUI.PLT;
+using GUI.Settings;
+
 namespace GUI {
     /// <summary>
     /// Interaction logic for MainWindow.xaml

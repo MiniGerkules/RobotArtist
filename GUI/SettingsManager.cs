@@ -4,6 +4,8 @@ using System.Reflection;
 using System.Windows.Controls;
 using System.Collections.Generic;
 
+using GUI.Settings;
+
 namespace GUI {
     using ApplySettingsEvent = Action<AlgorithmSettings, bool>;
 
