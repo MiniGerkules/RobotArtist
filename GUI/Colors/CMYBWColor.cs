@@ -88,7 +88,7 @@ namespace GUI.Colors {
             }
 
             int[] indexes = distances.GetIndexesForSorted();
-            int numOfColors = Math.Min(250, numRows);
+            int numOfColors = Math.Min(20, numRows);
 
             Matrix2D D = (1 / distances.GetByIndexes(indexes[..numOfColors])).MakeDiag();
             Matrix2D nearestPoints = new(hsv.GetByIndexes(indexes[..numOfColors]));
