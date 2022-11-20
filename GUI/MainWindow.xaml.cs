@@ -26,7 +26,7 @@ namespace GUI {
         private readonly PLTDecoder pltDecoder = new();
         private readonly SettingsManager settingsManager;
 
-        private readonly string pathToDatabase = @"resources/ModelTable600.xls";
+        private readonly string pathToDatabase = @"resources/ModelTable600_initial.xls";
 
         private AlgorithmSettings curSettings = null;
 
