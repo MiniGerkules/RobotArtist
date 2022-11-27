@@ -76,8 +76,10 @@ namespace GUI.PLT {
 
         private void NewDecode() {
             decodedPlt.Clear();
+
             lastPoint = null;
             curColor = null;
+
             MaxX = 0;
             MaxY = 0;
         }
