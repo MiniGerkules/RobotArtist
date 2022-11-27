@@ -90,7 +90,7 @@ namespace GUI {
             return false;
         }
 
-        private void AddNewOpenedFile(string fileName) {
+        private void AddNewOpenedFile(in string fileName) {
             OpenedFile file = new(fileName, ChangeFile, CloseActiveFile);
 
             openedFiles.Children.Add(file);
