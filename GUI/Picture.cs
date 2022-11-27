@@ -7,8 +7,7 @@ using GUI.PLT;
 using GUI.Colors;
 using GUI.Settings;
 
-namespace GUI
-{
+namespace GUI {
     internal class Picture {
         public BitmapSource RenderedPicture { get; private set; } = null;
         public AlgorithmSettings Settings { get; private set; }
