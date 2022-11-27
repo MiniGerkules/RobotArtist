@@ -10,7 +10,6 @@ using GUI.Settings;
 namespace GUI
 {
     internal class Picture {
-        public List<(GeometryGroup, Pen)> Strokes { get; private set; } = new();
         public BitmapSource RenderedPicture { get; private set; } = null;
         public AlgorithmSettings Settings { get; private set; }
 
@@ -29,6 +28,7 @@ namespace GUI
         public void ProcessStrokes(List<Stroke> strokes, double width, double height) {
             Width = width;
             Height = height;
+            savedStrokes = strokes;
 
             DrawingVisual image = BuildImage(strokes);
             RenderBitmap(image);
@@ -40,16 +40,7 @@ namespace GUI
         public void Redraw(AlgorithmSettings newSettings) {
             Settings = newSettings;
 
-            DrawingVisual image = new();
-            DrawingContext context = image.RenderOpen();
-            SetBackground(context, Brushes.White);
-
-            foreach (var (geometry, pen) in Strokes) {
-                pen.Thickness = Settings.BrushWidth;
-                context.DrawGeometry(null, pen, geometry);
-            }
-
-            context.Close();
+            var image = BuildImage(savedStrokes);
             RenderBitmap(image);
             RestoreRotationAngle(angleOfRotation);
 
@@ -84,23 +75,23 @@ namespace GUI
 
         private DrawingVisual BuildImage(List<Stroke> strokes) {
             DrawingVisual image = new();
-            Strokes.Capacity = strokes.Count;
             DrawingContext context = image.RenderOpen();
-
             SetBackground(context, Brushes.White);
-            UpdateColor(out Pen pen, out var geometry, strokes[0].StroceColor, out var lastColor);
-            for (int i = 0; i < strokes.Count; ++i) {
-                if (strokes[i].StroceColor != lastColor) {
-                    context.DrawGeometry(null, pen, geometry);
-                    Strokes.Add((geometry, pen));
-                    UpdateColor(out pen, out geometry, strokes[i].StroceColor, out lastColor);
+            UpdateColor(out var pen, out var geometry, strokes[0].StroceColor, out var lastColor);
+
+            lock (mutex) {
+                savedStrokes.Capacity = strokes.Count;
+                for (int i = 0; i < strokes.Count; ++i) {
+                    if (strokes[i].StroceColor != lastColor) {
+                        context.DrawGeometry(null, pen, geometry);
+                        UpdateColor(out pen, out geometry, strokes[i].StroceColor, out lastColor);
+                    }
+
+                    geometry.Children.Add(GetLineGeometry(strokes[i]));
                 }
 
-                geometry.Children.Add(GetLineGeometry(strokes[i]));
+                context.DrawGeometry(null, pen, geometry);
             }
-
-            context.DrawGeometry(null, pen, geometry);
-            Strokes.Add((geometry, pen));
 
             context.Close();
             return image;
