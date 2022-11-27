@@ -10,6 +10,7 @@ using System.Windows.Media.Imaging;
 
 using GUI.PLT;
 using GUI.Settings;
+using System.Threading.Tasks;
 
 namespace GUI {
     /// <summary>
@@ -25,13 +26,13 @@ namespace GUI {
 
         private readonly PLTDecoder pltDecoder = new();
         private readonly SettingsManager settingsManager;
+        private AlgorithmSettings curSettings = null;
 
         private readonly string pathToDatabase = @"resources/ModelTable600_initial.xls";
 
-        private AlgorithmSettings curSettings = null;
-
         public MainWindow() {
             InitializeComponent();
+            progressBar.DataContext = pltDecoder;
 
             mainMenu.Background = DefaultGUISettings.menuColor;
             SetInactive();
@@ -75,9 +76,9 @@ namespace GUI {
                 return;
             }
 
-            AddNewOpenedFile(fileName);
-            ChangeActive(ActiveGrid.ViewGrid);
-            DisplayActiveBitmap(viewImage);
+            //AddNewOpenedFile(fileName);
+            //ChangeActive(ActiveGrid.ViewGrid);
+            //DisplayActiveBitmap(viewImage);
         }
 
         private bool IsFileAlreadyOpened(string file) {
@@ -89,7 +90,7 @@ namespace GUI {
             return false;
         }
 
-        private void AddNewOpenedFile(string fileName) {
+        private void AddNewOpenedFile(in string fileName) {
             OpenedFile file = new(fileName, ChangeFile, CloseActiveFile);
 
             openedFiles.Children.Add(file);
@@ -110,15 +111,24 @@ namespace GUI {
             DisplayActiveBitmap(viewImage);
         }
 
-        private void PLTFileHandler(string fileName) {
-            List<Stroke> strokes = pltDecoder.Decode(fileName);
+        private async void PLTFileHandler(string fileName) {
+            status.Text = "Process PLT file";
+            var strokes = Task.Run(() => pltDecoder.Decode(fileName));
 
             curSettings ??= SettingsReader.ReadDefaultSettings();
             Picture picture = new(curSettings);
-            picture.ProcessStrokes(strokes, pltDecoder.MaxX, pltDecoder.MaxY);
+
+            status.Text = "Render image from PLT file";
+            await Task.Run(async () => picture.ProcessStrokes(await strokes, pltDecoder.MaxX, pltDecoder.MaxY));
 
             pathToActiveFile = new(fileName);
             files[pathToActiveFile] = picture;
+
+            AddNewOpenedFile(fileName);
+            ChangeActive(ActiveGrid.ViewGrid);
+            DisplayActiveBitmap(viewImage);
+
+            status.Text = "";
         }
 
         private void ImageFileHandler(string fileName) {
@@ -251,9 +261,9 @@ namespace GUI {
             settingsImage.Source = null;
         }
 
-        private void ApplySettings(AlgorithmSettings settedSettings, bool changed) {
+        private async void ApplySettings(AlgorithmSettings settedSettings, bool changed) {
             if (changed) {
-                files[pathToActiveFile].Redraw(settedSettings);
+                await Task.Run(() => files[pathToActiveFile].Redraw(settedSettings));
                 DisplayActiveBitmap(settingsImage);
             }
         }
