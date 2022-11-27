@@ -11,6 +11,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="26"/>
             <RowDefinition/>
+            <RowDefinition Height="30"/>
         </Grid.RowDefinitions>
 
         <Menu x:Name="mainMenu" Grid.Row="0" Grid.Column="0" VerticalAlignment="Top" FontSize="16">
@@ -73,5 +74,39 @@
         </Grid>
 
         <Grid x:Name="infoGrid" Visibility="Collapsed" Grid.Row="1" Grid.Column="0"/>
+
+        <!--<Grid x:Name="footer" Grid.Row="2" Grid.Column="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+
+            <TextBlock x:Name="status" Grid.Row="0" Grid.Column="0"/>
+            <ProgressBar x:Name="progressBar" Grid.Row="0" Grid.Column="1"
+                         Minimum="0" Maximum="100" Value="{Binding CurPercentOfProcessing, Mode=OneWay}"/>
+        </Grid>-->
+
+        <StatusBar x:Name="footer" Grid.Row="2" Grid.Column="0">
+            <StatusBar.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+                    </Grid>
+                </ItemsPanelTemplate>
+            </StatusBar.ItemsPanel>
+
+            <StatusBarItem Grid.Column="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+                <TextBlock x:Name="status"/>
+            </StatusBarItem>
+            <Separator Grid.Column="1"/>
+            <StatusBarItem Grid.Column="2" VerticalContentAlignment="Stretch" HorizontalContentAlignment="Stretch">
+                <ProgressBar x:Name="progressBar" Minimum="0" Maximum="100"
+                             Value="{Binding CurPercentOfProcessing, Mode=OneWay}"/>
+            </StatusBarItem>
+        </StatusBar>
     </Grid>
 </Window>
