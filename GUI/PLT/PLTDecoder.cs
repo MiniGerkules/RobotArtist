@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
 using GUI.Colors;
-using GeneralComponents;
 
 namespace GUI.PLT {
     /// <summary>
