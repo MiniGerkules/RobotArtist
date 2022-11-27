@@ -13,10 +13,14 @@ namespace GUI
         public List<(GeometryGroup, Pen)> Strokes { get; private set; } = new();
         public BitmapSource RenderedPicture { get; private set; } = null;
         public AlgorithmSettings Settings { get; private set; }
-        private ushort angle = 0;
 
         public double Width { get; private set; }
         public double Height { get; private set; }
+
+        private readonly object mutex = new();
+        private List<Stroke> savedStrokes = new();
+
+        private ushort angleOfRotation = 0;
 
         public Picture(AlgorithmSettings settings) {
             Settings = settings;
@@ -28,7 +32,9 @@ namespace GUI
 
             DrawingVisual image = BuildImage(strokes);
             RenderBitmap(image);
-            strokes.Clear();
+
+            if (RenderedPicture.CanFreeze)
+                RenderedPicture.Freeze();
         }
 
         public void Redraw(AlgorithmSettings newSettings) {
@@ -45,11 +51,14 @@ namespace GUI
 
             context.Close();
             RenderBitmap(image);
-            RestoreRotationAngle(angle);
+            RestoreRotationAngle(angleOfRotation);
+
+            if (RenderedPicture.CanFreeze)
+                RenderedPicture.Freeze();
         }
 
         public void Rotate() {
-            angle = (ushort)((angle + 90) % 360);
+            angleOfRotation = (ushort)((angleOfRotation + 90) % 360);
             RestoreRotationAngle(90);
         }
 
