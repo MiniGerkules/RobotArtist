@@ -42,7 +42,7 @@ namespace GUI.PLT {
         /// <summary>
         /// The method decodes the plt code passed in the string
         /// </summary>
-        /// <param name="fileName"> Path to the file with plt code </param>
+        /// <param name="fileName"> The path to plt file that should decode </param>
         /// <returns> List of strokes with specified colors </returns>
         public List<Stroke> Decode(in string fileName) {
             NewDecode();
@@ -84,7 +84,7 @@ namespace GUI.PLT {
             MaxY = 0;
         }
 
-        private void ProcessPart(string part) {
+        private void ProcessPart(in string part) {
             switch (part[..2]) {
                 case "PP":
                     curColor = new CMYBWColor(part[2..].Split(','));
@@ -103,7 +103,7 @@ namespace GUI.PLT {
             }
         }
 
-        private void ProcessPDCommand(string command) {
+        private void ProcessPDCommand(in string command) {
             if (curColor == null)
                 throw new ArgumentException("Invalid plt code. Color don't set before painting!");
 
