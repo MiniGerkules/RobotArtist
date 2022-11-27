@@ -1,7 +1,10 @@
 using System;
 using System.IO;
 using System.Linq;
+using GeneralComponents;
+using System.ComponentModel;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 using GUI.Colors;
 using GeneralComponents;
@@ -10,14 +13,32 @@ namespace GUI.PLT {
     /// <summary>
     /// The class describes the plt code decoder
     /// </summary>
-    class PLTDecoder {
-        public readonly static uint numTicksInMM = 40;
+    class PLTDecoder : INotifyPropertyChanged {
+        private readonly static uint numTicksInMM = 40; // Characteristic of PLT format
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
         public uint MaxX { get; private set; } = 0;
         public uint MaxY { get; private set; } = 0;
+
+        public byte curPercent = 0;
+        public byte CurPercentOfProcessing {
+            get => curPercent;
+            private set {
+                if (0 <= value && value <= 100) {
+                    curPercent = value;
+                    NotifyPropertyChanged(nameof(CurPercentOfProcessing));
+                }
+            }
+        }
 
         private readonly List<Stroke> decodedPlt = new();
         private Point2D? lastPoint = null;
         private PLTColor curColor = null;
+
+        private void NotifyPropertyChanged([CallerMemberName] string propertyName = "") {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
 
         /// <summary>
         /// The method decodes the plt code passed in the string
