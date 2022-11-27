@@ -76,9 +76,9 @@ namespace GUI {
                 return;
             }
 
-            AddNewOpenedFile(fileName);
-            ChangeActive(ActiveGrid.ViewGrid);
-            DisplayActiveBitmap(viewImage);
+            //AddNewOpenedFile(fileName);
+            //ChangeActive(ActiveGrid.ViewGrid);
+            //DisplayActiveBitmap(viewImage);
         }
 
         private bool IsFileAlreadyOpened(string file) {
@@ -111,15 +111,24 @@ namespace GUI {
             DisplayActiveBitmap(viewImage);
         }
 
-        private void PLTFileHandler(string fileName) {
-            List<Stroke> strokes = pltDecoder.Decode(fileName);
+        private async void PLTFileHandler(string fileName) {
+            status.Text = "Process PLT file";
+            var strokes = Task.Run(() => pltDecoder.Decode(fileName));
 
             curSettings ??= SettingsReader.ReadDefaultSettings();
             Picture picture = new(curSettings);
-            picture.ProcessStrokes(strokes, pltDecoder.MaxX, pltDecoder.MaxY);
+
+            status.Text = "Render image from PLT file";
+            await Task.Run(async () => picture.ProcessStrokes(await strokes, pltDecoder.MaxX, pltDecoder.MaxY));
 
             pathToActiveFile = new(fileName);
             files[pathToActiveFile] = picture;
+
+            AddNewOpenedFile(fileName);
+            ChangeActive(ActiveGrid.ViewGrid);
+            DisplayActiveBitmap(viewImage);
+
+            status.Text = "";
         }
 
         private void ImageFileHandler(string fileName) {
@@ -252,9 +261,9 @@ namespace GUI {
             settingsImage.Source = null;
         }
 
-        private void ApplySettings(AlgorithmSettings settedSettings, bool changed) {
+        private async void ApplySettings(AlgorithmSettings settedSettings, bool changed) {
             if (changed) {
-                files[pathToActiveFile].Redraw(settedSettings);
+                await Task.Run(() => files[pathToActiveFile].Redraw(settedSettings));
                 DisplayActiveBitmap(settingsImage);
             }
         }
