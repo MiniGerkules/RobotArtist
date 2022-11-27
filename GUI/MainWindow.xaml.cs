@@ -10,6 +10,7 @@ using System.Windows.Media.Imaging;
 
 using GUI.PLT;
 using GUI.Settings;
+using System.Threading.Tasks;
 
 namespace GUI {
     /// <summary>
@@ -25,13 +26,13 @@ namespace GUI {
 
         private readonly PLTDecoder pltDecoder = new();
         private readonly SettingsManager settingsManager;
+        private AlgorithmSettings curSettings = null;
 
         private readonly string pathToDatabase = @"resources/ModelTable600_initial.xls";
 
-        private AlgorithmSettings curSettings = null;
-
         public MainWindow() {
             InitializeComponent();
+            progressBar.DataContext = pltDecoder;
 
             mainMenu.Background = DefaultGUISettings.menuColor;
             SetInactive();
