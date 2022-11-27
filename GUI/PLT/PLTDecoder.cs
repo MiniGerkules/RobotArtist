@@ -44,26 +44,33 @@ namespace GUI.PLT {
         /// </summary>
         /// <param name="fileName"> Path to the file with plt code </param>
         /// <returns> List of strokes with specified colors </returns>
-        public List<Stroke> Decode(string fileName) {
-            using (StreamReader reader = new(fileName)) {
-                string line = reader.ReadLine();
+        public List<Stroke> Decode(in string fileName) {
+            NewDecode();
 
-                if (line == null || line == "")
-                    throw new ArgumentException("ERROR! PLT file is empty!");
-                if (line.Length <= 2 || line[..2].ToLower() != "in")
-                    throw new ArgumentException("ERROR! Invalid code. PLT-code should start with [IN] operator!");
-
-                NewDecode();
-                line = line[^1] == ';' ? line[3..(line.Length - 1)] : line[3..];
-
-                do {
-                    foreach (string part in line.Split(';'))
-                        ProcessPart(part);
-
-                    line = reader.ReadLine();
-                } while (line != null);
+            string pltCode;
+            try {
+                pltCode = File.ReadAllText(fileName);
+            } catch (Exception) {
+                throw new Exception("ERROR! Can't read the file!");
             }
 
+            pltCode = pltCode.Trim();
+            if (!pltCode.StartsWith("in;", true, null))
+                throw new Exception("ERROR! PLT-code should start with [IN] operator!");
+            if (pltCode[^1] != ';')
+                throw new Exception("ERROR! PLT file have to end with ';' character!");
+
+            int curPos = 3;
+            // Start from 3 to cut [IN] operator
+            for (int endPos = pltCode.Length; curPos < endPos; ++curPos) {
+                CurPercentOfProcessing = (byte)((curPos+1)*100 / endPos); // +1 to get 100 percent at the last iteration
+                int startPosition = curPos;
+
+                curPos = pltCode.IndexOf(';', startPosition);
+                ProcessPart(pltCode[startPosition..curPos]);
+            }
+
+            CurPercentOfProcessing = 100;
             return decodedPlt;
         }
 
