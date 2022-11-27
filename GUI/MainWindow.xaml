@@ -7,6 +7,37 @@
         mc:Ignorable="d"
         Title="RobotArtist" Height="450" Width="800" MinHeight="375" MinWidth="450"
         WindowState="Maximized" Loaded="WindowLoaded">
+
+    <Window.Resources>
+        <Style TargetType="TextBlock">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Margin" Value="5"/>
+        </Style>
+
+        <Style TargetType="TextBox">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Margin" Value="5"/>
+        </Style>
+
+        <Style TargetType="MenuItem">
+            <Setter Property="FontSize" Value="14"/>
+        </Style>
+
+        <Style TargetType="ProgressBar">
+            <Setter Property="Margin" Value="2.5"/>
+        </Style>
+
+        <Style TargetType="StatusBar">
+            <Setter Property="Margin" Value="2.5 2.5 2.5 2.5"/>
+            <Style.Resources>
+                <Style TargetType="TextBlock">
+                    <Setter Property="FontSize" Value="14"/>
+                </Style>
+                <Style TargetType="ProgressBar"/>
+            </Style.Resources>
+        </Style>
+    </Window.Resources>
+
     <Grid x:Name="mainGrid">
         <Grid.RowDefinitions>
             <RowDefinition Height="26"/>
@@ -14,7 +45,7 @@
             <RowDefinition Height="30"/>
         </Grid.RowDefinitions>
 
-        <Menu x:Name="mainMenu" Grid.Row="0" Grid.Column="0" VerticalAlignment="Top" FontSize="16">
+        <Menu x:Name="mainMenu" Grid.Row="0" Grid.Column="0" VerticalAlignment="Top">
             <MenuItem Header="File">
                 <MenuItem x:Name="openButton" Header="Open" Command="Open"/>
                 <MenuItem Header="Save" Click="SaveFileClick"/>
