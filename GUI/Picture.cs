@@ -16,7 +16,7 @@ namespace GUI {
         public double Height { get; private set; }
 
         private readonly object mutex = new();
-        private List<Stroke> savedStrokes = new();
+        private readonly List<Stroke> savedStrokes = new();
 
         private ushort angleOfRotation = 0;
 
