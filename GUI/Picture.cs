@@ -16,20 +16,20 @@ namespace GUI {
         public double Height { get; private set; }
 
         private readonly object mutex = new();
-        private List<Stroke> savedStrokes = new();
+        private readonly List<Stroke> savedStrokes = new();
 
         private ushort angleOfRotation = 0;
 
-        public Picture(AlgorithmSettings settings) {
+        public Picture(AlgorithmSettings settings, List<Stroke> strokes, double width, double height) {
             Settings = settings;
-        }
-
-        public void ProcessStrokes(List<Stroke> strokes, double width, double height) {
-            Width = width;
-            Height = height;
             savedStrokes = strokes;
 
-            DrawingVisual image = BuildImage(strokes);
+            Width = width;
+            Height = height;
+        }
+
+        public void ProcessStrokes() {
+            DrawingVisual image = BuildImage(savedStrokes);
             RenderBitmap(image);
 
             if (RenderedPicture.CanFreeze)
