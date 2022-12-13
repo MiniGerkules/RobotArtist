@@ -157,20 +157,46 @@ namespace GUI {
         }
 
         private void ViewClick(object sender, RoutedEventArgs e) {
-            if (pathToActiveFile == null || (viewButton.Background as SolidColorBrush).Color == DefaultGUISettings.activeButton.Color)
+            if (pathToActiveFile == null || activeGrid == ActiveGrid.ViewGrid)
                 return;
 
-            ChangeActive(ActiveGrid.ViewGrid);
+            activeGrid = ActiveGrid.ViewGrid;
+            ChangeActive();
             DisplayActiveBitmap(viewImage);
         }
 
         private void EditCurPicSettings(object sender, RoutedEventArgs e) {
-            if (pathToActiveFile == null || (settingsButton.Background as SolidColorBrush).Color == DefaultGUISettings.activeButton.Color)
+            if (pathToActiveFile == null || activeGrid == ActiveGrid.SettingsGrid)
                 return;
 
-            ChangeActive(ActiveGrid.SettingsGrid);
+            activeGrid = ActiveGrid.SettingsGrid;
+            ChangeActive();
             DisplayActiveBitmap(settingsImage);
             settingsManager.DisplaySettings(settingsFields, files[pathToActiveFile].Settings);
+        }
+
+        private void InfoClick(object sender, RoutedEventArgs e) {
+            if (pathToActiveFile == null || activeGrid == ActiveGrid.InfoGreed)
+                return;
+
+            activeGrid = ActiveGrid.InfoGreed;
+            ChangeActive();
+            var settings = files[pathToActiveFile].Settings;
+            List<UIElement> elements = new(settings.numOfSettings);
+
+            string width = "Width (mm) = " + files[pathToActiveFile].Width.ToString();
+            string height = "Height (mm) = " + files[pathToActiveFile].Height.ToString();
+            elements.Add(Helpers.CreateTextBlock(width, HorizontalAlignment.Center, new()));
+            elements.Add(Helpers.CreateTextBlock(height, HorizontalAlignment.Center, new()));
+
+            foreach (var pair in settings) {
+                string text = AlgorithmSettings.GetPropertyDesc(pair.Item1) + " = " + pair.Item2.ToString();
+                elements.Add(Helpers.CreateTextBlock(text, HorizontalAlignment.Center, new()));
+            }
+
+            GridDisplayer displayer = new(infoGrid);
+            displayer.Reset();
+            displayer.DisplayElemByRow(elements);
         }
 
         private void SaveCurrentSettings(object sender, RoutedEventArgs e) {
