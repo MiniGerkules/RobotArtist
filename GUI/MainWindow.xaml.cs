@@ -28,7 +28,8 @@ namespace GUI {
         private readonly SettingsManager settingsManager;
         private AlgorithmSettings curSettings = null;
 
-        private readonly string pathToDatabase = @"resources/ModelTable600_initial.xls";
+        private static readonly string pathToDatabase = @"resources/ModelTable600_initial.xls";
+        private ActiveGrid activeGrid = ActiveGrid.NoActive;
 
         public MainWindow() {
             InitializeComponent();
@@ -106,8 +107,9 @@ namespace GUI {
         }
 
         private void UpdateOutputImage(string fileName) {
-            ChangeActive(ActiveGrid.ViewGrid);
             pathToActiveFile = fileName;
+            activeGrid = ActiveGrid.ViewGrid;
+            ChangeActive();
             DisplayActiveBitmap(viewImage);
         }
 
@@ -123,12 +125,12 @@ namespace GUI {
 
             pathToActiveFile = new(fileName);
             files[pathToActiveFile] = picture;
+            status.Text = "";
 
             AddNewOpenedFile(fileName);
-            ChangeActive(ActiveGrid.ViewGrid);
+            activeGrid = ActiveGrid.ViewGrid;
+            ChangeActive();
             DisplayActiveBitmap(viewImage);
-
-            status.Text = "";
         }
 
         private void ImageFileHandler(string fileName) {
@@ -194,31 +196,8 @@ namespace GUI {
             curSettings = SettingsReader.ReadDefaultSettings();
         }
 
-        private void InfoClick(object sender, RoutedEventArgs e) {
-            if (pathToActiveFile == null || (infoButton.Background as SolidColorBrush).Color == DefaultGUISettings.activeButton.Color)
-                return;
-
-            ChangeActive(ActiveGrid.InfoGreed);
-            var settings = files[pathToActiveFile].Settings;
-            List<UIElement> elements = new(settings.numOfSettings);
-
-            string width = "Width (mm) = " + files[pathToActiveFile].Width.ToString();
-            string height = "Height (mm) = " + files[pathToActiveFile].Height.ToString();
-            elements.Add(Helpers.CreateTextBlock(width, HorizontalAlignment.Center, new()));
-            elements.Add(Helpers.CreateTextBlock(height, HorizontalAlignment.Center, new()));
-
-            foreach (var pair in settings) {
-                string text = AlgorithmSettings.GetPropertyDesc(pair.Item1) + " = " + pair.Item2.ToString();
-                elements.Add(Helpers.CreateTextBlock(text, HorizontalAlignment.Center, new()));
-            }
-
-            GridDisplayer displayer = new(infoGrid);
-            displayer.Reset();
-            displayer.DisplayElemByRow(elements);
-        }
-
-        private void ChangeActive(ActiveGrid active) {
-            switch (active) {
+        private void ChangeActive() {
+            switch (activeGrid) {
                 case ActiveGrid.ViewGrid:
                     viewGrid.Visibility = Visibility.Visible;
                     settingsGrid.Visibility = Visibility.Collapsed;
