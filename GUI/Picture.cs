@@ -16,20 +16,17 @@ namespace GUI {
         public double Height { get; private set; }
 
         private readonly object mutex = new();
-        private readonly List<Stroke> savedStrokes = new();
+        private readonly PLTPicture pltPicture;
 
         private ushort angleOfRotation = 0;
 
-        public Picture(AlgorithmSettings settings, List<Stroke> strokes, double width, double height) {
+        public Picture(AlgorithmSettings settings, PLTPicture picture) {
             Settings = settings;
-            savedStrokes = strokes;
-
-            Width = width;
-            Height = height;
+            pltPicture = picture;
         }
 
         public void ProcessStrokes() {
-            DrawingVisual image = BuildImage(savedStrokes);
+            DrawingVisual image = BuildImage();
             RenderBitmap(image);
 
             if (RenderedPicture.CanFreeze)
@@ -39,7 +36,7 @@ namespace GUI {
         public void Redraw(AlgorithmSettings newSettings) {
             Settings = newSettings;
 
-            var image = BuildImage(savedStrokes);
+            var image = BuildImage();
             RenderBitmap(image);
             RestoreRotationAngle(angleOfRotation);
 
@@ -66,27 +63,31 @@ namespace GUI {
         }
 
         private void RenderBitmap(DrawingVisual image) {
-            Rect bounds = image.ContentBounds;
-            RenderTargetBitmap renderedImage = new((int)bounds.Width, (int)bounds.Height, 96, 96, PixelFormats.Default);
+            //Rect bounds = image.ContentBounds;
+            //RenderTargetBitmap renderedImage = new((int)bounds.Width, (int)bounds.Height, 96, 96, PixelFormats.Default);
+            int width = (int)SystemParameters.PrimaryScreenWidth;
+            int height = (int)SystemParameters.PrimaryScreenHeight;
+            RenderTargetBitmap renderedImage = new(width, height, 96, 96, PixelFormats.Default);
+
             renderedImage.Render(image);
             RenderedPicture = renderedImage;
         }
 
-        private DrawingVisual BuildImage(List<Stroke> strokes) {
+        private DrawingVisual BuildImage() {
             DrawingVisual image = new();
             DrawingContext context = image.RenderOpen();
             SetBackground(context, Brushes.White);
-            UpdateColor(out var pen, out var geometry, strokes[0].StroceColor, out var lastColor);
+            UpdateColor(out var pen, out var geometry, pltPicture.Strokes[0].StroceColor, out var lastColor);
 
             lock (mutex) {
-                savedStrokes.Capacity = strokes.Count;
-                for (int i = 0; i < strokes.Count; ++i) {
-                    if (strokes[i].StroceColor != lastColor) {
+                for (int i = 0; i < pltPicture.Strokes.Count; ++i) {
+                    var stroke = pltPicture.Strokes[i];
+                    if (pltPicture.Strokes[i].StroceColor != lastColor) {
                         context.DrawGeometry(null, pen, geometry);
-                        UpdateColor(out pen, out geometry, strokes[i].StroceColor, out lastColor);
+                        UpdateColor(out pen, out geometry, stroke.StroceColor, out lastColor);
                     }
 
-                    geometry.Children.Add(GetLineGeometry(strokes[i]));
+                    geometry.Children.Add(GetLineGeometry(stroke));
                 }
 
                 context.DrawGeometry(null, pen, geometry);
