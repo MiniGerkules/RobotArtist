@@ -8,17 +8,14 @@ using System.Runtime.CompilerServices;
 
 using GUI.Colors;
 
-namespace GUI.PLT {
+namespace GUI.PLT
+{
     /// <summary>
     /// The class describes the plt code decoder
     /// </summary>
     class PLTDecoder : INotifyPropertyChanged {
         private readonly static uint numTicksInMM = 40; // Characteristic of PLT format
-
         public event PropertyChangedEventHandler PropertyChanged;
-
-        public uint MaxX { get; private set; } = 0;
-        public uint MaxY { get; private set; } = 0;
 
         public byte curPercent = 0;
         public byte CurPercentOfProcessing {
@@ -98,9 +95,6 @@ namespace GUI.PLT {
             uint[] coords = command[2..].Split(',').Select(elem => uint.Parse(elem)).ToArray();
             Point2D newPoint = new(coords);
             newPoint.Divide(numTicksInMM);
-
-            MaxX = Math.Max(MaxX, newPoint.X);
-            MaxY = Math.Max(MaxY, newPoint.Y);
 
             if (lastPoint != null)
                 decodedPlt.Add(new(lastPoint.Value, newPoint, curColor));
