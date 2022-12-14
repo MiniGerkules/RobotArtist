@@ -115,7 +115,7 @@ namespace GUI {
             var pltPicture = Task.Run(() => pltDecoder.Decode(fileName));
 
             curSettings ??= SettingsReader.ReadDefaultSettings();
-            Picture picture = new(curSettings, await pltPicture);
+            Picture picture = new(await pltPicture, curSettings);
 
             status.Text = "Render image from PLT file";
             await Task.Run(() => picture.ProcessStrokes());

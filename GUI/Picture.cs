@@ -19,9 +19,9 @@ namespace GUI {
 
         private ushort angleOfRotation = 0;
 
-        public Picture(AlgorithmSettings settings, PLTPicture picture) {
-            Settings = settings;
+        public Picture(PLTPicture picture, AlgorithmSettings settings) {
             pltPicture = picture;
+            Settings = settings;
         }
 
         public void ProcessStrokes() {
