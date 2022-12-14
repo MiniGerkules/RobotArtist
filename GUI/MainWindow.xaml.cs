@@ -112,10 +112,10 @@ namespace GUI {
 
         private async Task PLTFileHandler(string fileName) {
             status.Text = "Process PLT file";
-            var strokes = Task.Run(() => pltDecoder.Decode(fileName));
+            var pltPicture = Task.Run(() => pltDecoder.Decode(fileName));
 
             curSettings ??= SettingsReader.ReadDefaultSettings();
-            Picture picture = new(curSettings, await strokes, pltDecoder.MaxX, pltDecoder.MaxY);
+            Picture picture = new(curSettings, await pltPicture);
 
             status.Text = "Render image from PLT file";
             await Task.Run(() => picture.ProcessStrokes());
