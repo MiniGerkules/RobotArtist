@@ -64,22 +64,21 @@ namespace GUI {
                 ProcessFile(fileDialog.FileName);
         }
 
-        private void ProcessFile(string fileName) {
+        private async void ProcessFile(string fileName) {
             if (IsFileAlreadyOpened(fileName))
                 return;
 
             try {
-                if (fileName.EndsWith(".plt")) PLTFileHandler(fileName);
-                else ImageFileHandler(fileName);
+                if (fileName.EndsWith(".plt")) await PLTFileHandler(fileName);
+                else await ImageFileHandler(fileName);
             } catch (ArgumentException Error) {
                 MessageBox.Show($"Can't process file!\n{Error.Message}",
                                 "Error!", MessageBoxButton.OK);
                 return;
             }
 
-            //AddNewOpenedFile(fileName);
-            //ChangeActive(ActiveGrid.ViewGrid);
-            //DisplayActiveBitmap(viewImage);
+            AddNewOpenedFile(fileName);
+            SwitchToAnotherTab(ActiveGrid.ViewGrid, viewImage);
         }
 
         private bool IsFileAlreadyOpened(string file) {
@@ -111,7 +110,7 @@ namespace GUI {
             SwitchToAnotherTab(ActiveGrid.ViewGrid, viewImage);
         }
 
-        private async void PLTFileHandler(string fileName) {
+        private async Task PLTFileHandler(string fileName) {
             status.Text = "Process PLT file";
             var strokes = Task.Run(() => pltDecoder.Decode(fileName));
 
@@ -124,14 +123,9 @@ namespace GUI {
             pathToActiveFile = new(fileName);
             files[pathToActiveFile] = picture;
             status.Text = "";
-
-            AddNewOpenedFile(fileName);
-            activeGrid = ActiveGrid.ViewGrid;
-            ChangeActive();
-            DisplayActiveBitmap(viewImage);
         }
 
-        private void ImageFileHandler(string fileName) {
+        private async Task ImageFileHandler(string fileName) {
             BitmapImage image = new(new Uri(fileName));
             tracer = new(image, new(new()), DatabaseLoader.Database);
         }
