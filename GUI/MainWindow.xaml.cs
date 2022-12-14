@@ -108,9 +108,7 @@ namespace GUI {
 
         private void UpdateOutputImage(string fileName) {
             pathToActiveFile = fileName;
-            activeGrid = ActiveGrid.ViewGrid;
-            ChangeActive();
-            DisplayActiveBitmap(viewImage);
+            SwitchToAnotherTab(ActiveGrid.ViewGrid, viewImage);
         }
 
         private async void PLTFileHandler(string fileName) {
@@ -160,18 +158,14 @@ namespace GUI {
             if (pathToActiveFile == null || activeGrid == ActiveGrid.ViewGrid)
                 return;
 
-            activeGrid = ActiveGrid.ViewGrid;
-            ChangeActive();
-            DisplayActiveBitmap(viewImage);
+            SwitchToAnotherTab(ActiveGrid.ViewGrid, viewImage);
         }
 
         private void EditCurPicSettings(object sender, RoutedEventArgs e) {
             if (pathToActiveFile == null || activeGrid == ActiveGrid.SettingsGrid)
                 return;
 
-            activeGrid = ActiveGrid.SettingsGrid;
-            ChangeActive();
-            DisplayActiveBitmap(settingsImage);
+            SwitchToAnotherTab(ActiveGrid.SettingsGrid, settingsImage);
             settingsManager.DisplaySettings(settingsFields, files[pathToActiveFile].Settings);
         }
 
@@ -197,6 +191,12 @@ namespace GUI {
             GridDisplayer displayer = new(infoGrid);
             displayer.Reset();
             displayer.DisplayElemByRow(elements);
+        }
+
+        private void SwitchToAnotherTab(ActiveGrid active, Image image) {
+            activeGrid = active;
+            ChangeActive();
+            DisplayActiveBitmap(image);
         }
 
         private void SaveCurrentSettings(object sender, RoutedEventArgs e) {
