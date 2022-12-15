@@ -11,17 +11,18 @@ namespace GUI {
         public BitmapSource RenderedPicture { get; private set; } = null;
         public AlgorithmSettings Settings { get; private set; }
 
-        public double Width { get; private set; }
-        public double Height { get; private set; }
-
         private readonly object mutex = new();
         private readonly PLTPicture pltPicture;
+        private readonly double scalingFactor;
+        private uint angleOfRotation = 0;
 
-        private ushort angleOfRotation = 0;
+        public double Width => pltPicture.Width;
+        public double Height => pltPicture.Height;
 
-        public Picture(PLTPicture picture, AlgorithmSettings settings) {
+        public Picture(PLTPicture picture, AlgorithmSettings settings, WindowSize windowSize) {
             pltPicture = picture;
             Settings = settings;
+            scalingFactor = windowSize.CountScaling(picture.Width, picture.Height);
         }
 
         public void ProcessStrokes() {
@@ -44,29 +45,21 @@ namespace GUI {
         }
 
         public void Rotate() {
-            angleOfRotation = (ushort)((angleOfRotation + 90) % 360);
+            angleOfRotation = (angleOfRotation + 90) % 360;
             RestoreRotationAngle(90);
         }
 
-        private void SetBackground(DrawingContext context, Brush brush) {
-            double brushWidth = Settings.BrushWidth;
-            Rect background = new(-brushWidth / 2, -brushWidth / 2,
-                                  Width + brushWidth, Height + brushWidth);
-            context.DrawRectangle(brush, null, background);
-        }
-
-        private void RestoreRotationAngle(ushort angle) {
+        private void RestoreRotationAngle(uint angle) {
             RotateTransform rotate = new(angle);
             TransformedBitmap tb = new(RenderedPicture, rotate);
             RenderedPicture = tb;
         }
 
         private void RenderBitmap(DrawingVisual image) {
-            //Rect bounds = image.ContentBounds;
-            //RenderTargetBitmap renderedImage = new((int)bounds.Width, (int)bounds.Height, 96, 96, PixelFormats.Default);
-            int width = (int)SystemParameters.PrimaryScreenWidth;
-            int height = (int)SystemParameters.PrimaryScreenHeight;
-            RenderTargetBitmap renderedImage = new(width, height, 96, 96, PixelFormats.Default);
+            RenderTargetBitmap renderedImage = new(
+                (int)(Width*scalingFactor), (int)(Height*scalingFactor),
+                96, 96, PixelFormats.Default
+            );
 
             renderedImage.Render(image);
             RenderedPicture = renderedImage;
@@ -96,6 +89,13 @@ namespace GUI {
             return image;
         }
 
+        private void SetBackground(DrawingContext context, Brush brush) {
+            double brushWidth = Settings.BrushWidth * scalingFactor;
+            Rect background = new(-brushWidth / 2, -brushWidth / 2,
+                                  Width*scalingFactor + brushWidth, Height*scalingFactor + brushWidth);
+            context.DrawRectangle(brush, null, background);
+        }
+
         private void UpdateColor(out Pen pen, out GeometryGroup geometry,
                                  PLTColor newColor, out PLTColor oldColor) {
             UpdatePenAndGeometry(out pen, out geometry, new SolidColorBrush(newColor.ToColor()));
@@ -105,7 +105,7 @@ namespace GUI {
         private void UpdatePenAndGeometry(out Pen pen, out GeometryGroup geometry, Brush newColor) {
             geometry = new();
             pen = new() {
-                Thickness = Settings.BrushWidth,
+                Thickness = Settings.BrushWidth * scalingFactor,
                 StartLineCap = PenLineCap.Round,
                 EndLineCap = PenLineCap.Round,
                 Brush = newColor
@@ -113,8 +113,8 @@ namespace GUI {
         }
 
         private LineGeometry GetLineGeometry(Stroke stoke) {
-            Point start = new(stoke.Start.X, stoke.Start.Y);
-            Point end = new(stoke.End.X, stoke.End.Y);
+            Point start = new(stoke.Start.X * scalingFactor, stoke.Start.Y * scalingFactor);
+            Point end = new(stoke.End.X * scalingFactor, stoke.End.Y * scalingFactor);
 
             return new(start, end);
         }

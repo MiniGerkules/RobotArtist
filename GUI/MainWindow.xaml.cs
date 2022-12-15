@@ -17,6 +17,7 @@ namespace GUI {
     /// Interaction logic for MainWindow.xaml
     /// </summary>
     public partial class MainWindow : Window {
+        private readonly WindowSize windowSize = new(SystemParameters.PrimaryScreenWidth, SystemParameters.PrimaryScreenHeight);
         private Algorithm.Tracer tracer;
 
         private readonly Dictionary<string, Picture> files = new();
@@ -115,7 +116,7 @@ namespace GUI {
             var pltPicture = Task.Run(() => pltDecoder.Decode(fileName));
 
             curSettings ??= SettingsReader.ReadDefaultSettings();
-            Picture picture = new(await pltPicture, curSettings);
+            Picture picture = new(await pltPicture, curSettings, windowSize);
 
             status.Text = "Render image from PLT file";
             await Task.Run(() => picture.ProcessStrokes());
