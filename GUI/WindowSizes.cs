@@ -1,11 +1,11 @@
 ﻿using System;
 
 namespace GUI {
-    public class WindowSize {
+    public class WindowSizes {
         private readonly double windowWidth;
         private readonly double windowHeight;
 
-        public WindowSize(double windowWidth, double windowHeight) {
+        public WindowSizes(double windowWidth, double windowHeight) {
             (this.windowWidth, this.windowHeight) = (windowWidth, windowHeight);
         }
 

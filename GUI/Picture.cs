@@ -19,7 +19,7 @@ namespace GUI {
         public double Width => pltPicture.Width;
         public double Height => pltPicture.Height;
 
-        public Picture(PLTPicture picture, AlgorithmSettings settings, WindowSize windowSize) {
+        public Picture(PLTPicture picture, AlgorithmSettings settings, WindowSizes windowSize) {
             pltPicture = picture;
             Settings = settings;
             scalingFactor = windowSize.CountScaling(picture.Width, picture.Height);

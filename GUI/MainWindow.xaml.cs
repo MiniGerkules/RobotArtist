@@ -17,7 +17,7 @@ namespace GUI {
     /// Interaction logic for MainWindow.xaml
     /// </summary>
     public partial class MainWindow : Window {
-        private readonly WindowSize windowSize = new(SystemParameters.PrimaryScreenWidth, SystemParameters.PrimaryScreenHeight);
+        private readonly WindowSizes windowSize = new(SystemParameters.PrimaryScreenWidth, SystemParameters.PrimaryScreenHeight);
         private Algorithm.Tracer tracer;
 
         private readonly Dictionary<string, Picture> files = new();
