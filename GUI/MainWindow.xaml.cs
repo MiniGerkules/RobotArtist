@@ -17,6 +17,7 @@ namespace GUI {
     /// Interaction logic for MainWindow.xaml
     /// </summary>
     public partial class MainWindow : Window {
+        private readonly WindowSizes windowSize = new(SystemParameters.PrimaryScreenWidth, SystemParameters.PrimaryScreenHeight);
         private Algorithm.Tracer tracer;
 
         private readonly Dictionary<string, Picture> files = new();
@@ -64,22 +65,21 @@ namespace GUI {
                 ProcessFile(fileDialog.FileName);
         }
 
-        private void ProcessFile(string fileName) {
+        private async void ProcessFile(string fileName) {
             if (IsFileAlreadyOpened(fileName))
                 return;
 
             try {
-                if (fileName.EndsWith(".plt")) PLTFileHandler(fileName);
-                else ImageFileHandler(fileName);
+                if (fileName.EndsWith(".plt")) await PLTFileHandler(fileName);
+                else await ImageFileHandler(fileName);
             } catch (ArgumentException Error) {
                 MessageBox.Show($"Can't process file!\n{Error.Message}",
                                 "Error!", MessageBoxButton.OK);
                 return;
             }
 
-            //AddNewOpenedFile(fileName);
-            //ChangeActive(ActiveGrid.ViewGrid);
-            //DisplayActiveBitmap(viewImage);
+            AddNewOpenedFile(fileName);
+            SwitchToAnotherTab(ActiveGrid.ViewGrid, viewImage);
         }
 
         private bool IsFileAlreadyOpened(string file) {
@@ -108,17 +108,15 @@ namespace GUI {
 
         private void UpdateOutputImage(string fileName) {
             pathToActiveFile = fileName;
-            activeGrid = ActiveGrid.ViewGrid;
-            ChangeActive();
-            DisplayActiveBitmap(viewImage);
+            SwitchToAnotherTab(ActiveGrid.ViewGrid, viewImage);
         }
 
-        private async void PLTFileHandler(string fileName) {
+        private async Task PLTFileHandler(string fileName) {
             status.Text = "Process PLT file";
-            var strokes = Task.Run(() => pltDecoder.Decode(fileName));
+            var pltPicture = Task.Run(() => pltDecoder.Decode(fileName));
 
             curSettings ??= SettingsReader.ReadDefaultSettings();
-            Picture picture = new(curSettings, await strokes, pltDecoder.MaxX, pltDecoder.MaxY);
+            Picture picture = new(await pltPicture, curSettings, windowSize);
 
             status.Text = "Render image from PLT file";
             await Task.Run(() => picture.ProcessStrokes());
@@ -126,14 +124,9 @@ namespace GUI {
             pathToActiveFile = new(fileName);
             files[pathToActiveFile] = picture;
             status.Text = "";
-
-            AddNewOpenedFile(fileName);
-            activeGrid = ActiveGrid.ViewGrid;
-            ChangeActive();
-            DisplayActiveBitmap(viewImage);
         }
 
-        private void ImageFileHandler(string fileName) {
+        private async Task ImageFileHandler(string fileName) {
             BitmapImage image = new(new Uri(fileName));
             tracer = new(image, new(new()), DatabaseLoader.Database);
         }
@@ -152,26 +145,22 @@ namespace GUI {
             DisplayActiveBitmap(viewImage);
         }
 
-        private void RepaintImage(object sender, RoutedEventArgs e) {
-            PLTFileHandler(pathToActiveFile);
+        private async void RepaintImage(object sender, RoutedEventArgs e) {
+            await PLTFileHandler(pathToActiveFile);
         }
 
         private void ViewClick(object sender, RoutedEventArgs e) {
             if (pathToActiveFile == null || activeGrid == ActiveGrid.ViewGrid)
                 return;
 
-            activeGrid = ActiveGrid.ViewGrid;
-            ChangeActive();
-            DisplayActiveBitmap(viewImage);
+            SwitchToAnotherTab(ActiveGrid.ViewGrid, viewImage);
         }
 
         private void EditCurPicSettings(object sender, RoutedEventArgs e) {
             if (pathToActiveFile == null || activeGrid == ActiveGrid.SettingsGrid)
                 return;
 
-            activeGrid = ActiveGrid.SettingsGrid;
-            ChangeActive();
-            DisplayActiveBitmap(settingsImage);
+            SwitchToAnotherTab(ActiveGrid.SettingsGrid, settingsImage);
             settingsManager.DisplaySettings(settingsFields, files[pathToActiveFile].Settings);
         }
 
@@ -197,6 +186,12 @@ namespace GUI {
             GridDisplayer displayer = new(infoGrid);
             displayer.Reset();
             displayer.DisplayElemByRow(elements);
+        }
+
+        private void SwitchToAnotherTab(ActiveGrid active, Image image) {
+            activeGrid = active;
+            ChangeActive();
+            DisplayActiveBitmap(image);
         }
 
         private void SaveCurrentSettings(object sender, RoutedEventArgs e) {

@@ -1,6 +1,5 @@
 ﻿using System.Windows;
 using System.Windows.Media;
-using System.Collections.Generic;
 using System.Windows.Media.Imaging;
 
 using GUI.PLT;
@@ -12,24 +11,22 @@ namespace GUI {
         public BitmapSource RenderedPicture { get; private set; } = null;
         public AlgorithmSettings Settings { get; private set; }
 
-        public double Width { get; private set; }
-        public double Height { get; private set; }
-
         private readonly object mutex = new();
-        private readonly List<Stroke> savedStrokes = new();
+        private readonly PLTPicture pltPicture;
+        private readonly double scalingFactor;
+        private uint angleOfRotation = 0;
 
-        private ushort angleOfRotation = 0;
+        public double Width => pltPicture.Width;
+        public double Height => pltPicture.Height;
 
-        public Picture(AlgorithmSettings settings, List<Stroke> strokes, double width, double height) {
+        public Picture(PLTPicture picture, AlgorithmSettings settings, WindowSizes windowSize) {
+            pltPicture = picture;
             Settings = settings;
-            savedStrokes = strokes;
-
-            Width = width;
-            Height = height;
+            scalingFactor = windowSize.CountScaling(picture.Width, picture.Height);
         }
 
         public void ProcessStrokes() {
-            DrawingVisual image = BuildImage(savedStrokes);
+            DrawingVisual image = BuildImage();
             RenderBitmap(image);
 
             if (RenderedPicture.CanFreeze)
@@ -39,7 +36,7 @@ namespace GUI {
         public void Redraw(AlgorithmSettings newSettings) {
             Settings = newSettings;
 
-            var image = BuildImage(savedStrokes);
+            var image = BuildImage();
             RenderBitmap(image);
             RestoreRotationAngle(angleOfRotation);
 
@@ -48,45 +45,42 @@ namespace GUI {
         }
 
         public void Rotate() {
-            angleOfRotation = (ushort)((angleOfRotation + 90) % 360);
+            angleOfRotation = (angleOfRotation + 90) % 360;
             RestoreRotationAngle(90);
         }
 
-        private void SetBackground(DrawingContext context, Brush brush) {
-            double brushWidth = Settings.BrushWidth;
-            Rect background = new(-brushWidth / 2, -brushWidth / 2,
-                                  Width + brushWidth, Height + brushWidth);
-            context.DrawRectangle(brush, null, background);
-        }
-
-        private void RestoreRotationAngle(ushort angle) {
+        private void RestoreRotationAngle(uint angle) {
             RotateTransform rotate = new(angle);
             TransformedBitmap tb = new(RenderedPicture, rotate);
             RenderedPicture = tb;
         }
 
         private void RenderBitmap(DrawingVisual image) {
-            Rect bounds = image.ContentBounds;
-            RenderTargetBitmap renderedImage = new((int)bounds.Width, (int)bounds.Height, 96, 96, PixelFormats.Default);
+            RenderTargetBitmap renderedImage = new(
+                (int)(Width*scalingFactor), (int)(Height*scalingFactor),
+                96, 96, PixelFormats.Default
+            );
+
             renderedImage.Render(image);
             RenderedPicture = renderedImage;
         }
 
-        private DrawingVisual BuildImage(List<Stroke> strokes) {
+        private DrawingVisual BuildImage() {
             DrawingVisual image = new();
             DrawingContext context = image.RenderOpen();
             SetBackground(context, Brushes.White);
-            UpdateColor(out var pen, out var geometry, strokes[0].StroceColor, out var lastColor);
+            UpdateColor(out var pen, out var geometry, pltPicture.Strokes[0].StroceColor,
+                        out var lastColor);
 
             lock (mutex) {
-                savedStrokes.Capacity = strokes.Count;
-                for (int i = 0; i < strokes.Count; ++i) {
-                    if (strokes[i].StroceColor != lastColor) {
+                for (int i = 0; i < pltPicture.Strokes.Count; ++i) {
+                    var stroke = pltPicture.Strokes[i];
+                    if (pltPicture.Strokes[i].StroceColor != lastColor) {
                         context.DrawGeometry(null, pen, geometry);
-                        UpdateColor(out pen, out geometry, strokes[i].StroceColor, out lastColor);
+                        UpdateColor(out pen, out geometry, stroke.StroceColor, out lastColor);
                     }
 
-                    geometry.Children.Add(GetLineGeometry(strokes[i]));
+                    geometry.Children.Add(GetLineGeometry(stroke));
                 }
 
                 context.DrawGeometry(null, pen, geometry);
@@ -94,6 +88,13 @@ namespace GUI {
 
             context.Close();
             return image;
+        }
+
+        private void SetBackground(DrawingContext context, Brush brush) {
+            double brushWidth = Settings.BrushWidth * scalingFactor;
+            Rect background = new(-brushWidth / 2, -brushWidth / 2,
+                                  Width*scalingFactor + brushWidth, Height*scalingFactor + brushWidth);
+            context.DrawRectangle(brush, null, background);
         }
 
         private void UpdateColor(out Pen pen, out GeometryGroup geometry,
@@ -105,7 +106,7 @@ namespace GUI {
         private void UpdatePenAndGeometry(out Pen pen, out GeometryGroup geometry, Brush newColor) {
             geometry = new();
             pen = new() {
-                Thickness = Settings.BrushWidth,
+                Thickness = Settings.BrushWidth * scalingFactor,
                 StartLineCap = PenLineCap.Round,
                 EndLineCap = PenLineCap.Round,
                 Brush = newColor
@@ -113,8 +114,8 @@ namespace GUI {
         }
 
         private LineGeometry GetLineGeometry(Stroke stoke) {
-            Point start = new(stoke.Start.X, stoke.Start.Y);
-            Point end = new(stoke.End.X, stoke.End.Y);
+            Point start = new(stoke.Start.X * scalingFactor, stoke.Start.Y * scalingFactor);
+            Point end = new(stoke.End.X * scalingFactor, stoke.End.Y * scalingFactor);
 
             return new(start, end);
         }

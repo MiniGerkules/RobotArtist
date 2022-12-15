@@ -8,17 +8,14 @@ using System.Runtime.CompilerServices;
 
 using GUI.Colors;
 
-namespace GUI.PLT {
+namespace GUI.PLT
+{
     /// <summary>
     /// The class describes the plt code decoder
     /// </summary>
     class PLTDecoder : INotifyPropertyChanged {
         private readonly static uint numTicksInMM = 40; // Characteristic of PLT format
-
         public event PropertyChangedEventHandler PropertyChanged;
-
-        public uint MaxX { get; private set; } = 0;
-        public uint MaxY { get; private set; } = 0;
 
         public byte curPercent = 0;
         public byte CurPercentOfProcessing {
@@ -31,7 +28,6 @@ namespace GUI.PLT {
             }
         }
 
-        private readonly List<Stroke> decodedPlt = new();
         private Point2D? lastPoint = null;
         private PLTColor curColor = null;
 
@@ -44,9 +40,7 @@ namespace GUI.PLT {
         /// </summary>
         /// <param name="fileName"> The path to plt file that should decode </param>
         /// <returns> List of strokes with specified colors </returns>
-        public List<Stroke> Decode(in string fileName) {
-            NewDecode();
-
+        public PLTPicture Decode(in string fileName) {
             string pltCode;
             try {
                 pltCode = File.ReadAllText(fileName);
@@ -60,31 +54,22 @@ namespace GUI.PLT {
             if (pltCode[^1] != ';')
                 throw new Exception("ERROR! PLT file have to end with ';' character!");
 
-            int curPos = 3;
-            // Start from 3 to cut [IN] operator
+            List<Stroke> decodedPlt = new();
+            lastPoint = null; curColor = null;
+            int curPos = 3; // Start from 3 to cut [IN] operator
             for (int endPos = pltCode.Length; curPos < endPos; ++curPos) {
                 CurPercentOfProcessing = (byte)((curPos+1)*100 / endPos); // +1 to get 100 percent at the last iteration
                 int startPosition = curPos;
 
                 curPos = pltCode.IndexOf(';', startPosition);
-                ProcessPart(pltCode[startPosition..curPos]);
+                ProcessPart(decodedPlt, pltCode[startPosition..curPos]);
             }
 
             CurPercentOfProcessing = 100;
-            return decodedPlt;
+            return new(decodedPlt);
         }
 
-        private void NewDecode() {
-            decodedPlt.Clear();
-
-            lastPoint = null;
-            curColor = null;
-
-            MaxX = 0;
-            MaxY = 0;
-        }
-
-        private void ProcessPart(in string part) {
+        private void ProcessPart(List<Stroke> decodedPlt, in string part) {
             switch (part[..2]) {
                 case "PP":
                     curColor = new CMYBWColor(part[2..].Split(','));
@@ -93,7 +78,7 @@ namespace GUI.PLT {
                     curColor = new RGBColor(part[2..].Split(','));
                     break;
                 case "PD":
-                    ProcessPDCommand(part);
+                    ProcessPDCommand(decodedPlt, part);
                     break;
                 case "PU":
                     lastPoint = null;
@@ -103,16 +88,13 @@ namespace GUI.PLT {
             }
         }
 
-        private void ProcessPDCommand(in string command) {
+        private void ProcessPDCommand(List<Stroke> decodedPlt, in string command) {
             if (curColor == null)
                 throw new ArgumentException("Invalid plt code. Color don't set before painting!");
 
             uint[] coords = command[2..].Split(',').Select(elem => uint.Parse(elem)).ToArray();
             Point2D newPoint = new(coords);
             newPoint.Divide(numTicksInMM);
-
-            MaxX = Math.Max(MaxX, newPoint.X);
-            MaxY = Math.Max(MaxY, newPoint.Y);
 
             if (lastPoint != null)
                 decodedPlt.Add(new(lastPoint.Value, newPoint, curColor));
