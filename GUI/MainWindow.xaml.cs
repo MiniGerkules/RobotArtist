@@ -145,8 +145,8 @@ namespace GUI {
             DisplayActiveBitmap(viewImage);
         }
 
-        private void RepaintImage(object sender, RoutedEventArgs e) {
-            PLTFileHandler(pathToActiveFile);
+        private async void RepaintImage(object sender, RoutedEventArgs e) {
+            await PLTFileHandler(pathToActiveFile);
         }
 
         private void ViewClick(object sender, RoutedEventArgs e) {
