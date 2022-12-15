@@ -69,7 +69,8 @@ namespace GUI {
             DrawingVisual image = new();
             DrawingContext context = image.RenderOpen();
             SetBackground(context, Brushes.White);
-            UpdateColor(out var pen, out var geometry, pltPicture.Strokes[0].StroceColor, out var lastColor);
+            UpdateColor(out var pen, out var geometry, pltPicture.Strokes[0].StroceColor,
+                        out var lastColor);
 
             lock (mutex) {
                 for (int i = 0; i < pltPicture.Strokes.Count; ++i) {
