@@ -2,38 +2,31 @@ using System;
 using System.IO;
 using System.Linq;
 using GeneralComponents;
-using System.ComponentModel;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 
 using GUI.Colors;
 
-namespace GUI.PLT
-{
+namespace GUI.PLT {
     /// <summary>
     /// The class describes the plt code decoder
     /// </summary>
-    class PLTDecoder : INotifyPropertyChanged {
+    class PLTDecoder : NotifierOfPropertyChange {
         private readonly static uint numTicksInMM = 40; // Characteristic of PLT format
-        public event PropertyChangedEventHandler PropertyChanged;
+        public static int MaxPercent => 100;
 
-        public byte curPercent = 0;
-        public byte CurPercentOfProcessing {
+        private int curPercent = 0;
+        public int CurPercent {
             get => curPercent;
             private set {
-                if (0 <= value && value <= 100) {
+                if (0 <= value && value <= MaxPercent) {
                     curPercent = value;
-                    NotifyPropertyChanged(nameof(CurPercentOfProcessing));
+                    NotifyPropertyChanged(nameof(CurPercent));
                 }
             }
         }
 
         private Point2D? lastPoint = null;
         private PLTColor curColor = null;
-
-        private void NotifyPropertyChanged([CallerMemberName] string propertyName = "") {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
 
         /// <summary>
         /// The method decodes the plt code passed in the string
@@ -58,14 +51,14 @@ namespace GUI.PLT
             lastPoint = null; curColor = null;
             int curPos = 3; // Start from 3 to cut [IN] operator
             for (int endPos = pltCode.Length; curPos < endPos; ++curPos) {
-                CurPercentOfProcessing = (byte)((curPos+1)*100 / endPos); // +1 to get 100 percent at the last iteration
+                CurPercent = curPos*100 / endPos;
                 int startPosition = curPos;
 
                 curPos = pltCode.IndexOf(';', startPosition);
                 ProcessPart(decodedPlt, pltCode[startPosition..curPos]);
             }
 
-            CurPercentOfProcessing = 100;
+            CurPercent = 100;
             return new(decodedPlt);
         }
 
