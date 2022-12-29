@@ -1,40 +1,45 @@
 ﻿using System;
 using System.IO;
 using System.Windows;
-using Microsoft.Win32;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Collections.Generic;
 using System.Windows.Media.Imaging;
 
+using Microsoft.Win32;
+
 using GUI.PLT;
 using GUI.Settings;
-using System.Threading.Tasks;
 
-namespace GUI {
+namespace GUI
+{
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
     public partial class MainWindow : Window {
-        private readonly WindowSizes windowSize = new(SystemParameters.PrimaryScreenWidth, SystemParameters.PrimaryScreenHeight);
         private Algorithm.Tracer tracer;
 
-        private readonly Dictionary<string, Picture> files = new();
+        private readonly Dictionary<string, PLTPicture> files = new();
         private readonly Dictionary<string, UIElement> tabs = new();
         private readonly Dictionary<string, string> savedFiles = new();
         private string pathToActiveFile = null;
 
-        private readonly PLTDecoder pltDecoder = new();
         private readonly SettingsManager settingsManager;
         private AlgorithmSettings curSettings = null;
+
+        private readonly PLTDecoder pltDecoder = new();
+        private readonly PLTImgBuilder pltImgBuilder = new();
+        private readonly BuildingImgProcessVM vm;
 
         private static readonly string pathToDatabase = @"resources/ModelTable600_initial.xls";
         private ActiveGrid activeGrid = ActiveGrid.NoActive;
 
         public MainWindow() {
             InitializeComponent();
-            progressBar.DataContext = pltDecoder;
+            vm = new(pltDecoder, pltImgBuilder);
+            footer.DataContext = vm;
 
             mainMenu.Background = DefaultGUISettings.menuColor;
             SetInactive();
@@ -112,18 +117,13 @@ namespace GUI {
         }
 
         private async Task PLTFileHandler(string fileName) {
-            status.Text = "Process PLT file";
             var pltPicture = Task.Run(() => pltDecoder.Decode(fileName));
 
             curSettings ??= SettingsReader.ReadDefaultSettings();
-            Picture picture = new(await pltPicture, curSettings, windowSize);
-
-            status.Text = "Render image from PLT file";
-            await Task.Run(() => picture.ProcessStrokes());
+            var picture = Task.Run(async () => pltImgBuilder.Build(await pltPicture));
 
             pathToActiveFile = new(fileName);
-            files[pathToActiveFile] = picture;
-            status.Text = "";
+            files[pathToActiveFile] = await picture;
         }
 
         private async Task ImageFileHandler(string fileName) {
@@ -146,7 +146,7 @@ namespace GUI {
         }
 
         private async void RepaintImage(object sender, RoutedEventArgs e) {
-            await PLTFileHandler(pathToActiveFile);
+            await Task.Run(() => pltImgBuilder.Rebuild(files[pathToActiveFile]));
         }
 
         private void ViewClick(object sender, RoutedEventArgs e) {
@@ -263,7 +263,9 @@ namespace GUI {
 
         private async void ApplySettings(AlgorithmSettings settedSettings, bool changed) {
             if (changed) {
-                await Task.Run(() => files[pathToActiveFile].Redraw(settedSettings));
+                files[pathToActiveFile] = await Task.Run(
+                    () => pltImgBuilder.Rebuild(settedSettings, files[pathToActiveFile])
+                );
                 DisplayActiveBitmap(settingsImage);
             }
         }
@@ -307,9 +309,9 @@ namespace GUI {
                 return;
 
             Action<BitmapSource, string> call;
-            SaveFileDialog dlg = new();
-            string fileName = Helpers.GetFileName(pathToActiveFile);
-            dlg.FileName = Helpers.GetFileNameWithoutExt(fileName);
+            SaveFileDialog dlg = new() {
+                FileName = Path.GetFileNameWithoutExtension(pathToActiveFile),
+            };
 
             if (pathToActiveFile.EndsWith(".plt")) {
                 dlg.DefaultExt = ".png";

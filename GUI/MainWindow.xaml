@@ -86,8 +86,8 @@
 
                 <Image.ContextMenu>
                     <ContextMenu>
-                        <MenuItem Header="Повернуть на 90 градусов" Click="RotateImage"/>
-                        <MenuItem Header="Полностью перестроить" Click="RepaintImage"/>
+                        <MenuItem Header="Rotate 90 degrees" Click="RotateImage"/>
+                        <MenuItem Header="Completely rebuild" Click="RepaintImage"/>
                     </ContextMenu>
                 </Image.ContextMenu>
             </Image>
@@ -135,12 +135,12 @@
             </StatusBar.ItemsPanel>
 
             <StatusBarItem Grid.Column="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
-                <TextBlock x:Name="status"/>
+                <TextBlock x:Name="status" Text="{Binding Status, Mode=OneWay}"/>
             </StatusBarItem>
             <Separator Grid.Column="1"/>
             <StatusBarItem Grid.Column="2" VerticalContentAlignment="Stretch" HorizontalContentAlignment="Stretch">
-                <ProgressBar x:Name="progressBar" Minimum="0" Maximum="100"
-                             Value="{Binding CurPercentOfProcessing, Mode=OneWay}"/>
+                <ProgressBar x:Name="progressBar" Minimum="0" Maximum="{Binding MaxVal, Mode=OneWay}"
+                             Value="{Binding CurVal, Mode=OneWay}"/>
             </StatusBarItem>
         </StatusBar>
     </Grid>

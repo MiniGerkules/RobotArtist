@@ -1,20 +1,42 @@
-﻿using System.Collections.Generic;
-using System.Collections.Immutable;
+﻿using System.Windows.Media;
+using System.Windows.Media.Imaging;
+
+using GUI.Settings;
 
 namespace GUI.PLT {
     internal class PLTPicture {
-        public ImmutableList<Stroke> Strokes { get; private set; }
-        public double Width { get; }
-        public double Height { get; }
+        public BitmapSource RenderedPicture { get; private set; }
+        public AlgorithmSettings Settings { get; private set; }
 
-        public PLTPicture(List<Stroke> strokes) {
-            Strokes = strokes.ToImmutableList();
+        public PLTDecoderRes PLTDecoded { get; }
+        public double Width => PLTDecoded.Width;
+        public double Height => PLTDecoded.Height;
 
-            Width = 0; Height = 0;
-            foreach (var stroke in Strokes) {
-                if (Width < stroke.End.X) Width = stroke.End.X;
-                if (Height < stroke.End.Y) Height = stroke.End.Y;
-            }
+        private uint angleOfRotation = 0;
+
+        public PLTPicture(in AlgorithmSettings settings, in BitmapSource renderedPicture,
+                          in PLTDecoderRes pltDecoded) {
+            PLTDecoded = pltDecoded;
+            RenderedPicture = renderedPicture;
+            Settings = settings;
+        }
+
+        public void RestoreRotationAngle(in PLTPicture picture) {
+            SetAngle(picture.angleOfRotation);
+        }
+
+        public void Rotate() {
+            angleOfRotation = (angleOfRotation + 90) % 360;
+            SetAngle(90);
+        }
+
+        private void SetAngle(uint angle) {
+            RotateTransform rotate = new(angle);
+            TransformedBitmap tb = new(RenderedPicture, rotate);
+            RenderedPicture = tb;
+
+            if (RenderedPicture.CanFreeze)
+                RenderedPicture.Freeze();
         }
     }
 }
