@@ -33,7 +33,7 @@ namespace GUI.PLT {
         /// </summary>
         /// <param name="fileName"> The path to plt file that should decode </param>
         /// <returns> List of strokes with specified colors </returns>
-        public PLTPicture Decode(in string fileName) {
+        public PLTDecoderRes Decode(in string fileName) {
             string pltCode;
             try {
                 pltCode = File.ReadAllText(fileName);
