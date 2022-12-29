@@ -1,40 +1,45 @@
 ﻿using System;
 using System.IO;
 using System.Windows;
-using Microsoft.Win32;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Collections.Generic;
 using System.Windows.Media.Imaging;
 
+using Microsoft.Win32;
+
 using GUI.PLT;
 using GUI.Settings;
-using System.Threading.Tasks;
 
-namespace GUI {
+namespace GUI
+{
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
     public partial class MainWindow : Window {
-        private readonly WindowSizes windowSize = new(SystemParameters.PrimaryScreenWidth, SystemParameters.PrimaryScreenHeight);
         private Algorithm.Tracer tracer;
 
-        private readonly Dictionary<string, Picture> files = new();
+        private readonly Dictionary<string, PLTPicture> files = new();
         private readonly Dictionary<string, UIElement> tabs = new();
         private readonly Dictionary<string, string> savedFiles = new();
         private string pathToActiveFile = null;
 
-        private readonly PLTDecoder pltDecoder = new();
         private readonly SettingsManager settingsManager;
         private AlgorithmSettings curSettings = null;
+
+        private readonly PLTDecoder pltDecoder = new();
+        private readonly PLTImgBuilder pltImgBuilder = new();
+        private readonly BuildingImgProcessVM vm;
 
         private static readonly string pathToDatabase = @"resources/ModelTable600_initial.xls";
         private ActiveGrid activeGrid = ActiveGrid.NoActive;
 
         public MainWindow() {
             InitializeComponent();
-            progressBar.DataContext = pltDecoder;
+            vm = new(pltDecoder, pltImgBuilder);
+            footer.DataContext = vm;
 
             mainMenu.Background = DefaultGUISettings.menuColor;
             SetInactive();
