@@ -8,7 +8,10 @@ using GUI.Settings;
 namespace GUI.PLT {
     internal class PLTImgBuilder : NotifierOfPropertyChange {
         private static readonly ScreenSizes windowSize = new();
-        public static int MaxPercent => 100;
+
+        private static readonly int maxPercentForBuilding = 90;
+        private static readonly int maxPercentForRendering = 10;
+        public static int MaxPercent => maxPercentForBuilding + maxPercentForRendering;
         
         public AlgorithmSettings Settings { get; set; } = SettingsReader.ReadDefaultSettings();
 
@@ -49,18 +52,19 @@ namespace GUI.PLT {
             return RenderBitmap(image, picture.Width, picture.Height, scale);
         }
 
-        private static BitmapSource RenderBitmap(DrawingVisual image, double width,
+        private BitmapSource RenderBitmap(DrawingVisual image, double width,
                                                  double height, double scalingFactor) {
             RenderTargetBitmap renderedImage = new(
                 (int)(width * scalingFactor), (int)(height * scalingFactor),
                 96, 96, PixelFormats.Default
             );
-
             renderedImage.Render(image);
+
+            CurPercent += maxPercentForRendering;
             return renderedImage;
         }
 
-        private static DrawingVisual ProcessStrokes(in AlgorithmSettings settings,
+        private DrawingVisual ProcessStrokes(in AlgorithmSettings settings,
                                              in PLTDecoderRes picture) {
             DrawingVisual image = new();
             DrawingContext context = image.RenderOpen();
@@ -71,6 +75,8 @@ namespace GUI.PLT {
                         out var lastColor, scale);
 
             for (int i = 0; i < picture.Strokes.Count; ++i) {
+                CurPercent = i*maxPercentForBuilding / picture.Strokes.Count;
+
                 var stroke = picture.Strokes[i];
                 if (picture.Strokes[i].StroceColor != lastColor) {
                     context.DrawGeometry(null, pen, geometry);
@@ -84,6 +90,7 @@ namespace GUI.PLT {
             context.DrawGeometry(null, pen, geometry);
             context.Close();
 
+            CurPercent = maxPercentForBuilding;
             return image;
         }
 
