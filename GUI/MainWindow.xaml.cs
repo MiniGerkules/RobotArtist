@@ -117,18 +117,13 @@ namespace GUI
         }
 
         private async Task PLTFileHandler(string fileName) {
-            status.Text = "Process PLT file";
             var pltPicture = Task.Run(() => pltDecoder.Decode(fileName));
 
             curSettings ??= SettingsReader.ReadDefaultSettings();
-            Picture picture = new(await pltPicture, curSettings, windowSize);
-
-            status.Text = "Render image from PLT file";
-            await Task.Run(() => picture.ProcessStrokes());
+            var picture = Task.Run(async () => pltImgBuilder.Build(await pltPicture));
 
             pathToActiveFile = new(fileName);
-            files[pathToActiveFile] = picture;
-            status.Text = "";
+            files[pathToActiveFile] = await picture;
         }
 
         private async Task ImageFileHandler(string fileName) {
@@ -151,7 +146,7 @@ namespace GUI
         }
 
         private async void RepaintImage(object sender, RoutedEventArgs e) {
-            await PLTFileHandler(pathToActiveFile);
+            await Task.Run(() => pltImgBuilder.Rebuild(files[pathToActiveFile]));
         }
 
         private void ViewClick(object sender, RoutedEventArgs e) {
@@ -268,7 +263,9 @@ namespace GUI
 
         private async void ApplySettings(AlgorithmSettings settedSettings, bool changed) {
             if (changed) {
-                await Task.Run(() => files[pathToActiveFile].Redraw(settedSettings));
+                files[pathToActiveFile] = await Task.Run(
+                    () => pltImgBuilder.Rebuild(settedSettings, files[pathToActiveFile])
+                );
                 DisplayActiveBitmap(settingsImage);
             }
         }
