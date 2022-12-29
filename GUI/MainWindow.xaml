@@ -86,8 +86,8 @@
 
                 <Image.ContextMenu>
                     <ContextMenu>
-                        <MenuItem Header="Повернуть на 90 градусов" Click="RotateImage"/>
-                        <MenuItem Header="Полностью перестроить" Click="RepaintImage"/>
+                        <MenuItem Header="Rotate 90 degrees" Click="RotateImage"/>
+                        <MenuItem Header="Completely rebuild" Click="RepaintImage"/>
                     </ContextMenu>
                 </Image.ContextMenu>
             </Image>
