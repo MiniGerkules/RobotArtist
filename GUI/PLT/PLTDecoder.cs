@@ -51,14 +51,14 @@ namespace GUI.PLT {
             lastPoint = null; curColor = null;
             int curPos = 3; // Start from 3 to cut [IN] operator
             for (int endPos = pltCode.Length; curPos < endPos; ++curPos) {
-                CurPercent = curPos*100 / endPos;
+                CurPercent = curPos*MaxPercent / endPos;
                 int startPosition = curPos;
 
                 curPos = pltCode.IndexOf(';', startPosition);
                 ProcessPart(decodedPlt, pltCode[startPosition..curPos]);
             }
 
-            CurPercent = 100;
+            CurPercent = MaxPercent;
             return new(decodedPlt);
         }
 
