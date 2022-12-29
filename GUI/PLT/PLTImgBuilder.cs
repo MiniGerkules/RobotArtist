@@ -25,6 +25,7 @@ namespace GUI.PLT {
                 }
             }
         }
+        public void ResetCurPercent() { curPercent = 0; }
 
         public PLTPicture Build(PLTDecoderRes picture) {
             var bitmap = CreateBitmapOf(Settings, picture);

@@ -24,6 +24,7 @@ namespace GUI.PLT {
                 }
             }
         }
+        public void ResetCurPercent() { curPercent = 0; }
 
         private Point2D? lastPoint = null;
         private PLTColor curColor = null;
