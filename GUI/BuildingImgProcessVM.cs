@@ -23,10 +23,13 @@ namespace GUI {
             if (sender is PLTDecoder) {
                 status = "Process PLT file";
             } else if (sender is PLTImgBuilder recived) {
-                if (recived.CurPercent != PLTImgBuilder.MaxPercent)
+                if (recived.CurPercent != PLTImgBuilder.MaxPercent) {
                     status = "Render image from PLT file";
-                else
+                } else {
                     status = "";
+                    decoder.ResetCurPercent();
+                    builder.ResetCurPercent();
+                }
             }
 
             NotifyPropertyChanged(nameof(Status));
