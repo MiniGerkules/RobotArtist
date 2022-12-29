@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System.IO;
+using System.Windows;
 using System.Windows.Controls;
 
 namespace GUI {
@@ -13,7 +14,7 @@ namespace GUI {
             this.chooseClick = chooseClick;
             this.closeClick = closeClick;
 
-            choose.Content = Helpers.GetFileName(pathToFile);
+            choose.Content = Path.GetFileName(pathToFile);
             choose.Background = DefaultGUISettings.buttonColor;
             choose.FontSize = DefaultGUISettings.FontSize;
         }

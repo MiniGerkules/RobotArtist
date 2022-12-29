@@ -307,9 +307,9 @@ namespace GUI {
                 return;
 
             Action<BitmapSource, string> call;
-            SaveFileDialog dlg = new();
-            string fileName = Helpers.GetFileName(pathToActiveFile);
-            dlg.FileName = Helpers.GetFileNameWithoutExt(fileName);
+            SaveFileDialog dlg = new() {
+                FileName = Path.GetFileNameWithoutExtension(pathToActiveFile),
+            };
 
             if (pathToActiveFile.EndsWith(".plt")) {
                 dlg.DefaultExt = ".png";
