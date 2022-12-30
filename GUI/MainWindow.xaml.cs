@@ -95,18 +95,49 @@ namespace GUI {
         }
 
         private void AddNewOpenedFile(in string fileName) {
-            OpenedFile file = new(fileName, ChangeFile, CloseActiveFile);
+            OpenedFile file = new(fileName, ChangeFile, CloseFile);
 
             openedFiles.Children.Add(file);
             tabs[pathToActiveFile] = openedFiles.Children[^1];
         }
 
-        private void ChangeFile(object sender, EventArgs e) {
-            OpenedFile clicked = (OpenedFile)sender;
-            if (clicked.PathToFile == pathToActiveFile)
+        private void ChangeFile(OpenedFile sender) {
+            if (sender.PathToFile == pathToActiveFile)
                 return;
 
-            UpdateOutputImage(clicked.PathToFile);
+            UpdateOutputImage(sender.PathToFile);
+        }
+
+        private void CloseFile(OpenedFile sender) {
+            CloseFile(sender.PathToFile);
+        }
+
+        private void CloseFile(string fileToClose) {
+            if (!tabs.ContainsKey(fileToClose)) return;
+
+            files.Remove(fileToClose);
+            openedFiles.Children.Remove(tabs[fileToClose]);
+            tabs.Remove(fileToClose);
+
+            if (fileToClose == pathToActiveFile)
+                WasClosedActiveFile();
+        }
+
+        private void WasClosedActiveFile() {
+            if (openedFiles.Children.Count != 0) {
+                pathToActiveFile = ((OpenedFile)openedFiles.Children[0]).PathToFile;
+
+                switch (activeGrid) {
+                    case ActiveGrid.ViewGrid:
+                        DisplayActiveBitmap(viewImage);
+                        break;
+                    case ActiveGrid.SettingsGrid:
+                        DisplayActiveBitmap(settingsImage);
+                        break;
+                }
+            } else {
+                SetInactive();
+            }
         }
 
         private void UpdateOutputImage(string fileName) {

@@ -4,11 +4,15 @@ using System.Windows.Controls;
 
 namespace GUI {
     public partial class OpenedFile : UserControl {
-        public string PathToFile { get; private set; }
-        private RoutedEventHandler chooseClick;
-        private RoutedEventHandler closeClick;
+        public delegate void CloseClick(OpenedFile toClose);
+        public delegate void ChangeClick(OpenedFile toClose);
 
-        public OpenedFile(string pathToFile, RoutedEventHandler chooseClick, RoutedEventHandler closeClick) {
+        public string PathToFile { get; }
+
+        private readonly ChangeClick chooseClick;
+        private readonly CloseClick closeClick;
+
+        public OpenedFile(string pathToFile, ChangeClick chooseClick, CloseClick closeClick) {
             InitializeComponent();
             PathToFile = pathToFile;
             this.chooseClick = chooseClick;
@@ -20,11 +24,11 @@ namespace GUI {
         }
 
         private void Choose_Click(object sender, RoutedEventArgs e) {
-            chooseClick(this, e);
+            chooseClick(this);
         }
 
         private void Close_Click(object sender, RoutedEventArgs e) {
-            closeClick(this, e);
+            closeClick(this);
         }
     }
 }
