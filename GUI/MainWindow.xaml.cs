@@ -196,7 +196,7 @@ namespace GUI {
             activeGrid = ActiveGrid.InfoGreed;
             ChangeActive();
             var settings = files[pathToActiveFile].Settings;
-            List<UIElement> elements = new(settings.numOfSettings);
+            List<UIElement> elements = new(settings.NumOfSettings);
 
             string width = "Width (mm) = " + files[pathToActiveFile].Width.ToString();
             string height = "Height (mm) = " + files[pathToActiveFile].Height.ToString();

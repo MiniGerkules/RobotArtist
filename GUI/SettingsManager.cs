@@ -21,9 +21,9 @@ namespace GUI {
         public void DisplaySettings(Grid grid, AlgorithmSettings settings) {
             displayer = new(grid);
             displayer.Reset();
-            displayer.GridInit(settings.numOfSettings + 1);
+            displayer.GridInit(settings.NumOfSettings + 1);
 
-            List<(UIElement, UIElement)> pairs = new(settings.numOfSettings);
+            List<(UIElement, UIElement)> pairs = new(settings.NumOfSettings);
             foreach (var pair in settings) {
                 var (label, value) = CreateRecord(pair);
                 pairs.Add((label, value));
