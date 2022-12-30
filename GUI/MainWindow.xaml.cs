@@ -128,15 +128,10 @@ namespace GUI {
         }
 
         private void DisplayActiveBitmap(Image image) {
-            //ImageBrush imageBrush = new(bitmap);
-            //imageBrush.Stretch = Stretch.Uniform;
-            //outputImage.Background = imageBrush;
-
             image.Source = files[pathToActiveFile].RenderedPicture;
         }
 
         private void RotateImage(object sender, RoutedEventArgs e) {
-            //var (centerX, centerY) = Helpers.GetCenter(outputImage.ActualWidth, outputImage.ActualHeight);
             files[pathToActiveFile].Rotate();
             DisplayActiveBitmap(viewImage);
         }
