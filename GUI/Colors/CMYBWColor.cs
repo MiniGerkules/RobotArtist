@@ -46,35 +46,35 @@ namespace GUI.Colors {
         }
 
         public override Color ToColor() {
-            return ((HSVColor)this).ToColor();
+            return ToHSVColor().ToColor();
         }
 
-        public static explicit operator HSVColor(CMYBWColor color) {
+        public HSVColor ToHSVColor() {
             double a = 0, b = 0, c = 0;
 
             ColorMixType mixType = ColorMixType.MagentaYellow1;
-            if (color.cyan + color.magenta + color.yellow > 0) {
-                if (color.magenta > 0 && (color.yellow > 0 || color.cyan == 0)) {
-                    a = (double)color.magenta / (color.magenta + color.yellow);
+            if (cyan + magenta + yellow > 0) {
+                if (magenta > 0 && (yellow > 0 || cyan == 0)) {
+                    a = (double)magenta / (magenta+yellow);
                     mixType = a > 0.4 ? ColorMixType.MagentaYellow1 : ColorMixType.MagentaYellow2;
                 } else {
-                    if (color.yellow > 0 && (color.cyan > 0 || color.magenta == 0)) {
-                        a = (double)color.yellow / (color.cyan + color.yellow);
+                    if (yellow > 0 && (cyan > 0 || magenta == 0)) {
+                        a = (double)yellow / (cyan+yellow);
                         mixType = ColorMixType.YellowCyan;
                     } else {
-                        a = (double)color.cyan / (color.cyan + color.magenta);
+                        a = (double)cyan / (cyan+magenta);
                         mixType = ColorMixType.CyanMagenta;
                     }
                 }
             }
 
-            if (color.blue + color.white > 0)
-                b = (double)color.blue / (color.blue + color.white);
+            if (blue + white > 0)
+                b = (double)blue / (blue+white);
             else
                 b = 0;
 
-            uint hue = color.cyan + color.magenta + color.yellow;
-            uint vTotal = hue + color.blue + color.white;
+            uint hue = cyan + magenta + yellow;
+            uint vTotal = hue + blue + white;
             c = (double)hue / vTotal;
 
             var hsv = DatabaseLoader.Database.GetHSV(mixType);
