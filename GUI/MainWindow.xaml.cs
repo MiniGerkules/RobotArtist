@@ -142,7 +142,10 @@ namespace GUI {
         }
 
         private async void RepaintImage(object sender, RoutedEventArgs e) {
-            await Task.Run(() => pltImgBuilder.Rebuild(files[pathToActiveFile]));
+            files[pathToActiveFile] = await Task.Run(
+                () => pltImgBuilder.Rebuild(files[pathToActiveFile])
+            );
+            DisplayActiveBitmap(viewImage);
         }
 
         private void ViewClick(object sender, RoutedEventArgs e) {
