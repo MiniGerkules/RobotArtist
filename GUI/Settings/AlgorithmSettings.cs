@@ -41,13 +41,16 @@ namespace GUI.Settings {
         public int NumOfSettings { get; }
 
         public static string GetPropertyDesc(PropertyInfo property) => property.Name switch {
-            nameof(ItersMinOverlap) => "Number of iterations",
-            nameof(MinOverlap) => "Minimum overlap coefficient",
-            nameof(MaxOverlap) => "Maximum overlap coefficient",
-            nameof(PixTol) => "Possible color deviation at the end",
-            nameof(PixTol2) => "Possible color deviation on average",
-            nameof(PixTolBest) => "The Error of taking a smear",
-            nameof(BrushWidth) => "The width of the brush",
+            nameof(ItersMinOverlap) => "Number of iterations.",
+            nameof(MinOverlap) => "Minimum overlap coefficient.",
+            nameof(MaxOverlap) => "Maximum overlap coefficient.",
+            nameof(PixTol) => "Possible color deviation at the end.",
+            nameof(PixTol2) => "Possible color deviation on average.",
+            nameof(PixTolBest) => "The Error of taking a smear.",
+            nameof(BrushWidth) => "The width of the brush.",
+            nameof(NumOfNeibForPropClass) => "Number of neibors for proportion classification.",
+            nameof(NumOfNeibForPropReg) => "Number of neibors for proportion regression.",
+            nameof(NumOfNeibForHSVReg) => "Number of neibors for HSV-color regression.",
             _ => throw new FieldAccessException($"There aren't decription for a {property.Name} setting!")
         };
 
