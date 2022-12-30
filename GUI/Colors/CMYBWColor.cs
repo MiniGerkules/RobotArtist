@@ -94,7 +94,7 @@ namespace GUI.Colors {
             int numOfColors = (int)Math.Min(NumOfNeibForRegression, numRows);
 
             Matrix2D D = (1 / distances.GetByIndexes(indexes[..numOfColors])).MakeDiag();
-            Matrix2D nearestPoints = new(hsv.GetByIndexes(indexes[..numOfColors]));
+            //Matrix2D nearestPoints = new(hsv.GetByIndexes(indexes[..numOfColors]));
             Matrix2D propsOfNearestPoints = new(proportions.GetByIndexes(indexes[..numOfColors]));
 
             Matrix2D E = new(numOfColors, 4, 0); // evaluated polynomial
