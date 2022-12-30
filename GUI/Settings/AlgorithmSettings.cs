@@ -38,7 +38,7 @@ namespace GUI.Settings {
         #endregion
 
         /// <summary> The number of settings </summary>
-        public int NumOfSettings { get; }
+        public readonly int numOfSettings;
 
         public static string GetPropertyDesc(PropertyInfo property) => property.Name switch {
             nameof(ItersMinOverlap) => "Number of iterations.",
@@ -66,7 +66,7 @@ namespace GUI.Settings {
             PixTolBest = pixTolBest;
             BrushWidth = brushWidth;
 
-            NumOfSettings = typeof(AlgorithmSettings).GetProperties().Length;
+            numOfSettings = typeof(AlgorithmSettings).GetProperties().Length;
         }
 
         public AlgorithmSettings(Dictionary<PropertyInfo, object> settings) : this() {
