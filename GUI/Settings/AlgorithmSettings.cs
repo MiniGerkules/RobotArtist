@@ -4,7 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 
 namespace GUI.Settings {
-    internal class AlgorithmSettings : IEnumerable<(PropertyInfo, object)> {
+    internal record class AlgorithmSettings : IEnumerable<(PropertyInfo, object)> {
         #region Settings
         /// <summary> Number of iterations </summary>
         public uint ItersMinOverlap { get; private set; } = 1;
@@ -75,24 +75,6 @@ namespace GUI.Settings {
 
         IEnumerator IEnumerable.GetEnumerator() {
             return GetEnumerator();
-        }
-
-        public override bool Equals(object obj) {
-            if (ReferenceEquals(this, obj)) {
-                return true;
-            } else if (obj is null || obj is not AlgorithmSettings) {
-                return false;
-            } else {
-                AlgorithmSettings other = (AlgorithmSettings)obj;
-                return ItersMinOverlap == other.ItersMinOverlap && MinOverlap == other.MinOverlap &&
-                       MaxOverlap == other.MaxOverlap && PixTol == other.PixTol &&
-                       PixTol2 == other.PixTol2 && PixTolBest == other.PixTolBest &&
-                       BrushWidth == other.BrushWidth;
-            }
-        }
-
-        public override int GetHashCode() {
-            throw new NotImplementedException();
         }
     }
 }

@@ -32,7 +32,7 @@ namespace GUI {
             displayer.DisplayPairs(pairs);
             displayer.DisplayButton("Apply settings", ApplySettings);
 
-            oldSettings = new(settings);
+            oldSettings = settings;
         }
 
         private (SettingToDisplay, TextBox) CreateRecord((PropertyInfo, object) pair) {
@@ -79,9 +79,9 @@ namespace GUI {
 
             DisplayErrors(errors);
             AlgorithmSettings newSettings = new(values);
-            ReturnNewSettings(newSettings, !newSettings.Equals(oldSettings));
+            ReturnNewSettings(newSettings, newSettings != oldSettings);
 
-            oldSettings = new(newSettings);
+            oldSettings = newSettings;
         }
 
         private void DisplayErrors(List<string> errors) {
