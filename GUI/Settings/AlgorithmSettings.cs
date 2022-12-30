@@ -7,38 +7,38 @@ namespace GUI.Settings {
     internal class AlgorithmSettings : IEnumerable<(PropertyInfo, object)> {
         #region Settings
         /// <summary> Number of iterations </summary>
-        public uint ItersMinOverlap { get; private set; }
+        public uint ItersMinOverlap { get; private set; } = 1;
 
         /// <summary> Minimum overlap coefficient </summary>
-        public double MinOverlap { get; private set; }
+        public double MinOverlap { get; private set; } = 0.6;
 
         /// <summary> Maximum overlap coefficient </summary>
-        public double MaxOverlap { get; private set; }
+        public double MaxOverlap { get; private set; } = 1;
 
         /// <summary> Possible color deviation at the end </summary>
-        public double PixTol { get; private set; }
+        public double PixTol { get; private set; } = 9;
 
         /// <summary> Possible color deviation on average </summary>
-        public double PixTol2 { get; private set; }
+        public double PixTol2 { get; private set; } = 100;
 
         /// <summary> The error of taking a smear </summary>
-        public double PixTolBest { get; private set; }
+        public double PixTolBest { get; private set; } = 4;
 
         /// <summary> The width of the brush </summary>
-        public uint BrushWidth { get; private set; }
+        public uint BrushWidth { get; private set; } = 4;
 
         /// <summary> Number of neibors for proportion classification </summary>
-        public uint NumOfNeibForPropClass { get; private set; }
+        public uint NumOfNeibForPropClass { get; private set; } = 10;
 
         /// <summary> Number of neibors for proportion regression </summary>
-        public uint NumOfNeibForPropReg { get; private set; }
+        public uint NumOfNeibForPropReg { get; private set; } = 45;
 
         /// <summary> Number of neibors for HSV-color regression </summary>
-        public uint NumOfNeibForHSVReg { get; private set; }
+        public uint NumOfNeibForHSVReg { get; private set; } = 14;
         #endregion
 
         /// <summary> The number of settings </summary>
-        public readonly int numOfSettings;
+        public readonly int numOfSettings = typeof(AlgorithmSettings).GetProperties().Length;
 
         public static string GetPropertyDesc(PropertyInfo property) => property.Name switch {
             nameof(ItersMinOverlap) => "Number of iterations.",
@@ -54,22 +54,7 @@ namespace GUI.Settings {
             _ => throw new FieldAccessException($"There aren't decription for a {property.Name} setting!")
         };
 
-        public AlgorithmSettings(uint itersMinOverlap = 1, double minOverlap = 0.6,
-                                 double maxOverlap = 1, double pixTol = 9,
-                                 double pixTol2 = 100, double pixTolBest = 4,
-                                 uint brushWidth = 4) {
-            ItersMinOverlap = itersMinOverlap;
-            MinOverlap = minOverlap;
-            MaxOverlap = maxOverlap;
-            PixTol = pixTol;
-            PixTol2 = pixTol2;
-            PixTolBest = pixTolBest;
-            BrushWidth = brushWidth;
-
-            numOfSettings = typeof(AlgorithmSettings).GetProperties().Length;
-        }
-
-        public AlgorithmSettings(Dictionary<PropertyInfo, object> settings) : this() {
+        public AlgorithmSettings(Dictionary<PropertyInfo, object> settings) {
             foreach (var setting in settings)
                 setting.Key.SetValue(this, setting.Value);
         }
