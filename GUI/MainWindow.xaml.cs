@@ -224,12 +224,11 @@ namespace GUI {
         }
 
         private void LoadSettingsFromFile(object sender, RoutedEventArgs e) {
-            var newSettings = SettingsReader.ReadSettings();
-
-            if (newSettings != null)
-                pltImgBuilder.Settings = newSettings;
-            else
-                MessageBox.Show("You didn't choose the file!", "Error!", MessageBoxButton.OK);
+            try {
+                pltImgBuilder.Settings = SettingsReader.ReadSettings();
+            } catch (Exception error) {
+                MessageBox.Show(error.Message, "Error!", MessageBoxButton.OK);
+            }
         }
 
         private void SaveSettingsAsDefault(object sender, RoutedEventArgs e) {

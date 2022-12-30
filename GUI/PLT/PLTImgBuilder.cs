@@ -48,8 +48,10 @@ namespace GUI.PLT {
         }
 
         private BitmapSource CreateBitmapOf(in AlgorithmSettings settings, in PLTDecoderRes picture) {
-            var image = ProcessStrokes(settings, picture);
+            CMYBWColor.NumOfNeibForRegression = settings.NumOfNeibForHSVReg;
             double scale = windowSize.CountScaling(picture.Width, picture.Height);
+
+            var image = ProcessStrokes(settings, picture);
             return RenderBitmap(image, picture.Width, picture.Height, scale);
         }
 

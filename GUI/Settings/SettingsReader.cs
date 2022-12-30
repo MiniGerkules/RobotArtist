@@ -14,7 +14,7 @@ namespace GUI.Settings {
             };
             
             if (fileDialog.ShowDialog() == false)
-                return null;
+                throw new Exception("You didn't choose the file!");
 
             return ReadSettingsFrom(fileDialog.FileName);
         }
@@ -33,18 +33,18 @@ namespace GUI.Settings {
             Type settingsType = typeof(AlgorithmSettings);
             var constructor = settingsType.GetConstructor(
                 BindingFlags.Instance | BindingFlags.Public,
-                new Type[] { typeof(Dictionary<PropertyInfo, double>) }
+                new Type[] { typeof(Dictionary<PropertyInfo, object>) }
             );
 
             if (constructor == null)
                 throw new Exception("Can't create algorithm settings!");
 
             var props = settingsType.GetProperties();
-            Dictionary<PropertyInfo, double> values = new();
+            Dictionary<PropertyInfo, object> values = new();
             foreach (var prop in props) {
                 JsonNode setting = json[prop.Name];
                 if (setting != null)
-                    values[prop] = (double)setting;
+                    values[prop] = setting;
             }
 
             return (AlgorithmSettings)constructor.Invoke(new object[] { values });
