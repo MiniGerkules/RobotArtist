@@ -14,7 +14,7 @@ namespace GUI.Settings {
             };
             
             if (fileDialog.ShowDialog() == false)
-                return null;
+                throw new Exception("You didn't choose the file!");
 
             return ReadSettingsFrom(fileDialog.FileName);
         }
