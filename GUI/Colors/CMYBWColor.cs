@@ -10,6 +10,9 @@ namespace GUI.Colors {
     /// The class describes a color based on cyan, magenta, yellow, blue and white.
     /// </summary>
     internal class CMYBWColor : PLTColor {
+        /// <summary> Number of neibors for HSV-color regression </summary>
+        public static uint NumOfNeibForRegression { get; set; } = 20;
+
         private readonly static uint minColors = 5; // White/black pictures
         private readonly static uint maxColors = 8; // Color pictures
         private readonly uint cyan, magenta, yellow, blue, white;
@@ -88,7 +91,7 @@ namespace GUI.Colors {
             }
 
             int[] indexes = distances.GetIndexesForSorted();
-            int numOfColors = Math.Min(20, numRows);
+            int numOfColors = (int)Math.Min(NumOfNeibForRegression, numRows);
 
             Matrix2D D = (1 / distances.GetByIndexes(indexes[..numOfColors])).MakeDiag();
             Matrix2D nearestPoints = new(hsv.GetByIndexes(indexes[..numOfColors]));
