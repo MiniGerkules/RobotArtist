@@ -4,14 +4,14 @@ using System.Collections;
 using System.Collections.Generic;
 
 namespace GUI.Settings {
-    internal class AlgorithmSettings : IEnumerable<(PropertyInfo, double)> {
-        public double ItersMinOverlap { get; private set; } // Number of iterations
+    internal class AlgorithmSettings : IEnumerable<(PropertyInfo, object)> {
+        public uint ItersMinOverlap { get; private set; }   // Number of iterations
         public double MinOverlap { get; private set; }      // Minimum overlap coefficient
         public double MaxOverlap { get; private set; }      // Maximum overlap coefficient
         public double PixTol { get; private set; }          // Possible color deviation at the end
         public double PixTol2 { get; private set; }         // Possible color deviation on average
         public double PixTolBest { get; private set; }      // The Error of taking a smear
-        public double BrushWidth { get; private set; }      // The width of the brush
+        public uint BrushWidth { get; private set; }        // The width of the brush
 
         public readonly int numOfSettings;                  // The number of settings
 
@@ -26,9 +26,10 @@ namespace GUI.Settings {
             _ => throw new FieldAccessException($"There aren't decription for {property.Name} setting!")
         };
 
-        public AlgorithmSettings(double itersMinOverlap = 1, double minOverlap = 0.6,
-                                 double maxOverlap = 1, double pixTol = 9, double pixTol2 = 100,
-                                 double pixTolBest = 4, double brushWidth = 4) {
+        public AlgorithmSettings(uint itersMinOverlap = 1, double minOverlap = 0.6,
+                                 double maxOverlap = 1, double pixTol = 9,
+                                 double pixTol2 = 100, double pixTolBest = 4,
+                                 uint brushWidth = 4) {
             ItersMinOverlap = itersMinOverlap;
             MinOverlap = minOverlap;
             MaxOverlap = maxOverlap;
@@ -40,7 +41,7 @@ namespace GUI.Settings {
             numOfSettings = typeof(AlgorithmSettings).GetProperties().Length;
         }
 
-        public AlgorithmSettings(Dictionary<PropertyInfo, double> settings) : this() {
+        public AlgorithmSettings(Dictionary<PropertyInfo, object> settings) : this() {
             foreach (var setting in settings)
                 setting.Key.SetValue(this, setting.Value);
         }
@@ -51,12 +52,12 @@ namespace GUI.Settings {
                 setting.SetValue(this, setting.GetValue(toCopy));
         }
 
-        public IEnumerator<(PropertyInfo, double)> GetEnumerator() {
+        public IEnumerator<(PropertyInfo, object)> GetEnumerator() {
             var props = typeof(AlgorithmSettings).GetProperties(BindingFlags.Instance |
                                                                 BindingFlags.Public);
 
             foreach (var prop in props)
-                yield return (prop, (double)prop.GetValue(this));
+                yield return (prop, prop.GetValue(this));
         }
 
         IEnumerator IEnumerable.GetEnumerator() {

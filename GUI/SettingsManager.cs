@@ -35,7 +35,7 @@ namespace GUI {
             oldSettings = new(settings);
         }
 
-        private (SettingToDisplay, TextBox) CreateRecord((PropertyInfo, double) pair) {
+        private (SettingToDisplay, TextBox) CreateRecord((PropertyInfo, object) pair) {
             SettingToDisplay label = new(pair.Item1);
             label.Text = AlgorithmSettings.GetPropertyDesc(pair.Item1);
             label.FontSize = DefaultGUISettings.FontSize;
@@ -59,18 +59,19 @@ namespace GUI {
             List<string> errors = new();
 
             var displayedElems = displayer.GetDisplayedElems();
-            Dictionary<PropertyInfo, double> values = new();
+            Dictionary<PropertyInfo, object> values = new();
             foreach (var row in displayedElems) {
                 SettingToDisplay setting = (SettingToDisplay)row.Find(elem => elem is SettingToDisplay);
                 TextBox settingValue = (TextBox)row.Find(elem => elem is TextBox);
                 if (row.Count != 2 || setting == null || settingValue == null)
                     continue;
 
-                if (double.TryParse(settingValue.Text, out double value)) {
+                try {
+                    var value = Convert.ChangeType(settingValue.Text, setting.Setting.PropertyType);
                     values[setting.Setting] = value;
-                } else {
+                } catch (Exception) {
                     errors.Add(setting.Text);
-                    double oldValue = (double)setting.Setting.GetValue(oldSettings);
+                    var oldValue = setting.Setting.GetValue(oldSettings);
                     values[setting.Setting] = oldValue;
                     settingValue.Text = oldValue.ToString();
                 }
