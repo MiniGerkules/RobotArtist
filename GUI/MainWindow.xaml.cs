@@ -13,8 +13,7 @@ using Microsoft.Win32;
 using GUI.PLT;
 using GUI.Settings;
 
-namespace GUI
-{
+namespace GUI {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
