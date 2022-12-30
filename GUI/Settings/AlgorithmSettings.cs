@@ -54,15 +54,11 @@ namespace GUI.Settings {
             _ => throw new FieldAccessException($"There aren't decription for a {property.Name} setting!")
         };
 
+        public AlgorithmSettings() { }
+
         public AlgorithmSettings(Dictionary<PropertyInfo, object> settings) {
             foreach (var setting in settings)
                 setting.Key.SetValue(this, setting.Value);
-        }
-
-        public AlgorithmSettings(AlgorithmSettings toCopy) {
-            var settings = typeof(AlgorithmSettings).GetProperties();
-            foreach (var setting in settings)
-                setting.SetValue(this, setting.GetValue(toCopy));
         }
 
         public IEnumerator<(PropertyInfo, object)> GetEnumerator() {
