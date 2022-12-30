@@ -16,14 +16,14 @@ namespace GUI.Settings {
         public readonly int numOfSettings;                  // The number of settings
 
         public static string GetPropertyDesc(PropertyInfo property) => property.Name switch {
-            "ItersMinOverlap" => "Number of iterations",
-            "MinOverlap" => "Minimum overlap coefficient",
-            "MaxOverlap" => "Maximum overlap coefficient",
-            "PixTol" => "Possible color deviation at the end",
-            "PixTol2" => "Possible color deviation on average",
-            "PixTolBest" => "The Error of taking a smear",
-            "BrushWidth" => "The width of the brush",
-            _ => throw new FieldAccessException($"There aren't decription for {property.Name} setting!")
+            nameof(ItersMinOverlap) => "Number of iterations",
+            nameof(MinOverlap) => "Minimum overlap coefficient",
+            nameof(MaxOverlap) => "Maximum overlap coefficient",
+            nameof(PixTol) => "Possible color deviation at the end",
+            nameof(PixTol2) => "Possible color deviation on average",
+            nameof(PixTolBest) => "The Error of taking a smear",
+            nameof(BrushWidth) => "The width of the brush",
+            _ => throw new FieldAccessException($"There aren't decription for a {property.Name} setting!")
         };
 
         public AlgorithmSettings(uint itersMinOverlap = 1, double minOverlap = 0.6,
