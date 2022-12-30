@@ -294,19 +294,7 @@ namespace GUI {
         }
 
         private void CloseActiveFile(object sender, RoutedEventArgs e) {
-            if (pathToActiveFile != null) {
-                files.Remove(pathToActiveFile);
-                openedFiles.Children.Remove(tabs[pathToActiveFile]);
-                if (openedFiles.Children.Count != 0) {
-                    pathToActiveFile = ((OpenedFile)openedFiles.Children[0]).PathToFile;
-                    if ((viewButton.Background as SolidColorBrush).Color == DefaultGUISettings.activeButton.Color)
-                        DisplayActiveBitmap(viewImage);
-                    else
-                        DisplayActiveBitmap(settingsImage);
-                } else {
-                    SetInactive();
-                }
-            }
+            CloseFile(pathToActiveFile);
         }
 
         private void CloseApp(object sender, RoutedEventArgs e) {
