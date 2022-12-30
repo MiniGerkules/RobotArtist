@@ -13,8 +13,7 @@ using Microsoft.Win32;
 using GUI.PLT;
 using GUI.Settings;
 
-namespace GUI
-{
+namespace GUI {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
@@ -27,7 +26,6 @@ namespace GUI
         private string pathToActiveFile = null;
 
         private readonly SettingsManager settingsManager;
-        private AlgorithmSettings curSettings = null;
 
         private readonly PLTDecoder pltDecoder = new();
         private readonly PLTImgBuilder pltImgBuilder = new();
@@ -118,8 +116,6 @@ namespace GUI
 
         private async Task PLTFileHandler(string fileName) {
             var pltPicture = Task.Run(() => pltDecoder.Decode(fileName));
-
-            curSettings ??= SettingsReader.ReadDefaultSettings();
             var picture = Task.Run(async () => pltImgBuilder.Build(await pltPicture));
 
             pathToActiveFile = new(fileName);
@@ -146,7 +142,10 @@ namespace GUI
         }
 
         private async void RepaintImage(object sender, RoutedEventArgs e) {
-            await Task.Run(() => pltImgBuilder.Rebuild(files[pathToActiveFile]));
+            files[pathToActiveFile] = await Task.Run(
+                () => pltImgBuilder.Rebuild(files[pathToActiveFile])
+            );
+            DisplayActiveBitmap(viewImage);
         }
 
         private void ViewClick(object sender, RoutedEventArgs e) {
@@ -195,26 +194,24 @@ namespace GUI
         }
 
         private void SaveCurrentSettings(object sender, RoutedEventArgs e) {
-            if (curSettings == null) return;
-            SettingsWriter.WriteSettings(curSettings);
+            SettingsWriter.WriteSettings(pltImgBuilder.Settings);
         }
 
         private void LoadSettingsFromFile(object sender, RoutedEventArgs e) {
             var newSettings = SettingsReader.ReadSettings();
 
             if (newSettings != null)
-                curSettings = newSettings;
+                pltImgBuilder.Settings = newSettings;
             else
                 MessageBox.Show("You didn't choose the file!", "Error!", MessageBoxButton.OK);
         }
 
         private void SaveSettingsAsDefault(object sender, RoutedEventArgs e) {
-            if (curSettings != null)
-                SettingsWriter.WriteSettingsToDefaultConf(curSettings);
+            SettingsWriter.WriteSettingsToDefaultConf(pltImgBuilder.Settings);
         }
 
         private void ResetSettings(object sender, RoutedEventArgs e) {
-            curSettings = SettingsReader.ReadDefaultSettings();
+            pltImgBuilder.Settings = SettingsReader.ReadDefaultSettings();
         }
 
         private void ChangeActive() {
