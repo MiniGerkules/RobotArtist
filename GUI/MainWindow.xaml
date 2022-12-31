@@ -43,7 +43,7 @@
             <MenuItem x:Name="infoButton" Header="Information about the painting" Click="InfoClick"/>
         </Menu>
 
-        <Grid x:Name="viewGrid" Visibility="Visible" Grid.Row="1" Grid.Column="0">
+        <Grid x:Name="viewGrid" Visibility="Collapsed" Grid.Row="1" Grid.Column="0">
             <Grid.RowDefinitions>
             <RowDefinition Height="*" MinHeight="60"/>
             <RowDefinition Height="15*"/>
@@ -85,16 +85,9 @@
 
         <Grid x:Name="infoGrid" Visibility="Collapsed" Grid.Row="1" Grid.Column="0"/>
 
-        <!--<Grid x:Name="footer" Grid.Row="2" Grid.Column="0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition/>
-                <ColumnDefinition/>
-            </Grid.ColumnDefinitions>
-
-            <TextBlock x:Name="status" Grid.Row="0" Grid.Column="0"/>
-            <ProgressBar x:Name="progressBar" Grid.Row="0" Grid.Column="1"
-                         Minimum="0" Maximum="100" Value="{Binding CurPercentOfProcessing, Mode=OneWay}"/>
-        </Grid>-->
+        <Grid x:Name="strocesStructure" Visibility="Collapsed" Grid.Row="1" Grid.Column="0">
+            <Image x:Name="strocesStructureImg"/>
+        </Grid>
 
         <StatusBar x:Name="footer" Grid.Row="2" Grid.Column="0">
             <StatusBar.ItemsPanel>
