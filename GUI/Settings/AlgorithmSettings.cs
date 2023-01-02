@@ -57,8 +57,11 @@ namespace GUI.Settings {
         public AlgorithmSettings() { }
 
         public AlgorithmSettings(Dictionary<PropertyInfo, object> settings) {
-            foreach (var setting in settings)
-                setting.Key.SetValue(this, setting.Value);
+            foreach (var setting in settings) {
+                setting.Key.SetValue(
+                    this, Convert.ChangeType(setting.Value, setting.Key.PropertyType)
+                );
+            }
         }
 
         public IEnumerator<(PropertyInfo, object?)> GetEnumerator() {
