@@ -32,15 +32,16 @@
                 <MenuItem Header="Сlose" Click="CloseActiveFile"/>
                 <MenuItem Header="Exit" Click="CloseApp"/>
             </MenuItem>
-            <MenuItem x:Name="viewButton" Header="Viewing" Click="ViewClick"/>
+            <MenuItem x:Name="viewButton" Header="Viewing" Click="MenuButtonClick"/>
+            <MenuItem x:Name="stroKesStructButton" Header="Strokes stucture" Click="MenuButtonClick"/>
             <MenuItem x:Name="settingsButton" Header="Settings">
-                <MenuItem Header="Edit current picture settings" Click="EditCurPicSettings"/>
+                <MenuItem Header="Edit current picture settings" Click="EditCurSettings"/>
                 <MenuItem Header="Save settings to a file" Click="SaveCurrentSettings"/>
                 <MenuItem Header="Load settings from a file" Click="LoadSettingsFromFile"/>
                 <MenuItem Header="Set current settings as default" Click="SaveSettingsAsDefault"/>
                 <MenuItem Header="Reset settings to default" Click="ResetSettings"/>
             </MenuItem>
-            <MenuItem x:Name="infoButton" Header="Information about the painting" Click="InfoClick"/>
+            <MenuItem x:Name="infoButton" Header="Information about the painting" Click="MenuButtonClick"/>
         </Menu>
 
         <Grid x:Name="pagePlaceholder" Grid.Row="1"/>
