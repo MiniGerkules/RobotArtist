@@ -4,9 +4,9 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:GUI"
-        d:DataContext="{d:DesignInstance Type=local:BuildingImgProcessVM}"
         mc:Ignorable="d"
-        Title="RobotArtist" Height="450" Width="800" MinHeight="375" MinWidth="450"
+        d:DataContext="{d:DesignInstance Type=local:BuildingImgProcessVM}"
+        Title="RobotArtist" MinHeight="375" MinWidth="500"
         WindowState="Maximized" Loaded="WindowLoaded">
 
     <Window.Resources>
