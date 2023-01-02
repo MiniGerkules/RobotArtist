@@ -126,13 +126,10 @@ namespace GUI {
             pages[activeTab].SetActive();
         }
 
-        private async void ApplySettings(AlgorithmSettings settedSettings, bool changed) {
-            if (changed) {
-                files[pathToActiveFile] = await Task.Run(
-                    () => pltImgBuilder.Rebuild(settedSettings, files[pathToActiveFile])
-                );
-                DisplayActiveBitmap(settingsImage);
-            }
+        private void SetAllPagesInactive() {
+            activePage = null;
+            foreach (var (_, page) in pages)
+                page.SetInactive();
         }
 
         private void CloseActiveFile(object sender, RoutedEventArgs e) {
