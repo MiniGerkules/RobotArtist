@@ -33,9 +33,9 @@ namespace GUI.Pages {
             List<string> infoFields = new(active.Settings.numOfSettings) {
                 $"Width (mm) = {active.Width}.", $"Height (mm) = {active.Height}."
             };
-            foreach (var pair in active.Settings) {
-                string text = AlgorithmSettings.GetPropertyDesc(pair.Item1) + " = " + pair.Item2.ToString();
-                infoFields.Add(text);
+            foreach (var (property, value) in active.Settings) {
+                if (value == null) continue;
+                infoFields.Add($"{AlgorithmSettings.GetPropertyDesc(property)} = {value}.");
             }
 
             ShowInfo(infoFields.ToImmutableList());

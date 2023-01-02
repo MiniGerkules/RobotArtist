@@ -37,8 +37,8 @@ namespace GUI.Colors {
             return !(first == second);
         }
 
-        public override bool Equals(object obj) {
-            return obj is CMYBWColor color && this == color;
+        public override bool Equals(object? obj) {
+            return obj != null && obj is CMYBWColor color && this == color;
         }
 
         public override int GetHashCode() {

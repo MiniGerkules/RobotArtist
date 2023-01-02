@@ -33,7 +33,7 @@ namespace GUI.Settings {
             Dictionary<string, double> vals = new();
             var props = typeof(AlgorithmSettings).GetProperties();
             foreach (var prop in props)
-                vals.Add(prop.Name, (double)prop.GetValue(settings));
+                vals.Add(prop.Name, (double)prop.GetValue(settings)!);
 
             var options = new JsonSerializerOptions() { WriteIndented = true };
             var json = JsonSerializer.Serialize(vals, options);

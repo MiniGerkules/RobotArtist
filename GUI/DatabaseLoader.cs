@@ -10,7 +10,7 @@ using GeneralComponents;
 
 namespace GUI {
     internal class DatabaseLoader {
-        private static Database database = null;
+        private static Database? database = null;
         public static Database Database => database ??
                         throw new NullReferenceException("Database wasn't loaded!");
 
