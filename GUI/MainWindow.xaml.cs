@@ -13,6 +13,10 @@ using Microsoft.Win32;
 using GUI.PLT;
 using GUI.Settings;
 
+using GUI.Pages;
+using GUI.Pages.ViewPage;
+using GUI.Pages.SettingsPage;
+
 namespace GUI {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
@@ -31,18 +35,27 @@ namespace GUI {
         private readonly PLTImgBuilder pltImgBuilder = new();
         private readonly BuildingImgProcessVM vm;
 
-        private static readonly string pathToDatabase = @"resources/ModelTable600_initial.xls";
-        private ActiveGrid activeGrid = ActiveGrid.NoActive;
+        private readonly IImgFileContainer filesContainer;
+        private readonly Dictionary<MenuItem, IPage> pages;
+        private MenuItem? activePage = null;
 
         public MainWindow() {
             InitializeComponent();
-            vm = new(pltDecoder, pltImgBuilder);
-            footer.DataContext = vm;
+
+            footer.DataContext = new BuildingImgProcessVM(pltDecoder, pltImgBuilder);
+            filesContainer = new ViewPage(viewButton, pltDecoder, pltImgBuilder);
+            pages = new() {
+                { viewButton, (filesContainer as IPage)! },
+                { stroKesStructButton, new StrokesStructurePage(stroKesStructButton) },
+                { settingsButton, new SettingsPage(settingsButton, filesContainer.GetActive,
+                                                   ErrorsDisplayer, filesContainer.ApplySettingsForActive) },
+                { infoButton, new InformationPage(infoButton, filesContainer.GetActive) },
+            };
 
             mainMenu.Background = DefaultGUISettings.menuColor;
-            SetInactive();
-
-            settingsManager = new(ApplySettings);
+            foreach (var (_, page) in pages)
+                pagePlaceholder.Children.Add(page as UserControl);
+            SetAllPagesInactive();
 
             CommandBinding commandBinding = new(ApplicationCommands.Open, OpenFile);
             CommandBindings.Add(commandBinding);
