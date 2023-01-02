@@ -18,22 +18,14 @@ using GUI.Pages.ViewPage;
 using GUI.Pages.SettingsPage;
 
 namespace GUI {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
     public partial class MainWindow : Window {
-        private Algorithm.Tracer tracer;
+        private static readonly string pathToDatabase = @"resources/ModelTable600_initial.xls";
 
-        private readonly Dictionary<string, PLTPicture> files = new();
-        private readonly Dictionary<string, UIElement> tabs = new();
+        /// <summary> Key -- path to plt file, value -- path to saved image </summary>
         private readonly Dictionary<string, string> savedFiles = new();
-        private string pathToActiveFile = null;
-
-        private readonly SettingsManager settingsManager;
 
         private readonly PLTDecoder pltDecoder = new();
         private readonly PLTImgBuilder pltImgBuilder = new();
-        private readonly BuildingImgProcessVM vm;
 
         private readonly IImgFileContainer filesContainer;
         private readonly Dictionary<MenuItem, IPage> pages;
