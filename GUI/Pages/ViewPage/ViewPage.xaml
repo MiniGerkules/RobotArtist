@@ -1,0 +1,48 @@
+﻿<UserControl x:Class="GUI.Pages.ViewPage.ViewPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:GUI.Pages.ViewPage"
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance Type=local:ViewVM}"
+             d:DesignHeight="450" d:DesignWidth="800">
+    
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../../Styles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Grid x:Name="mainGrid">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" MinHeight="60"/>
+            <RowDefinition Height="15*"/>
+        </Grid.RowDefinitions>
+
+        <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Auto">
+            <ItemsControl ItemsSource="{Binding Items}" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+            </ItemsControl>
+        </ScrollViewer>
+
+        <Image x:Name="viewImage" Source="{Binding Image}" Grid.Row="2" Grid.Column="0">
+            <Image.LayoutTransform>
+                <ScaleTransform ScaleX="1" ScaleY="-1"/>
+            </Image.LayoutTransform>
+
+            <Image.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Rotate 90 degrees" Click="RotateImage"/>
+                    <MenuItem Header="Completely rebuild" Click="RepaintImage"/>
+                </ContextMenu>
+            </Image.ContextMenu>
+        </Image>
+    </Grid>
+</UserControl>
