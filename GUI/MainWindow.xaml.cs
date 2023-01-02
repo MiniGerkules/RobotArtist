@@ -39,7 +39,7 @@ namespace GUI {
                 { viewButton, (filesContainer as IPage)! },
                 { stroKesStructButton, new StrokesStructurePage(stroKesStructButton) },
                 { settingsButton, new SettingsPage(settingsButton, filesContainer.GetActive,
-                                                   ErrorsDisplayer, filesContainer.ApplySettingsForActive) },
+                                                   ErrorDisplayer, filesContainer.ApplySettingsForActive) },
                 { infoButton, new InformationPage(infoButton, filesContainer.GetActive) },
             };
 
@@ -53,11 +53,15 @@ namespace GUI {
             openButton.CommandBindings.Add(commandBinding);
         }
 
+        private void ErrorDisplayer(string errorMsg) {
+            MessageBox.Show(errorMsg, "ERROR!", MessageBoxButton.OK);
+        }
+
         private void WindowLoaded(object sender, RoutedEventArgs e) {
             DatabaseLoader.LoadDatabase(pathToDatabase);
             if (!DatabaseLoader.IsLoaded()) {
-                MessageBox.Show("Can't to upload a file with color data. Check the presence " +
-                    "of the database file in the directory.", "Error!", MessageBoxButton.OK);
+                ErrorDisplayer("Can't to upload a file with color data. Check " +
+                                "the presence of the database file in the directory.");
                 Close();
             }
         }
@@ -68,13 +72,13 @@ namespace GUI {
             };
 
             if (fileDialog.ShowDialog() == false) {
-                MessageBox.Show("Can't open file!", "Error!", MessageBoxButton.OK);
+                ErrorDisplayer("Can't open file!");
             } else {
                 try {
                     filesContainer.Add(fileDialog.FileName);
                     ChangeActivePage(viewButton);
                 } catch (Exception error) {
-                    MessageBox.Show(error.Message, "ERROR!", MessageBoxButton.OK);
+                    ErrorDisplayer(error.Message);
                 }
             }
         }
@@ -99,7 +103,7 @@ namespace GUI {
             try {
                 pltImgBuilder.Settings = SettingsReader.ReadSettings();
             } catch (Exception error) {
-                MessageBox.Show(error.Message, "Error!", MessageBoxButton.OK);
+                ErrorDisplayer(error.Message);
             }
         }
 
@@ -179,9 +183,9 @@ namespace GUI {
                 call = SavePLTToFile;
             }
 
-            if (dlg.ShowDialog() != true)
-                MessageBox.Show("Couldn't select the path to save the file!", "Error!", MessageBoxButton.OK);
-            else {
+            if (dlg.ShowDialog() != true) {
+                ErrorDisplayer("Couldn't select the path to save the file!");
+            } else {
                 savedFiles[pathToActive] = dlg.FileName;
                 call(active.RenderedPicture, dlg.FileName);
             }
