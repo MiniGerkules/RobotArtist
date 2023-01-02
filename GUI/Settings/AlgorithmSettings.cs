@@ -4,7 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 
 namespace GUI.Settings {
-    internal record class AlgorithmSettings : IEnumerable<(PropertyInfo, object)> {
+    public record class AlgorithmSettings : IEnumerable<(PropertyInfo, object?)> {
         #region Settings
         /// <summary> Number of iterations </summary>
         public uint ItersMinOverlap { get; private set; } = 1;
@@ -61,9 +61,9 @@ namespace GUI.Settings {
                 setting.Key.SetValue(this, setting.Value);
         }
 
-        public IEnumerator<(PropertyInfo, object)> GetEnumerator() {
-            var props = typeof(AlgorithmSettings).GetProperties(BindingFlags.Instance |
-                                                                BindingFlags.Public);
+        public IEnumerator<(PropertyInfo, object?)> GetEnumerator() {
+            var props = typeof(AlgorithmSettings).
+                            GetProperties(BindingFlags.Instance | BindingFlags.Public);
 
             foreach (var prop in props)
                 yield return (prop, prop.GetValue(this));
