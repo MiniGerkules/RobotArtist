@@ -64,159 +64,21 @@ namespace GUI {
 
             if (fileDialog.ShowDialog() == false)
                 MessageBox.Show("Can't open file!", "Error!", MessageBoxButton.OK);
-            else
-                ProcessFile(fileDialog.FileName);
-        }
-
-        private async void ProcessFile(string fileName) {
-            if (IsFileAlreadyOpened(fileName))
-                return;
-
-            try {
-                if (fileName.EndsWith(".plt")) await PLTFileHandler(fileName);
-                else await ImageFileHandler(fileName);
-            } catch (ArgumentException Error) {
-                MessageBox.Show($"Can't process file!\n{Error.Message}",
-                                "Error!", MessageBoxButton.OK);
-                return;
-            }
-
-            AddNewOpenedFile(fileName);
-            SwitchToAnotherTab(ActiveGrid.ViewGrid, viewImage);
-        }
-
-        private bool IsFileAlreadyOpened(string file) {
-            if (files.ContainsKey(file)) {
-                UpdateOutputImage(file);
-                return true;
-            }
-
-            return false;
-        }
-
-        private void AddNewOpenedFile(in string fileName) {
-            OpenedFile file = new(fileName, ChangeFile, CloseFile);
-
-            openedFiles.Children.Add(file);
-            tabs[pathToActiveFile] = openedFiles.Children[^1];
-        }
-
-        private void ChangeFile(OpenedFile sender) {
-            if (sender.PathToFile == pathToActiveFile)
-                return;
-
-            UpdateOutputImage(sender.PathToFile);
-        }
-
-        private void CloseFile(OpenedFile sender) {
-            CloseFile(sender.PathToFile);
-        }
-
-        private void CloseFile(string fileToClose) {
-            if (!tabs.ContainsKey(fileToClose)) return;
-
-            files.Remove(fileToClose);
-            openedFiles.Children.Remove(tabs[fileToClose]);
-            tabs.Remove(fileToClose);
-
-            if (fileToClose == pathToActiveFile)
-                WasClosedActiveFile();
-        }
-
-        private void WasClosedActiveFile() {
-            if (openedFiles.Children.Count != 0) {
-                pathToActiveFile = ((OpenedFile)openedFiles.Children[0]).PathToFile;
-
-                switch (activeGrid) {
-                    case ActiveGrid.ViewGrid:
-                        DisplayActiveBitmap(viewImage);
-                        break;
-                    case ActiveGrid.SettingsGrid:
-                        DisplayActiveBitmap(settingsImage);
-                        break;
-                }
             } else {
                 SetInactive();
             }
         }
 
-        private void UpdateOutputImage(string fileName) {
-            pathToActiveFile = fileName;
-            SwitchToAnotherTab(ActiveGrid.ViewGrid, viewImage);
-        }
-
-        private async Task PLTFileHandler(string fileName) {
-            var pltPicture = Task.Run(() => pltDecoder.Decode(fileName));
-            var picture = Task.Run(async () => pltImgBuilder.Build(await pltPicture));
-
-            pathToActiveFile = new(fileName);
-            files[pathToActiveFile] = await picture;
-        }
-
-        private async Task ImageFileHandler(string fileName) {
-            BitmapImage image = new(new Uri(fileName));
-            tracer = new(image, new(new()), DatabaseLoader.Database);
-        }
-
-        private void DisplayActiveBitmap(Image image) {
-            image.Source = files[pathToActiveFile].RenderedPicture;
-        }
-
-        private void RotateImage(object sender, RoutedEventArgs e) {
-            files[pathToActiveFile].Rotate();
-            DisplayActiveBitmap(viewImage);
-        }
-
-        private async void RepaintImage(object sender, RoutedEventArgs e) {
-            files[pathToActiveFile] = await Task.Run(
-                () => pltImgBuilder.Rebuild(files[pathToActiveFile])
-            );
-            DisplayActiveBitmap(viewImage);
-        }
-
-        private void ViewClick(object sender, RoutedEventArgs e) {
-            if (pathToActiveFile == null || activeGrid == ActiveGrid.ViewGrid)
+        private void MenuButtonClick(object sender, RoutedEventArgs e) {
+            if (!IsAnyPageActive() || sender is not MenuItem ||
+                    ReferenceEquals(sender, activePage))
                 return;
 
-            SwitchToAnotherTab(ActiveGrid.ViewGrid, viewImage);
+            ChangeActivePage((MenuItem)sender);
         }
 
-        private void EditCurPicSettings(object sender, RoutedEventArgs e) {
-            if (pathToActiveFile == null || activeGrid == ActiveGrid.SettingsGrid)
-                return;
-
-            SwitchToAnotherTab(ActiveGrid.SettingsGrid, settingsImage);
-            settingsManager.DisplaySettings(settingsFields, files[pathToActiveFile].Settings);
-        }
-
-        private void InfoClick(object sender, RoutedEventArgs e) {
-            if (pathToActiveFile == null || activeGrid == ActiveGrid.InfoGreed)
-                return;
-
-            activeGrid = ActiveGrid.InfoGreed;
-            ChangeActive();
-            var settings = files[pathToActiveFile].Settings;
-            List<UIElement> elements = new(settings.numOfSettings);
-
-            string width = "Width (mm) = " + files[pathToActiveFile].Width.ToString();
-            string height = "Height (mm) = " + files[pathToActiveFile].Height.ToString();
-            elements.Add(Helpers.CreateTextBlock(width, HorizontalAlignment.Center, new()));
-            elements.Add(Helpers.CreateTextBlock(height, HorizontalAlignment.Center, new()));
-
-            foreach (var pair in settings) {
-                string text = AlgorithmSettings.GetPropertyDesc(pair.Item1) + " = " + pair.Item2.ToString();
-                elements.Add(Helpers.CreateTextBlock(text, HorizontalAlignment.Center, new()));
-            }
-
-            GridDisplayer displayer = new(infoGrid);
-            displayer.Reset();
-            displayer.DisplayElemByRow(elements);
-        }
-
-        private void SwitchToAnotherTab(ActiveGrid active, Image image) {
-            activeGrid = active;
-            ChangeActive();
-            DisplayActiveBitmap(image);
+        private void EditCurSettings(object sender, RoutedEventArgs e) {
+            MenuButtonClick(settingsButton, e);
         }
 
         private void SaveCurrentSettings(object sender, RoutedEventArgs e) {
@@ -239,48 +101,18 @@ namespace GUI {
             pltImgBuilder.Settings = SettingsReader.ReadDefaultSettings();
         }
 
-        private void ChangeActive() {
-            switch (activeGrid) {
-                case ActiveGrid.ViewGrid:
-                    viewGrid.Visibility = Visibility.Visible;
-                    settingsGrid.Visibility = Visibility.Collapsed;
-                    infoGrid.Visibility = Visibility.Collapsed;
-                    viewButton.Background = DefaultGUISettings.activeButton;
-                    settingsButton.Background = DefaultGUISettings.inactiveButton;
-                    infoButton.Background = DefaultGUISettings.inactiveButton;
-                    break;
-                case ActiveGrid.SettingsGrid:
-                    viewGrid.Visibility = Visibility.Collapsed;
-                    settingsGrid.Visibility = Visibility.Visible;
-                    infoGrid.Visibility = Visibility.Collapsed;
-                    viewButton.Background = DefaultGUISettings.inactiveButton;
-                    settingsButton.Background = DefaultGUISettings.activeButton;
-                    infoButton.Background = DefaultGUISettings.inactiveButton;
-                    break;
-                case ActiveGrid.InfoGreed:
-                    viewGrid.Visibility = Visibility.Collapsed;
-                    settingsGrid.Visibility = Visibility.Collapsed;
-                    infoGrid.Visibility = Visibility.Visible;
-                    viewButton.Background = DefaultGUISettings.inactiveButton;
-                    settingsButton.Background = DefaultGUISettings.inactiveButton;
-                    infoButton.Background = DefaultGUISettings.activeButton;
-                    break;
+        private bool IsAnyPageActive() {
+            foreach (var (_, page) in pages) {
+                if (page.IsActive()) return true;
             }
+
+            return false;
         }
 
-        private void SetInactive() {
-            pathToActiveFile = null;
-
-            viewGrid.Visibility = Visibility.Visible;
-            settingsGrid.Visibility = Visibility.Collapsed;
-            infoGrid.Visibility = Visibility.Collapsed;
-
-            viewButton.Background = DefaultGUISettings.inactiveButton;
-            settingsButton.Background = DefaultGUISettings.inactiveButton;
-            infoButton.Background = DefaultGUISettings.inactiveButton;
-
-            viewImage.Source = null;
-            settingsImage.Source = null;
+        private void ChangeActivePage(MenuItem activeTab) {
+            SetAllPagesInactive();
+            activePage = activeTab;
+            pages[activeTab].SetActive();
         }
 
         private async void ApplySettings(AlgorithmSettings settedSettings, bool changed) {
