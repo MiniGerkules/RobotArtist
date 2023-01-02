@@ -43,51 +43,7 @@
             <MenuItem x:Name="infoButton" Header="Information about the painting" Click="InfoClick"/>
         </Menu>
 
-        <Grid x:Name="viewGrid" Visibility="Collapsed" Grid.Row="1" Grid.Column="0">
-            <Grid.RowDefinitions>
-            <RowDefinition Height="*" MinHeight="60"/>
-            <RowDefinition Height="15*"/>
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="1*"/>
-            </Grid.ColumnDefinitions>
-
-            <StackPanel x:Name="openedFiles" Grid.Row="0" Grid.Column="0" Orientation="Horizontal"/>
-
-            <Image x:Name="viewImage" Grid.Row="2" Grid.Column="0">
-                <Image.LayoutTransform>
-                    <ScaleTransform ScaleX="1" ScaleY="-1"/>
-                </Image.LayoutTransform>
-
-                <Image.ContextMenu>
-                    <ContextMenu>
-                        <MenuItem Header="Rotate 90 degrees" Click="RotateImage"/>
-                        <MenuItem Header="Completely rebuild" Click="RepaintImage"/>
-                    </ContextMenu>
-                </Image.ContextMenu>
-            </Image>
-        </Grid>
-
-        <Grid x:Name="settingsGrid" Visibility="Collapsed" Grid.Row="1" Grid.Column="0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-
-            <Image x:Name="settingsImage" Grid.Row="0" Grid.Column="0">
-                <Image.LayoutTransform>
-                    <ScaleTransform ScaleX="1" ScaleY="-1"/>
-                </Image.LayoutTransform>
-            </Image>
-
-            <Grid x:Name="settingsFields" Grid.Row="0" Grid.Column="1"/>
-        </Grid>
-
-        <Grid x:Name="infoGrid" Visibility="Collapsed" Grid.Row="1" Grid.Column="0"/>
-
-        <Grid x:Name="strocesStructure" Visibility="Collapsed" Grid.Row="1" Grid.Column="0">
-            <Image x:Name="strocesStructureImg"/>
-        </Grid>
+        <Grid x:Name="pagePlaceholder" Grid.Row="1"/>
 
         <StatusBar x:Name="footer" Grid.Row="2" Grid.Column="0">
             <StatusBar.ItemsPanel>
