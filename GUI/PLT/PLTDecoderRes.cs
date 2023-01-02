@@ -2,7 +2,7 @@
 using System.Collections.Immutable;
 
 namespace GUI.PLT {
-    internal class PLTDecoderRes {
+    public class PLTDecoderRes {
         public ImmutableList<Stroke> Strokes { get; private set; }
         public double Width { get; }
         public double Height { get; }

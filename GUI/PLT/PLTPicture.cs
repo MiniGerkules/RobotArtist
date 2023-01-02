@@ -4,7 +4,7 @@ using System.Windows.Media.Imaging;
 using GUI.Settings;
 
 namespace GUI.PLT {
-    internal class PLTPicture {
+    public class PLTPicture {
         public BitmapSource RenderedPicture { get; private set; }
         public AlgorithmSettings Settings { get; private set; }
 

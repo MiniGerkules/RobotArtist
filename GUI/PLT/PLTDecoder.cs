@@ -10,7 +10,7 @@ namespace GUI.PLT {
     /// <summary>
     /// The class describes the plt code decoder
     /// </summary>
-    class PLTDecoder : NotifierOfPropertyChange {
+    public class PLTDecoder : NotifierOfPropertyChange {
         private readonly static uint numTicksInMM = 40; // Characteristic of PLT format
         public static int MaxPercent => 100;
 

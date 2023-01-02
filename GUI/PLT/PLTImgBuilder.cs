@@ -6,7 +6,7 @@ using GUI.Colors;
 using GUI.Settings;
 
 namespace GUI.PLT {
-    internal class PLTImgBuilder : NotifierOfPropertyChange {
+    public class PLTImgBuilder : NotifierOfPropertyChange {
         private static readonly ScreenSizes windowSize = new();
 
         private static readonly int maxPercentForBuilding = 90;

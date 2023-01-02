@@ -2,7 +2,7 @@
 using GeneralComponents;
 
 namespace GUI.PLT {
-    class Stroke {
+    public class Stroke {
         public Point2D Start { get; }
         public Point2D End { get; }
         public PLTColor StroceColor { get; }
