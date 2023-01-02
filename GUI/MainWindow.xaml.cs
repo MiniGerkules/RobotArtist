@@ -195,8 +195,8 @@ namespace GUI {
                 _ => new JpegBitmapEncoder()
             };
 
-            ScaleTransform mirrow = new ScaleTransform(1, -1);
-            TransformedBitmap tb = new TransformedBitmap(image.Clone(), mirrow);
+            ScaleTransform mirrow = new(1, -1);
+            TransformedBitmap tb = new(image.Clone(), mirrow);
             encoder.Frames.Add(BitmapFrame.Create(tb));
             using FileStream stream = new(filePath, FileMode.Create);
             encoder.Save(stream);
