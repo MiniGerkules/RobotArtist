@@ -72,13 +72,19 @@ namespace GUI {
         }
 
         private void OpenFile(object sender, ExecutedRoutedEventArgs e) {
-            OpenFileDialog fileDialog = new();
-            fileDialog.Filter = "Picture or PLT-file|*.jpg;*.png;*.bmp;*.plt";
+            OpenFileDialog fileDialog = new() {
+                Filter = "Picture or PLT-file|*.jpg;*.png;*.bmp;*.plt",
+            };
 
-            if (fileDialog.ShowDialog() == false)
+            if (fileDialog.ShowDialog() == false) {
                 MessageBox.Show("Can't open file!", "Error!", MessageBoxButton.OK);
             } else {
-                SetInactive();
+                try {
+                    filesContainer.Add(fileDialog.FileName);
+                    ChangeActivePage(viewButton);
+                } catch (Exception error) {
+                    MessageBox.Show(error.Message, "ERROR!", MessageBoxButton.OK);
+                }
             }
         }
 
@@ -138,7 +144,7 @@ namespace GUI {
         }
 
         private void CloseActiveFile(object sender, RoutedEventArgs e) {
-            CloseFile(pathToActiveFile);
+            filesContainer.RemoveActive();
         }
 
         private void CloseApp(object sender, RoutedEventArgs e) {
@@ -146,29 +152,36 @@ namespace GUI {
         }
 
         private void SaveFileClick(object sender, RoutedEventArgs e) {
-            if (pathToActiveFile == null)
-                return;
+            var active = filesContainer.GetActive();
+            if (active == null) return;
 
-            if (savedFiles.ContainsKey(pathToActiveFile)) {
-                if (pathToActiveFile.EndsWith(".plt"))
-                    SaveImageToFile(files[pathToActiveFile].RenderedPicture, savedFiles[pathToActiveFile]);
+            string pathToActive = filesContainer.GetPathToActive()!;
+            if (savedFiles.ContainsKey(pathToActive)) {
+                if (pathToActive.EndsWith(".plt"))
+                    SaveImageToFile(active.RenderedPicture, savedFiles[pathToActive]);
                 else
-                    SavePLTToFile(files[pathToActiveFile].RenderedPicture, savedFiles[pathToActiveFile]);
+                    SavePLTToFile(active.RenderedPicture, savedFiles[pathToActive]);
             } else {
                 SaveFileAsClick(sender, e);
             }
         }
 
         private void SaveFileAsClick(object sender, RoutedEventArgs e) {
-            if (pathToActiveFile == null)
+            var active = filesContainer.GetActive();
+            if (active == null)
                 return;
 
-            Action<BitmapSource, string> call;
+            var pathToActive = filesContainer.GetPathToActive()!;
+            SaveAs(pathToActive, active);
+        }
+
+        private void SaveAs(string pathToActive, PLTPicture active) {
             SaveFileDialog dlg = new() {
-                FileName = Path.GetFileNameWithoutExtension(pathToActiveFile),
+                FileName = Path.GetFileNameWithoutExtension(pathToActive),
             };
 
-            if (pathToActiveFile.EndsWith(".plt")) {
+            Action<BitmapSource, string> call;
+            if (pathToActive.EndsWith(".plt")) {
                 dlg.DefaultExt = ".png";
                 dlg.Filter = "Picture|*.jpg;*.png;*.bmp";
                 call = SaveImageToFile;
@@ -181,8 +194,8 @@ namespace GUI {
             if (dlg.ShowDialog() != true)
                 MessageBox.Show("Couldn't select the path to save the file!", "Error!", MessageBoxButton.OK);
             else {
-                savedFiles[pathToActiveFile] = dlg.FileName;
-                call(files[pathToActiveFile].RenderedPicture, dlg.FileName);
+                savedFiles[pathToActive] = dlg.FileName;
+                call(active.RenderedPicture, dlg.FileName);
             }
         }
 
