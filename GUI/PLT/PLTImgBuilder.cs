@@ -142,31 +142,28 @@ namespace GUI.PLT {
             return renderedImage;
         }
 
-        private DrawingVisual ProcessStrokes(in AlgorithmSettings settings,
-                                             in PLTDecoderRes picture) {
-            DrawingVisual image = new();
-            DrawingContext context = image.RenderOpen();
-
-            double scale = windowSize.CountScaling(picture.Width, picture.Height);
-            SetBackground(settings, context, Brushes.White, picture.Width, picture.Height, scale);
-            UpdateColor(settings, out var pen, out var geometry, picture.Strokes[0].StroceColor,
-                        out var lastColor, scale);
+        private BuildingImages ProcessStrokes(in AlgorithmSettings settings,
+                                              in PLTDecoderRes picture,
+                                              in double scale) {
+            BuildingImages builded = new(settings, scale);
+            builded.SetBackground(Brushes.White, picture.Width, picture.Height);
+            builded.ColorChanged(picture.Strokes[0].StroceColor);
 
             for (int i = 0; i < picture.Strokes.Count; ++i) {
                 CurPercent = i*maxPercentForBuilding / picture.Strokes.Count;
 
                 var stroke = picture.Strokes[i];
-                if (picture.Strokes[i].StroceColor != lastColor) {
-                    context.DrawGeometry(null, pen, geometry);
-                    UpdateColor(settings, out pen, out geometry, stroke.StroceColor,
-                                out lastColor, scale);
+
+                if (!builded.IsColorSame(picture.Strokes[i].StroceColor)) {
+                    builded.SaveGeometry();
+                    builded.ColorChanged(stroke.StroceColor);
                 }
 
-                geometry.Children.Add(GetLineGeometry(stroke, scale));
+                builded.AddToGeometry(stroke);
             }
 
-            context.DrawGeometry(null, pen, geometry);
-            context.Close();
+            builded.SaveGeometry();
+            builded.Close();
 
             CurPercent = maxPercentForBuilding;
             return builded;
