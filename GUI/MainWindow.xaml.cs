@@ -37,7 +37,8 @@ namespace GUI {
             filesContainer = new ViewPage(viewButton, pltDecoder, pltImgBuilder);
             pages = new() {
                 { viewButton, (filesContainer as IPage)! },
-                { stroKesStructButton, new StrokesStructurePage(stroKesStructButton) },
+                { stroKesStructButton, new StrokesStructurePage(stroKesStructButton,
+                                                                filesContainer.GetActive) },
                 { settingsButton, new SettingsPage(settingsButton, filesContainer.GetActive,
                                                    ErrorDisplayer, filesContainer.ApplySettingsForActive) },
                 { infoButton, new InformationPage(infoButton, filesContainer.GetActive) },
