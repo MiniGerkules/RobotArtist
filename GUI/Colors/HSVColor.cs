@@ -2,10 +2,10 @@
 using System.Windows.Media;
 
 namespace GUI.Colors {
-    internal class HSVColor : PLTColor {
-        private double hue;             // From 0 to 1
-        private double saturation;      // From 0 to 1
-        private double value;           // From 0 to 1
+    internal class HSVColor : IColor {
+        private readonly double hue;            // From 0 to 1
+        private readonly double saturation;     // From 0 to 1
+        private readonly double value;          // From 0 to 1
 
         public HSVColor(double hue, double saturation, double value) {
             this.hue = hue;
@@ -22,14 +22,18 @@ namespace GUI.Colors {
             value = hsv[2];
         }
 
-        public override Color ToColor() {
-            return ((RGBColor)this).ToColor();
+        public Color GetRealColor() {
+            return ToRGB().GetRealColor();
         }
 
-        public static explicit operator RGBColor(HSVColor color) {
+        public Color GetArtificialColor() {
+            return ToRGB().GetArtificialColor();
+        }
+
+        public RGBColor ToRGB() {
             // https://en.wikipedia.org/wiki/HSL_and_HSV#HSV_to_RGB
-            double hueInDegrees = color.hue * 360;
-            double C = color.saturation * color.value; // цветность
+            double hueInDegrees = hue * 360;
+            double C = saturation * value; // цветность
             double H = hueInDegrees / 60;
             double X = C * (1 - Math.Abs(H % 2 - 1));
 
@@ -47,7 +51,7 @@ namespace GUI.Colors {
             else /* 5 <= H && H < 6 */
                 (r1, g1, b1) = (C, 0, X);
 
-            double m = color.value - C;
+            double m = value - C;
             byte red = (byte)((r1 + m) * 255);
             byte green = (byte)((g1 + m) * 255);
             byte blue = (byte)((b1 + m) * 255);

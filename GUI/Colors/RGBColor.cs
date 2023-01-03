@@ -3,7 +3,7 @@ using System.Linq;
 using System.Windows.Media;
 
 namespace GUI.Colors {
-    internal class RGBColor : PLTColor {
+    internal class RGBColor : IColor {
         private byte red, green, blue;
 
         public RGBColor(string[] colors) {
@@ -18,8 +18,16 @@ namespace GUI.Colors {
             (this.red, this.green, this.blue) = (red, green, blue);
         }
 
-        public override Color ToColor() {
+        public Color GetRealColor() {
             return Color.FromRgb(red, green, blue);
+        }
+
+        public Color GetArtificialColor() {
+            Random rand = new();
+            var rgb = new byte[3];
+
+            rand.NextBytes(rgb);
+            return Color.FromRgb(rgb[0], rgb[1], rgb[2]);
         }
     }
 }
