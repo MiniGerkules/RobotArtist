@@ -3,7 +3,6 @@ using System.IO;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Collections.Generic;
 using System.Windows.Media.Imaging;
@@ -13,210 +12,88 @@ using Microsoft.Win32;
 using GUI.PLT;
 using GUI.Settings;
 
+using GUI.Pages;
+using GUI.Pages.ViewPage;
+using GUI.Pages.SettingsPage;
+
 namespace GUI {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
     public partial class MainWindow : Window {
-        private Algorithm.Tracer tracer;
+        private static readonly string pathToDatabase = @"resources/ModelTable600_initial.xls";
 
-        private readonly Dictionary<string, PLTPicture> files = new();
-        private readonly Dictionary<string, UIElement> tabs = new();
+        /// <summary> Key -- path to plt file, value -- path to saved image </summary>
         private readonly Dictionary<string, string> savedFiles = new();
-        private string pathToActiveFile = null;
-
-        private readonly SettingsManager settingsManager;
 
         private readonly PLTDecoder pltDecoder = new();
         private readonly PLTImgBuilder pltImgBuilder = new();
-        private readonly BuildingImgProcessVM vm;
 
-        private static readonly string pathToDatabase = @"resources/ModelTable600_initial.xls";
-        private ActiveGrid activeGrid = ActiveGrid.NoActive;
+        private readonly IImgFileContainer filesContainer;
+        private readonly Dictionary<MenuItem, IPage> pages;
+        private MenuItem? activePage = null;
 
         public MainWindow() {
             InitializeComponent();
-            vm = new(pltDecoder, pltImgBuilder);
-            footer.DataContext = vm;
+
+            footer.DataContext = new BuildingImgProcessVM(pltDecoder, pltImgBuilder);
+            filesContainer = new ViewPage(viewButton, pltDecoder, pltImgBuilder);
+            pages = new() {
+                { viewButton, (filesContainer as IPage)! },
+                { stroKesStructButton, new StrokesStructurePage(stroKesStructButton,
+                                                                filesContainer.GetActive) },
+                { settingsButton, new SettingsPage(settingsButton, filesContainer.GetActive,
+                                                   ErrorDisplayer, filesContainer.ApplySettingsForActive) },
+                { infoButton, new InformationPage(infoButton, filesContainer.GetActive) },
+            };
 
             mainMenu.Background = DefaultGUISettings.menuColor;
-            SetInactive();
-
-            settingsManager = new(ApplySettings);
+            foreach (var (_, page) in pages)
+                pagePlaceholder.Children.Add(page as UserControl);
+            SetAllPagesInactive();
 
             CommandBinding commandBinding = new(ApplicationCommands.Open, OpenFile);
             CommandBindings.Add(commandBinding);
             openButton.CommandBindings.Add(commandBinding);
         }
 
+        private void ErrorDisplayer(string errorMsg) {
+            MessageBox.Show(errorMsg, "ERROR!", MessageBoxButton.OK);
+        }
+
         private void WindowLoaded(object sender, RoutedEventArgs e) {
             DatabaseLoader.LoadDatabase(pathToDatabase);
             if (!DatabaseLoader.IsLoaded()) {
-                MessageBox.Show("Can't to upload a file with color data. Check the presence " +
-                    "of the database file in the directory.", "Error!", MessageBoxButton.OK);
+                ErrorDisplayer("Can't to upload a file with color data. Check " +
+                                "the presence of the database file in the directory.");
                 Close();
             }
         }
 
         private void OpenFile(object sender, ExecutedRoutedEventArgs e) {
-            OpenFileDialog fileDialog = new();
-            fileDialog.Filter = "Picture or PLT-file|*.jpg;*.png;*.bmp;*.plt";
+            OpenFileDialog fileDialog = new() {
+                Filter = "Picture or PLT-file|*.jpg;*.png;*.bmp;*.plt",
+            };
 
-            if (fileDialog.ShowDialog() == false)
-                MessageBox.Show("Can't open file!", "Error!", MessageBoxButton.OK);
-            else
-                ProcessFile(fileDialog.FileName);
-        }
-
-        private async void ProcessFile(string fileName) {
-            if (IsFileAlreadyOpened(fileName))
-                return;
-
-            try {
-                if (fileName.EndsWith(".plt")) await PLTFileHandler(fileName);
-                else await ImageFileHandler(fileName);
-            } catch (ArgumentException Error) {
-                MessageBox.Show($"Can't process file!\n{Error.Message}",
-                                "Error!", MessageBoxButton.OK);
-                return;
-            }
-
-            AddNewOpenedFile(fileName);
-            SwitchToAnotherTab(ActiveGrid.ViewGrid, viewImage);
-        }
-
-        private bool IsFileAlreadyOpened(string file) {
-            if (files.ContainsKey(file)) {
-                UpdateOutputImage(file);
-                return true;
-            }
-
-            return false;
-        }
-
-        private void AddNewOpenedFile(in string fileName) {
-            OpenedFile file = new(fileName, ChangeFile, CloseFile);
-
-            openedFiles.Children.Add(file);
-            tabs[pathToActiveFile] = openedFiles.Children[^1];
-        }
-
-        private void ChangeFile(OpenedFile sender) {
-            if (sender.PathToFile == pathToActiveFile)
-                return;
-
-            UpdateOutputImage(sender.PathToFile);
-        }
-
-        private void CloseFile(OpenedFile sender) {
-            CloseFile(sender.PathToFile);
-        }
-
-        private void CloseFile(string fileToClose) {
-            if (!tabs.ContainsKey(fileToClose)) return;
-
-            files.Remove(fileToClose);
-            openedFiles.Children.Remove(tabs[fileToClose]);
-            tabs.Remove(fileToClose);
-
-            if (fileToClose == pathToActiveFile)
-                WasClosedActiveFile();
-        }
-
-        private void WasClosedActiveFile() {
-            if (openedFiles.Children.Count != 0) {
-                pathToActiveFile = ((OpenedFile)openedFiles.Children[0]).PathToFile;
-
-                switch (activeGrid) {
-                    case ActiveGrid.ViewGrid:
-                        DisplayActiveBitmap(viewImage);
-                        break;
-                    case ActiveGrid.SettingsGrid:
-                        DisplayActiveBitmap(settingsImage);
-                        break;
-                }
+            if (fileDialog.ShowDialog() == false) {
+                ErrorDisplayer("Can't open file!");
             } else {
-                SetInactive();
+                try {
+                    filesContainer.Add(fileDialog.FileName);
+                    ChangeActivePage(viewButton);
+                } catch (Exception error) {
+                    ErrorDisplayer(error.Message);
+                }
             }
         }
 
-        private void UpdateOutputImage(string fileName) {
-            pathToActiveFile = fileName;
-            SwitchToAnotherTab(ActiveGrid.ViewGrid, viewImage);
-        }
-
-        private async Task PLTFileHandler(string fileName) {
-            var pltPicture = Task.Run(() => pltDecoder.Decode(fileName));
-            var picture = Task.Run(async () => pltImgBuilder.Build(await pltPicture));
-
-            pathToActiveFile = new(fileName);
-            files[pathToActiveFile] = await picture;
-        }
-
-        private async Task ImageFileHandler(string fileName) {
-            BitmapImage image = new(new Uri(fileName));
-            tracer = new(image, new(new()), DatabaseLoader.Database);
-        }
-
-        private void DisplayActiveBitmap(Image image) {
-            image.Source = files[pathToActiveFile].RenderedPicture;
-        }
-
-        private void RotateImage(object sender, RoutedEventArgs e) {
-            files[pathToActiveFile].Rotate();
-            DisplayActiveBitmap(viewImage);
-        }
-
-        private async void RepaintImage(object sender, RoutedEventArgs e) {
-            files[pathToActiveFile] = await Task.Run(
-                () => pltImgBuilder.Rebuild(files[pathToActiveFile])
-            );
-            DisplayActiveBitmap(viewImage);
-        }
-
-        private void ViewClick(object sender, RoutedEventArgs e) {
-            if (pathToActiveFile == null || activeGrid == ActiveGrid.ViewGrid)
+        private void MenuButtonClick(object sender, RoutedEventArgs e) {
+            if (!IsAnyPageActive() || sender is not MenuItem ||
+                    ReferenceEquals(sender, activePage))
                 return;
 
-            SwitchToAnotherTab(ActiveGrid.ViewGrid, viewImage);
+            ChangeActivePage((MenuItem)sender);
         }
 
-        private void EditCurPicSettings(object sender, RoutedEventArgs e) {
-            if (pathToActiveFile == null || activeGrid == ActiveGrid.SettingsGrid)
-                return;
-
-            SwitchToAnotherTab(ActiveGrid.SettingsGrid, settingsImage);
-            settingsManager.DisplaySettings(settingsFields, files[pathToActiveFile].Settings);
-        }
-
-        private void InfoClick(object sender, RoutedEventArgs e) {
-            if (pathToActiveFile == null || activeGrid == ActiveGrid.InfoGreed)
-                return;
-
-            activeGrid = ActiveGrid.InfoGreed;
-            ChangeActive();
-            var settings = files[pathToActiveFile].Settings;
-            List<UIElement> elements = new(settings.numOfSettings);
-
-            string width = "Width (mm) = " + files[pathToActiveFile].Width.ToString();
-            string height = "Height (mm) = " + files[pathToActiveFile].Height.ToString();
-            elements.Add(Helpers.CreateTextBlock(width, HorizontalAlignment.Center, new()));
-            elements.Add(Helpers.CreateTextBlock(height, HorizontalAlignment.Center, new()));
-
-            foreach (var pair in settings) {
-                string text = AlgorithmSettings.GetPropertyDesc(pair.Item1) + " = " + pair.Item2.ToString();
-                elements.Add(Helpers.CreateTextBlock(text, HorizontalAlignment.Center, new()));
-            }
-
-            GridDisplayer displayer = new(infoGrid);
-            displayer.Reset();
-            displayer.DisplayElemByRow(elements);
-        }
-
-        private void SwitchToAnotherTab(ActiveGrid active, Image image) {
-            activeGrid = active;
-            ChangeActive();
-            DisplayActiveBitmap(image);
+        private void EditCurSettings(object sender, RoutedEventArgs e) {
+            MenuButtonClick(settingsButton, e);
         }
 
         private void SaveCurrentSettings(object sender, RoutedEventArgs e) {
@@ -227,7 +104,7 @@ namespace GUI {
             try {
                 pltImgBuilder.Settings = SettingsReader.ReadSettings();
             } catch (Exception error) {
-                MessageBox.Show(error.Message, "Error!", MessageBoxButton.OK);
+                ErrorDisplayer(error.Message);
             }
         }
 
@@ -239,61 +116,28 @@ namespace GUI {
             pltImgBuilder.Settings = SettingsReader.ReadDefaultSettings();
         }
 
-        private void ChangeActive() {
-            switch (activeGrid) {
-                case ActiveGrid.ViewGrid:
-                    viewGrid.Visibility = Visibility.Visible;
-                    settingsGrid.Visibility = Visibility.Collapsed;
-                    infoGrid.Visibility = Visibility.Collapsed;
-                    viewButton.Background = DefaultGUISettings.activeButton;
-                    settingsButton.Background = DefaultGUISettings.inactiveButton;
-                    infoButton.Background = DefaultGUISettings.inactiveButton;
-                    break;
-                case ActiveGrid.SettingsGrid:
-                    viewGrid.Visibility = Visibility.Collapsed;
-                    settingsGrid.Visibility = Visibility.Visible;
-                    infoGrid.Visibility = Visibility.Collapsed;
-                    viewButton.Background = DefaultGUISettings.inactiveButton;
-                    settingsButton.Background = DefaultGUISettings.activeButton;
-                    infoButton.Background = DefaultGUISettings.inactiveButton;
-                    break;
-                case ActiveGrid.InfoGreed:
-                    viewGrid.Visibility = Visibility.Collapsed;
-                    settingsGrid.Visibility = Visibility.Collapsed;
-                    infoGrid.Visibility = Visibility.Visible;
-                    viewButton.Background = DefaultGUISettings.inactiveButton;
-                    settingsButton.Background = DefaultGUISettings.inactiveButton;
-                    infoButton.Background = DefaultGUISettings.activeButton;
-                    break;
+        private bool IsAnyPageActive() {
+            foreach (var (_, page) in pages) {
+                if (page.IsActive()) return true;
             }
+
+            return false;
         }
 
-        private void SetInactive() {
-            pathToActiveFile = null;
-
-            viewGrid.Visibility = Visibility.Visible;
-            settingsGrid.Visibility = Visibility.Collapsed;
-            infoGrid.Visibility = Visibility.Collapsed;
-
-            viewButton.Background = DefaultGUISettings.inactiveButton;
-            settingsButton.Background = DefaultGUISettings.inactiveButton;
-            infoButton.Background = DefaultGUISettings.inactiveButton;
-
-            viewImage.Source = null;
-            settingsImage.Source = null;
+        private void ChangeActivePage(MenuItem activeTab) {
+            SetAllPagesInactive();
+            activePage = activeTab;
+            pages[activeTab].SetActive();
         }
 
-        private async void ApplySettings(AlgorithmSettings settedSettings, bool changed) {
-            if (changed) {
-                files[pathToActiveFile] = await Task.Run(
-                    () => pltImgBuilder.Rebuild(settedSettings, files[pathToActiveFile])
-                );
-                DisplayActiveBitmap(settingsImage);
-            }
+        private void SetAllPagesInactive() {
+            activePage = null;
+            foreach (var (_, page) in pages)
+                page.SetInactive();
         }
 
         private void CloseActiveFile(object sender, RoutedEventArgs e) {
-            CloseFile(pathToActiveFile);
+            filesContainer.RemoveActive();
         }
 
         private void CloseApp(object sender, RoutedEventArgs e) {
@@ -301,29 +145,36 @@ namespace GUI {
         }
 
         private void SaveFileClick(object sender, RoutedEventArgs e) {
-            if (pathToActiveFile == null)
-                return;
+            var active = filesContainer.GetActive();
+            if (active == null) return;
 
-            if (savedFiles.ContainsKey(pathToActiveFile)) {
-                if (pathToActiveFile.EndsWith(".plt"))
-                    SaveImageToFile(files[pathToActiveFile].RenderedPicture, savedFiles[pathToActiveFile]);
+            string pathToActive = filesContainer.GetPathToActive()!;
+            if (savedFiles.ContainsKey(pathToActive)) {
+                if (pathToActive.EndsWith(".plt"))
+                    SaveImageToFile(active.Rendered.MainImage, savedFiles[pathToActive]);
                 else
-                    SavePLTToFile(files[pathToActiveFile].RenderedPicture, savedFiles[pathToActiveFile]);
+                    SavePLTToFile(active.Rendered.MainImage, savedFiles[pathToActive]);
             } else {
                 SaveFileAsClick(sender, e);
             }
         }
 
         private void SaveFileAsClick(object sender, RoutedEventArgs e) {
-            if (pathToActiveFile == null)
+            var active = filesContainer.GetActive();
+            if (active == null)
                 return;
 
-            Action<BitmapSource, string> call;
+            var pathToActive = filesContainer.GetPathToActive()!;
+            SaveAs(pathToActive, active);
+        }
+
+        private void SaveAs(string pathToActive, PLTPicture active) {
             SaveFileDialog dlg = new() {
-                FileName = Path.GetFileNameWithoutExtension(pathToActiveFile),
+                FileName = Path.GetFileNameWithoutExtension(pathToActive),
             };
 
-            if (pathToActiveFile.EndsWith(".plt")) {
+            Action<BitmapSource, string> call;
+            if (pathToActive.EndsWith(".plt")) {
                 dlg.DefaultExt = ".png";
                 dlg.Filter = "Picture|*.jpg;*.png;*.bmp";
                 call = SaveImageToFile;
@@ -333,11 +184,11 @@ namespace GUI {
                 call = SavePLTToFile;
             }
 
-            if (dlg.ShowDialog() != true)
-                MessageBox.Show("Couldn't select the path to save the file!", "Error!", MessageBoxButton.OK);
-            else {
-                savedFiles[pathToActiveFile] = dlg.FileName;
-                call(files[pathToActiveFile].RenderedPicture, dlg.FileName);
+            if (dlg.ShowDialog() != true) {
+                ErrorDisplayer("Couldn't select the path to save the file!");
+            } else {
+                savedFiles[pathToActive] = dlg.FileName;
+                call(active.Rendered.MainImage, dlg.FileName);
             }
         }
 
@@ -348,8 +199,8 @@ namespace GUI {
                 _ => new JpegBitmapEncoder()
             };
 
-            ScaleTransform mirrow = new ScaleTransform(1, -1);
-            TransformedBitmap tb = new TransformedBitmap(image.Clone(), mirrow);
+            ScaleTransform mirrow = new(1, -1);
+            TransformedBitmap tb = new(image.Clone(), mirrow);
             encoder.Frames.Add(BitmapFrame.Create(tb));
             using FileStream stream = new(filePath, FileMode.Create);
             encoder.Save(stream);

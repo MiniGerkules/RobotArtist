@@ -29,20 +29,20 @@ namespace GUI.Settings {
         private static AlgorithmSettings ReadSettingsFrom(string fileName) {
             string jsonContent = File.ReadAllText(fileName);
             var json = JsonNode.Parse(jsonContent);
-
-            Type settingsType = typeof(AlgorithmSettings);
+            
+            var settingsType = typeof(AlgorithmSettings);
             var constructor = settingsType.GetConstructor(
                 BindingFlags.Instance | BindingFlags.Public,
                 new Type[] { typeof(Dictionary<PropertyInfo, object>) }
             );
 
-            if (constructor == null)
-                throw new Exception("Can't create algorithm settings!");
+            if (json == null || constructor == null)
+                throw new Exception("Can't read algorithm settings!");
 
             var props = settingsType.GetProperties();
             Dictionary<PropertyInfo, object> values = new();
             foreach (var prop in props) {
-                JsonNode setting = json[prop.Name];
+                var setting = json[prop.Name];
                 if (setting != null)
                     values[prop] = setting;
             }

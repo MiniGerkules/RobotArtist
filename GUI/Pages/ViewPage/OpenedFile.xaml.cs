@@ -1,26 +1,26 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 
-namespace GUI {
+namespace GUI.Pages.ViewPage {
     public partial class OpenedFile : UserControl {
-        public delegate void CloseClick(OpenedFile toClose);
-        public delegate void ChangeClick(OpenedFile toClose);
+        public delegate void ChooseClick(OpenedFile fileToChoose);
+        public delegate void CloseClick(OpenedFile fileToClose);
+
+        private readonly ChooseClick chooseClick;
+        private readonly CloseClick closeClick;
 
         public string PathToFile { get; }
 
-        private readonly ChangeClick chooseClick;
-        private readonly CloseClick closeClick;
-
-        public OpenedFile(string pathToFile, ChangeClick chooseClick, CloseClick closeClick) {
+        public OpenedFile(string pathToFile, ChooseClick chooseClick,
+                          CloseClick closeClick) {
             InitializeComponent();
             PathToFile = pathToFile;
+            choose.Content = Path.GetFileName(pathToFile);
+
             this.chooseClick = chooseClick;
             this.closeClick = closeClick;
-
-            choose.Content = Path.GetFileName(pathToFile);
-            choose.Background = DefaultGUISettings.buttonColor;
-            choose.FontSize = DefaultGUISettings.FontSize;
         }
 
         private void Choose_Click(object sender, RoutedEventArgs e) {

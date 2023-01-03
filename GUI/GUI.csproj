@@ -4,11 +4,13 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net6.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
+	<Nullable>enable</Nullable>
   </PropertyGroup>
-
+	
   <ItemGroup>
     <None Remove="filler.jpg" />
     <None Remove="ModelTable600.xls" />
+    <None Remove="Pages\ViewPage\forClose.png" />
     <None Remove="resources\forClose.png" />
   </ItemGroup>
 
@@ -37,7 +39,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="resources\forClose.png">
+    <Resource Include="Pages\ViewPage\forClose.png">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Resource>
   </ItemGroup>

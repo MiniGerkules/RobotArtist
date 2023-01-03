@@ -1,11 +1,10 @@
-﻿using System.Windows.Media;
-using System.Windows.Media.Imaging;
+﻿using System.Windows.Media.Imaging;
 
 using GUI.Settings;
 
 namespace GUI.PLT {
-    internal class PLTPicture {
-        public BitmapSource RenderedPicture { get; private set; }
+    public class PLTPicture {
+        public Images Rendered { get; }
         public AlgorithmSettings Settings { get; private set; }
 
         public PLTDecoderRes PLTDecoded { get; }
@@ -14,29 +13,21 @@ namespace GUI.PLT {
 
         private uint angleOfRotation = 0;
 
-        public PLTPicture(in AlgorithmSettings settings, in BitmapSource renderedPicture,
+        public PLTPicture(in AlgorithmSettings settings, in Images rendered,
                           in PLTDecoderRes pltDecoded) {
-            PLTDecoded = pltDecoded;
-            RenderedPicture = renderedPicture;
             Settings = settings;
+            PLTDecoded = pltDecoded;
+            Rendered = rendered;
         }
 
-        public void RestoreRotationAngle(in PLTPicture picture) {
-            SetAngle(picture.angleOfRotation);
+        public void RestoreRotationAngle(PLTPicture picture) {
+            angleOfRotation = picture.angleOfRotation;
+            Rendered.Rotate(angleOfRotation);
         }
 
         public void Rotate() {
             angleOfRotation = (angleOfRotation + 90) % 360;
-            SetAngle(90);
-        }
-
-        private void SetAngle(uint angle) {
-            RotateTransform rotate = new(angle);
-            TransformedBitmap tb = new(RenderedPicture, rotate);
-            RenderedPicture = tb;
-
-            if (RenderedPicture.CanFreeze)
-                RenderedPicture.Freeze();
+            Rendered.Rotate(angleOfRotation);
         }
     }
 }

@@ -9,13 +9,16 @@ namespace GUI.Colors {
     /// <summary>
     /// The class describes a color based on cyan, magenta, yellow, blue and white.
     /// </summary>
-    internal class CMYBWColor : PLTColor {
+    internal class CMYBWColor : IColor {
         /// <summary> Number of neibors for HSV-color regression </summary>
         public static uint NumOfNeibForRegression { get; set; } = 20;
 
         private readonly static uint minColors = 5; // White/black pictures
         private readonly static uint maxColors = 8; // Color pictures
         private readonly uint cyan, magenta, yellow, blue, white;
+
+        private readonly ColorMixType mixType;
+        private readonly Matrix2D props;
 
         private (uint, uint, uint, uint, uint) GetColors() {
             return (cyan, magenta, yellow, blue, white);
@@ -27,32 +30,14 @@ namespace GUI.Colors {
                                                                     (arr[0], arr[1], arr[2], arr[3], arr[4]),
                 _ => throw new ArgumentException("There isn't correct number of the colors!")
             };
+
+            (mixType, props) = DetermineProportions();
         }
 
-        public static bool operator ==(CMYBWColor first, CMYBWColor second) {
-            return first.GetColors() == second.GetColors();
-        }
-
-        public static bool operator !=(CMYBWColor first, CMYBWColor second) {
-            return !(first == second);
-        }
-
-        public override bool Equals(object obj) {
-            return obj is CMYBWColor color && this == color;
-        }
-
-        public override int GetHashCode() {
-            return HashCode.Combine(cyan, magenta, yellow, blue, white);
-        }
-
-        public override Color ToColor() {
-            return ToHSVColor().ToColor();
-        }
-
-        public HSVColor ToHSVColor() {
-            double a = 0, b = 0, c = 0;
-
+        private (ColorMixType, Matrix2D) DetermineProportions() {
+            double a = 0;
             ColorMixType mixType = ColorMixType.MagentaYellow1;
+
             if (cyan + magenta + yellow > 0) {
                 if (magenta > 0 && (yellow > 0 || cyan == 0)) {
                     a = (double)magenta / (magenta+yellow);
@@ -68,30 +53,75 @@ namespace GUI.Colors {
                 }
             }
 
-            if (blue + white > 0)
-                b = (double)blue / (blue+white);
-            else
-                b = 0;
+            double b = blue + white > 0 ? (double)blue / (blue+white) : 0;
 
             uint hue = cyan + magenta + yellow;
             uint vTotal = hue + blue + white;
-            c = (double)hue / vTotal;
+            double c = (double)hue / vTotal;
 
+            return (mixType, new(new List<double> { a, b, c }));
+        }
+
+        public static bool operator ==(CMYBWColor first, CMYBWColor second) {
+            return first.GetColors() == second.GetColors();
+        }
+
+        public static bool operator !=(CMYBWColor first, CMYBWColor second) {
+            return !(first == second);
+        }
+
+        public override bool Equals(object? obj) {
+            return obj != null && obj is CMYBWColor color && this == color;
+        }
+
+        public override int GetHashCode() {
+            return HashCode.Combine(cyan, magenta, yellow, blue, white);
+        }
+
+        public Color GetRealColor() {
+            return ToHSVColor().GetRealColor();
+        }
+
+        public Color GetArtificialColor() {
+            var rgb = new double[3];
+            Random rand = new();
+
+            switch (mixType) {
+                case ColorMixType.MagentaYellow1:
+                case ColorMixType.MagentaYellow2:
+                    rgb[0] = 0.5 + 0.5*rand.NextDouble();
+                    rgb[1] = 0.5 + 0.5*rand.NextDouble();
+                    rgb[2] = 0.5 * rand.NextDouble();
+                    break;
+                case ColorMixType.YellowCyan:
+                    rgb[0] = 0.5 * rand.NextDouble();
+                    rgb[1] = 0.5 + 0.5*rand.NextDouble();
+                    rgb[2] = 0.5 * rand.NextDouble();
+                    break;
+                case ColorMixType.CyanMagenta:
+                    rgb[0] = 0.5 + 0.5*rand.NextDouble();
+                    rgb[1] = 0.5 * rand.NextDouble();
+                    rgb[2] = 0.5 + 0.5*rand.NextDouble();
+                    break;
+            }
+
+            for (int i = 0; i < rgb.Length; ++i) rgb[i] *= 230;
+            return Color.FromRgb((byte)rgb[0], (byte)rgb[1], (byte)rgb[2]);
+        }
+
+        public HSVColor ToHSVColor() {
             var hsv = DatabaseLoader.Database.GetHSV(mixType);
             var proportions = DatabaseLoader.Database.GetProportions(mixType);
 
-            int numRows = hsv.Count;
-            Matrix2D distances = new(numRows, 1);
-            Matrix2D props = new(new List<double> { a, b, c });
-
-            for (int i = 0; i < numRows; ++i) {
+            Matrix2D distances = new(hsv.Count, 1);
+            for (int i = 0; i < hsv.Count; ++i) {
                 Matrix2D matrix = new(proportions[i]);
                 // squared Euclidean distance
                 distances[i] = (double)((props - matrix) * (props - matrix).Transpose());
             }
 
             int[] indexes = distances.GetIndexesForSorted();
-            int numOfColors = (int)Math.Min(NumOfNeibForRegression, numRows);
+            int numOfColors = (int)Math.Min(NumOfNeibForRegression, hsv.Count);
 
             Matrix2D D = (1 / distances.GetByIndexes(indexes[..numOfColors])).MakeDiag();
             //Matrix2D nearestPoints = new(hsv.GetByIndexes(indexes[..numOfColors]));

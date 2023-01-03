@@ -4,7 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 
 namespace GUI.Settings {
-    internal record class AlgorithmSettings : IEnumerable<(PropertyInfo, object)> {
+    public record class AlgorithmSettings : IEnumerable<(PropertyInfo, object?)> {
         #region Settings
         /// <summary> Number of iterations </summary>
         public uint ItersMinOverlap { get; private set; } = 1;
@@ -41,29 +41,32 @@ namespace GUI.Settings {
         public readonly int numOfSettings = typeof(AlgorithmSettings).GetProperties().Length;
 
         public static string GetPropertyDesc(PropertyInfo property) => property.Name switch {
-            nameof(ItersMinOverlap) => "Number of iterations.",
-            nameof(MinOverlap) => "Minimum overlap coefficient.",
-            nameof(MaxOverlap) => "Maximum overlap coefficient.",
-            nameof(PixTol) => "Possible color deviation at the end.",
-            nameof(PixTol2) => "Possible color deviation on average.",
-            nameof(PixTolBest) => "The Error of taking a smear.",
-            nameof(BrushWidth) => "The width of the brush.",
-            nameof(NumOfNeibForPropClass) => "Number of neibors for proportion classification.",
-            nameof(NumOfNeibForPropReg) => "Number of neibors for proportion regression.",
-            nameof(NumOfNeibForHSVReg) => "Number of neibors for HSV-color regression.",
+            nameof(ItersMinOverlap) => "Number of iterations",
+            nameof(MinOverlap) => "Minimum overlap coefficient",
+            nameof(MaxOverlap) => "Maximum overlap coefficient",
+            nameof(PixTol) => "Possible color deviation at the end",
+            nameof(PixTol2) => "Possible color deviation on average",
+            nameof(PixTolBest) => "The Error of taking a smear",
+            nameof(BrushWidth) => "The width of the brush",
+            nameof(NumOfNeibForPropClass) => "Number of neibors for proportion classification",
+            nameof(NumOfNeibForPropReg) => "Number of neibors for proportion regression",
+            nameof(NumOfNeibForHSVReg) => "Number of neibors for HSV-color regression",
             _ => throw new FieldAccessException($"There aren't decription for a {property.Name} setting!")
         };
 
         public AlgorithmSettings() { }
 
         public AlgorithmSettings(Dictionary<PropertyInfo, object> settings) {
-            foreach (var setting in settings)
-                setting.Key.SetValue(this, setting.Value);
+            foreach (var setting in settings) {
+                setting.Key.SetValue(
+                    this, Convert.ChangeType(setting.Value, setting.Key.PropertyType)
+                );
+            }
         }
 
-        public IEnumerator<(PropertyInfo, object)> GetEnumerator() {
-            var props = typeof(AlgorithmSettings).GetProperties(BindingFlags.Instance |
-                                                                BindingFlags.Public);
+        public IEnumerator<(PropertyInfo, object?)> GetEnumerator() {
+            var props = typeof(AlgorithmSettings).
+                            GetProperties(BindingFlags.Instance | BindingFlags.Public);
 
             foreach (var prop in props)
                 yield return (prop, prop.GetValue(this));

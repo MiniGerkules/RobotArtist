@@ -5,41 +5,16 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:GUI"
         mc:Ignorable="d"
-        Title="RobotArtist" Height="450" Width="800" MinHeight="375" MinWidth="450"
+        d:DataContext="{d:DesignInstance Type=local:BuildingImgProcessVM}"
+        Title="RobotArtist" MinHeight="375" MinWidth="500"
         WindowState="Maximized" Loaded="WindowLoaded">
 
     <Window.Resources>
-        <Style TargetType="TextBlock">
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Margin" Value="5"/>
-        </Style>
-
-        <Style TargetType="TextBox">
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Margin" Value="5"/>
-        </Style>
-
-        <Style TargetType="MenuItem">
-            <Setter Property="FontSize" Value="14"/>
-        </Style>
-
-        <Style TargetType="ProgressBar">
-            <Setter Property="Margin" Value="2.5"/>
-        </Style>
-
-        <Style TargetType="Image">
-            <Setter Property="Margin" Value="5"/>
-        </Style>
-
-        <Style TargetType="StatusBar">
-            <Setter Property="Margin" Value="2.5 2.5 2.5 2.5"/>
-            <Style.Resources>
-                <Style TargetType="TextBlock">
-                    <Setter Property="FontSize" Value="14"/>
-                </Style>
-                <Style TargetType="ProgressBar"/>
-            </Style.Resources>
-        </Style>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Styles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
     </Window.Resources>
 
     <Grid x:Name="mainGrid">
@@ -57,69 +32,19 @@
                 <MenuItem Header="Сlose" Click="CloseActiveFile"/>
                 <MenuItem Header="Exit" Click="CloseApp"/>
             </MenuItem>
-            <MenuItem x:Name="viewButton" Header="Viewing" Click="ViewClick"/>
+            <MenuItem x:Name="viewButton" Header="Viewing" Click="MenuButtonClick"/>
+            <MenuItem x:Name="stroKesStructButton" Header="Strokes stucture" Click="MenuButtonClick"/>
             <MenuItem x:Name="settingsButton" Header="Settings">
-                <MenuItem Header="Edit current picture settings" Click="EditCurPicSettings"/>
+                <MenuItem Header="Edit current picture settings" Click="EditCurSettings"/>
                 <MenuItem Header="Save settings to a file" Click="SaveCurrentSettings"/>
                 <MenuItem Header="Load settings from a file" Click="LoadSettingsFromFile"/>
                 <MenuItem Header="Set current settings as default" Click="SaveSettingsAsDefault"/>
                 <MenuItem Header="Reset settings to default" Click="ResetSettings"/>
             </MenuItem>
-            <MenuItem x:Name="infoButton" Header="Information about the painting" Click="InfoClick"/>
+            <MenuItem x:Name="infoButton" Header="Information about the painting" Click="MenuButtonClick"/>
         </Menu>
 
-        <Grid x:Name="viewGrid" Visibility="Visible" Grid.Row="1" Grid.Column="0">
-            <Grid.RowDefinitions>
-            <RowDefinition Height="*" MinHeight="60"/>
-            <RowDefinition Height="15*"/>
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="1*"/>
-            </Grid.ColumnDefinitions>
-
-            <StackPanel x:Name="openedFiles" Grid.Row="0" Grid.Column="0" Orientation="Horizontal"/>
-
-            <Image x:Name="viewImage" Grid.Row="2" Grid.Column="0">
-                <Image.LayoutTransform>
-                    <ScaleTransform ScaleX="1" ScaleY="-1"/>
-                </Image.LayoutTransform>
-
-                <Image.ContextMenu>
-                    <ContextMenu>
-                        <MenuItem Header="Rotate 90 degrees" Click="RotateImage"/>
-                        <MenuItem Header="Completely rebuild" Click="RepaintImage"/>
-                    </ContextMenu>
-                </Image.ContextMenu>
-            </Image>
-        </Grid>
-
-        <Grid x:Name="settingsGrid" Visibility="Collapsed" Grid.Row="1" Grid.Column="0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-
-            <Image x:Name="settingsImage" Grid.Row="0" Grid.Column="0">
-                <Image.LayoutTransform>
-                    <ScaleTransform ScaleX="1" ScaleY="-1"/>
-                </Image.LayoutTransform>
-            </Image>
-
-            <Grid x:Name="settingsFields" Grid.Row="0" Grid.Column="1"/>
-        </Grid>
-
-        <Grid x:Name="infoGrid" Visibility="Collapsed" Grid.Row="1" Grid.Column="0"/>
-
-        <!--<Grid x:Name="footer" Grid.Row="2" Grid.Column="0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition/>
-                <ColumnDefinition/>
-            </Grid.ColumnDefinitions>
-
-            <TextBlock x:Name="status" Grid.Row="0" Grid.Column="0"/>
-            <ProgressBar x:Name="progressBar" Grid.Row="0" Grid.Column="1"
-                         Minimum="0" Maximum="100" Value="{Binding CurPercentOfProcessing, Mode=OneWay}"/>
-        </Grid>-->
+        <Grid x:Name="pagePlaceholder" Grid.Row="1"/>
 
         <StatusBar x:Name="footer" Grid.Row="2" Grid.Column="0">
             <StatusBar.ItemsPanel>

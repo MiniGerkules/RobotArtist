@@ -10,7 +10,7 @@ namespace GUI.PLT {
     /// <summary>
     /// The class describes the plt code decoder
     /// </summary>
-    class PLTDecoder : NotifierOfPropertyChange {
+    public class PLTDecoder : NotifierOfPropertyChange {
         private readonly static uint numTicksInMM = 40; // Characteristic of PLT format
         public static int MaxPercent => 100;
 
@@ -27,7 +27,7 @@ namespace GUI.PLT {
         public void ResetCurPercent() { curPercent = 0; }
 
         private Point2D? lastPoint = null;
-        private PLTColor curColor = null;
+        private IColor? curColor = null;
 
         /// <summary>
         /// The method decodes the plt code passed in the string
