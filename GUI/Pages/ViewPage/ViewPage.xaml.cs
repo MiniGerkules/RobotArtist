@@ -134,7 +134,7 @@ namespace GUI.Pages.ViewPage {
         }
 
         private void UpdateActiveImage() {
-            viewVM.Image = files[pathToActiveFile!].RenderedPicture;
+            viewVM.Image = files[pathToActiveFile!].Rendered.MainImage;
         }
     }
 }

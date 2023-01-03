@@ -150,9 +150,9 @@ namespace GUI {
             string pathToActive = filesContainer.GetPathToActive()!;
             if (savedFiles.ContainsKey(pathToActive)) {
                 if (pathToActive.EndsWith(".plt"))
-                    SaveImageToFile(active.RenderedPicture, savedFiles[pathToActive]);
+                    SaveImageToFile(active.Rendered.MainImage, savedFiles[pathToActive]);
                 else
-                    SavePLTToFile(active.RenderedPicture, savedFiles[pathToActive]);
+                    SavePLTToFile(active.Rendered.MainImage, savedFiles[pathToActive]);
             } else {
                 SaveFileAsClick(sender, e);
             }
@@ -187,7 +187,7 @@ namespace GUI {
                 ErrorDisplayer("Couldn't select the path to save the file!");
             } else {
                 savedFiles[pathToActive] = dlg.FileName;
-                call(active.RenderedPicture, dlg.FileName);
+                call(active.Rendered.MainImage, dlg.FileName);
             }
         }
 

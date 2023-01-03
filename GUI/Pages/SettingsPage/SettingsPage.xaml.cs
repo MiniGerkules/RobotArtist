@@ -46,7 +46,7 @@ namespace GUI.Pages.SettingsPage {
                 settingsVM.Items.Add(new(property, value.ToString()!));
             }
 
-            settingsImage.Source = active.RenderedPicture;
+            settingsImage.Source = active.Rendered.MainImage;
         }
 
         private async void ApplySettings(object sender, RoutedEventArgs e) {
@@ -68,7 +68,7 @@ namespace GUI.Pages.SettingsPage {
                 await applyNewSettings(newSettings);
 
                 var newActive = getActive();
-                if (newActive != null) settingsImage.Source = newActive.RenderedPicture;
+                if (newActive != null) settingsImage.Source = newActive.Rendered.MainImage;
                 else (this as IPage).SetInactive();
             }
         }
