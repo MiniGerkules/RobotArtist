@@ -27,8 +27,7 @@ namespace GUI.Pages {
             var active = getActive();
             if (active == null) return;
 
-            mainGrid.Visibility = Visibility.Visible;
-            menuItem.Background = DefaultGUISettings.activeButton;
+            (this as IPage).ShowMainParts();
 
             List<string> infoFields = new(active.Settings.numOfSettings) {
                 $"Width (mm) = {active.Width}.", $"Height (mm) = {active.Height}."

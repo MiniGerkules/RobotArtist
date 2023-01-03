@@ -16,11 +16,19 @@ namespace GUI.Pages {
         }
 
         void SetActive() {
+            ShowMainParts();
+        }
+
+        void ShowMainParts() {
             Container.Visibility = Visibility.Visible;
             LinkedMenuItem.Background = DefaultGUISettings.activeButton;
         }
 
         void SetInactive() {
+            HideMainParts();
+        }
+
+        void HideMainParts() {
             Container.Visibility = Visibility.Collapsed;
             LinkedMenuItem.Background = DefaultGUISettings.inactiveButton;
         }
