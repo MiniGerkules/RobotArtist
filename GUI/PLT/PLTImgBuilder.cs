@@ -102,17 +102,19 @@ namespace GUI.PLT {
         }
         public void ResetCurPercent() { curPercent = 0; }
 
-        public PLTPicture Build(PLTDecoderRes picture) {
-            var bitmap = CreateBitmapOf(Settings, picture);
-            if (bitmap.CanFreeze)
-                bitmap.Freeze();
+        public PLTPicture Build(in PLTDecoderRes picture) {
+            var images = CreateImagesOf(Settings, picture);
+            images.Freeze();
+            return new(Settings, images, picture);
+        }
 
-            return new(Settings, bitmap, picture);
+        public PLTPicture Rebuild(in PLTPicture picture) {
+            return Rebuild(Settings, picture);
         }
 
         public PLTPicture Rebuild(in AlgorithmSettings settings, in PLTPicture picture) {
-            var bitmap = CreateBitmapOf(settings, picture.PLTDecoded);
-            var newPicture = new PLTPicture(settings, bitmap, picture.PLTDecoded);
+            var images = CreateImagesOf(settings, picture.PLTDecoded);
+            var newPicture = new PLTPicture(settings, images, picture.PLTDecoded);
             newPicture.RestoreRotationAngle(picture);
 
             return newPicture;
