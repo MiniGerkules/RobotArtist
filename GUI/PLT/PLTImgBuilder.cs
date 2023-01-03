@@ -7,6 +7,81 @@ using GUI.Settings;
 
 namespace GUI.PLT {
     public class PLTImgBuilder : NotifierOfPropertyChange {
+        private class BuildingImages {
+            public DrawingVisual MainImage { get; } = new();
+            public DrawingVisual StrokesStructure { get; } = new();
+
+            private readonly AlgorithmSettings settings;
+            public double Scale { get; }
+
+            private readonly DrawingContext mainContext;
+            private readonly DrawingContext strokesContext;
+
+            private GeometryGroup geometry = new();
+            private IColor? curColor = null;
+            private Pen? penWithRealColor = null;
+            private Pen? penForStrokesStruct = null;
+
+            public BuildingImages(AlgorithmSettings settings, double scale) {
+                MainImage = new();
+                StrokesStructure = new();
+
+                mainContext = MainImage.RenderOpen();
+                strokesContext = StrokesStructure.RenderOpen();
+
+                this.settings = settings;
+                Scale = scale;
+            }
+
+            internal void Close() {
+                mainContext.Close();
+                strokesContext.Close();
+            }
+
+            internal void SetBackground(SolidColorBrush brush, double width, double height) {
+                double brushWidth = settings.BrushWidth * Scale;
+                Rect background = new(-brushWidth / 2, -brushWidth / 2,
+                                      width*Scale + brushWidth, height*Scale + brushWidth);
+
+                mainContext.DrawRectangle(brush, null, background);
+                strokesContext.DrawRectangle(brush, null, background);
+            }
+
+            internal bool IsColorSame(IColor stroceColor) {
+                if (curColor == null) return false;
+                else return stroceColor == curColor;
+            }
+
+            internal void ColorChanged(IColor newColor) {
+                geometry = new();
+                penWithRealColor = new() {
+                    Thickness = settings.BrushWidth * Scale,
+                    StartLineCap = PenLineCap.Round,
+                    EndLineCap = PenLineCap.Round,
+                    Brush = new SolidColorBrush(newColor.GetRealColor()),
+                };
+                penForStrokesStruct = new() {
+                    Thickness = settings.BrushWidth * Scale,
+                    StartLineCap = PenLineCap.Round,
+                    EndLineCap = PenLineCap.Round,
+                    Brush = new SolidColorBrush(newColor.GetArtificialColor()),
+                };
+
+                curColor = newColor;
+            }
+
+            internal void AddToGeometry(Stroke stroke) {
+                Point start = new(stroke.Start.X*Scale, stroke.Start.Y*Scale);
+                Point end = new(stroke.End.X*Scale, stroke.End.Y*Scale);
+                geometry.Children.Add(new LineGeometry(start, end));
+            }
+
+            internal void SaveGeometry() {
+                mainContext.DrawGeometry(null, penWithRealColor, geometry);
+                strokesContext.DrawGeometry(null, penForStrokesStruct, geometry);
+            }
+        }
+
         private static readonly ScreenSizes windowSize = new();
 
         private static readonly int maxPercentForBuilding = 90;
