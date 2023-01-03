@@ -6,23 +6,31 @@ namespace GUI.Pages {
         protected MenuItem LinkedMenuItem { get; }
         protected Grid Container { get; }
 
-        public bool IsLinked(object obj) {
+        bool IsLinked(object obj) {
             return obj is MenuItem menuItem && ReferenceEquals(LinkedMenuItem, menuItem);
         }
 
-        public void SetActive() {
+        bool IsActive() {
+            return Container.Visibility == Visibility.Visible &&
+                    LinkedMenuItem.Background == DefaultGUISettings.activeButton;
+        }
+
+        void SetActive() {
+            ShowMainParts();
+        }
+
+        void ShowMainParts() {
             Container.Visibility = Visibility.Visible;
             LinkedMenuItem.Background = DefaultGUISettings.activeButton;
         }
 
-        public void SetInactive() {
-            Container.Visibility = Visibility.Collapsed;
-            LinkedMenuItem.Background = DefaultGUISettings.inactiveButton;
+        void SetInactive() {
+            HideMainParts();
         }
 
-        public bool IsActive() {
-            return Container.Visibility == Visibility.Visible &&
-                    LinkedMenuItem.Background == DefaultGUISettings.activeButton;
+        void HideMainParts() {
+            Container.Visibility = Visibility.Collapsed;
+            LinkedMenuItem.Background = DefaultGUISettings.inactiveButton;
         }
     }
 }

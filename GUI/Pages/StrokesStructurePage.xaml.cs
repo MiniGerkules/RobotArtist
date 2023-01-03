@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Windows;
 using System.Windows.Controls;
 
 using GUI.PLT;
@@ -23,9 +22,7 @@ namespace GUI.Pages {
             var active = getActive();
             if (active == null) return;
 
-            mainGrid.Visibility = Visibility.Visible;
-            menuItem.Background = DefaultGUISettings.activeButton;
-
+            (this as IPage).ShowMainParts();
             strokesStructureImg.Source = active.Rendered.StrokesStructure;
         }
     }

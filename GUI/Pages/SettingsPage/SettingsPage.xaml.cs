@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Text;
-using System.Windows;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Controls;
@@ -37,8 +36,7 @@ namespace GUI.Pages.SettingsPage {
             var active = getActive();
             if (active == null) return;
 
-            mainGrid.Visibility = Visibility.Visible;
-            menuItem.Background = DefaultGUISettings.activeButton;
+            (this as IPage).ShowMainParts();
 
             settingsVM.Items.Clear();
             foreach (var (property, value) in active.Settings) {

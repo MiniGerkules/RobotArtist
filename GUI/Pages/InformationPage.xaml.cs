@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Text;
-using System.Windows;
 using System.Windows.Controls;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -27,8 +26,7 @@ namespace GUI.Pages {
             var active = getActive();
             if (active == null) return;
 
-            mainGrid.Visibility = Visibility.Visible;
-            menuItem.Background = DefaultGUISettings.activeButton;
+            (this as IPage).ShowMainParts();
 
             List<string> infoFields = new(active.Settings.numOfSettings) {
                 $"Width (mm) = {active.Width}.", $"Height (mm) = {active.Height}."
