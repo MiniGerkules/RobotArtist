@@ -27,7 +27,7 @@ namespace GUI.PLT {
         public void ResetCurPercent() { curPercent = 0; }
 
         private Point2D? lastPoint = null;
-        private PLTColor? curColor = null;
+        private IColor? curColor = null;
 
         /// <summary>
         /// The method decodes the plt code passed in the string
