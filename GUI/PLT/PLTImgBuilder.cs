@@ -87,7 +87,7 @@ namespace GUI.PLT {
         private static readonly int maxPercentForBuilding = 90;
         private static readonly int maxPercentForRendering = 10;
         public static int MaxPercent => maxPercentForBuilding + maxPercentForRendering;
-        
+
         public AlgorithmSettings Settings { get; set; } = SettingsReader.ReadDefaultSettings();
 
         private int curPercent = 0;
@@ -154,7 +154,6 @@ namespace GUI.PLT {
 
             for (int i = 0; i < picture.Strokes.Count; ++i) {
                 CurPercent = i*maxPercentForBuilding / picture.Strokes.Count;
-
                 var stroke = picture.Strokes[i];
 
                 if (!builded.IsColorSame(picture.Strokes[i].StroceColor)) {
