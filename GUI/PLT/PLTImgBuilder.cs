@@ -169,43 +169,7 @@ namespace GUI.PLT {
             context.Close();
 
             CurPercent = maxPercentForBuilding;
-            return image;
-        }
-
-        private static void SetBackground(in AlgorithmSettings settings, DrawingContext context,
-                                          in Brush brush, in double width, in double height,
-                                          in double scale) {
-            double brushWidth = settings.BrushWidth * scale;
-            Rect background = new(-brushWidth / 2, -brushWidth / 2,
-                                  width*scale + brushWidth, height*scale + brushWidth);
-            context.DrawRectangle(brush, null, background);
-        }
-
-        private static void UpdateColor(in AlgorithmSettings settings, out Pen pen,
-                                        out GeometryGroup geometry, in PLTColor newColor,
-                                        out PLTColor oldColor, in double scale) {
-            UpdatePenAndGeometry(settings, out pen, out geometry,
-                                 new SolidColorBrush(newColor.ToColor()), scale);
-            oldColor = newColor;
-        }
-
-        private static void UpdatePenAndGeometry(in AlgorithmSettings settings, out Pen pen,
-                                                 out GeometryGroup geometry, in Brush newColor,
-                                                 in double scale) {
-            geometry = new();
-            pen = new() {
-                Thickness = settings.BrushWidth * scale,
-                StartLineCap = PenLineCap.Round,
-                EndLineCap = PenLineCap.Round,
-                Brush = newColor
-            };
-        }
-
-        private static LineGeometry GetLineGeometry(in Stroke stoke, in double scale) {
-            Point start = new(stoke.Start.X * scale, stoke.Start.Y * scale);
-            Point end = new(stoke.End.X * scale, stoke.End.Y * scale);
-
-            return new(start, end);
+            return builded;
         }
     }
 }
