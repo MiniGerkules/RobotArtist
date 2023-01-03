@@ -118,27 +118,28 @@ namespace GUI.PLT {
             return newPicture;
         }
 
-        public PLTPicture Rebuild(in PLTPicture picture) {
-            return Rebuild(Settings, picture);
-        }
-
-        private BitmapSource CreateBitmapOf(in AlgorithmSettings settings, in PLTDecoderRes picture) {
+        private Images CreateImagesOf(in AlgorithmSettings settings,
+                                      in PLTDecoderRes decoded) {
             CMYBWColor.NumOfNeibForRegression = settings.NumOfNeibForHSVReg;
-            double scale = windowSize.CountScaling(picture.Width, picture.Height);
+            double scale = windowSize.CountScaling(decoded.Width, decoded.Height);
+            var builded = ProcessStrokes(settings, decoded, scale);
 
-            var image = ProcessStrokes(settings, picture);
-            return RenderBitmap(image, picture.Width, picture.Height, scale);
+            var main = RenderBitmap(builded.MainImage, decoded, scale);
+            CurPercent += maxPercentForRendering / 2;
+            var strokes = RenderBitmap(builded.StrokesStructure, decoded, scale);
+            CurPercent = maxPercentForBuilding + maxPercentForRendering;
+
+            return new Images(main, strokes);
         }
 
-        private BitmapSource RenderBitmap(DrawingVisual image, double width,
-                                                 double height, double scalingFactor) {
+        private static BitmapSource RenderBitmap(in DrawingVisual image, in PLTDecoderRes decoded,
+                                                 in double scale) {
             RenderTargetBitmap renderedImage = new(
-                (int)(width * scalingFactor), (int)(height * scalingFactor),
+                (int)(decoded.Width * scale), (int)(decoded.Height * scale),
                 96, 96, PixelFormats.Default
             );
-            renderedImage.Render(image);
 
-            CurPercent += maxPercentForRendering;
+            renderedImage.Render(image);
             return renderedImage;
         }
 
