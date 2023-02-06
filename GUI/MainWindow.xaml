@@ -42,6 +42,7 @@
                 <MenuItem Header="Reset settings to default" Click="ResetSettings"/>
             </MenuItem>
             <MenuItem x:Name="infoButton" Header="Information about the painting" Click="MenuButtonClick"/>
+            <MenuItem x:Name="editPLTButton" Header="Edit PLT" Click="MenuButtonClick"/>
         </Menu>
 
         <Grid x:Name="pagePlaceholder" Grid.Row="1"/>
