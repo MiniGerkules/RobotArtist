@@ -42,7 +42,7 @@ namespace GUI {
                 { settingsButton, new SettingsPage(settingsButton, filesContainer.GetActive,
                                                    ErrorDisplayer, filesContainer.ApplySettingsForActive) },
                 { infoButton, new InformationPage(infoButton, filesContainer.GetActive) },
-                { editPLTButton, new EditPLT(editPLTButton) },
+                { editPLTButton, new EditPLT(editPLTButton, filesContainer.GetActive) },
             };
 
             mainMenu.Background = DefaultGUISettings.menuColor;
