@@ -23,12 +23,6 @@ namespace GUI.PLT {
 
         public MyPen() { Pen = new(Brush, Thickness); }
 
-        public MyPen(Brush brush, uint thickness, double scale) {
-            Brush = brush;
-            Thickness = thickness;
-            Pen = new(Brush, Thickness);
-        }
-
         private void UpdatePen() {
             Pen = new() {
                 Thickness = Thickness,
