@@ -39,9 +39,7 @@ namespace GUI.PLT {
             }
 
             internal void SetBackground(SolidColorBrush brush, double width, double height) {
-                double brushWidth = settings.BrushWidth * Scale;
-                Rect background = new(-brushWidth / 2, -brushWidth / 2,
-                                      width*Scale + brushWidth, height*Scale + brushWidth);
+                Rect background = new(0, 0, width*Scale, height*Scale);
 
                 mainContext.DrawRectangle(brush, null, background);
                 strokesContext.DrawRectangle(brush, null, background);
