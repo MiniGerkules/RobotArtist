@@ -45,21 +45,22 @@ namespace GUI.PLT {
                 strokesContext.DrawRectangle(brush, null, background);
             }
 
-            internal bool IsColorSame(IColor stroceColor) => curColor == stroceColor;
-            internal bool IsBrushWidthSame(double brushWidth) => penWithRealColor.Thickness == brushWidth;
-
-            internal void ColorChanged(IColor newColor) {
-                geometry = new();
-                penWithRealColor.Brush = new SolidColorBrush(newColor.GetRealColor());
-                penForStrokesStruct.Brush = new SolidColorBrush(newColor.GetArtificialColor());
-
-                curColor = newColor;
+            internal bool NeedUpdate(IColor color, double brushWidth) {
+                return curColor != color || penWithRealColor.Thickness != brushWidth * Scale;
             }
 
-            internal void BushWidthChanged(double bushWidth) {
+            internal void UpdatePen(IColor color, double brushWidth) {
                 geometry = new();
-                penWithRealColor.Thickness = bushWidth * Scale;
-                penForStrokesStruct.Thickness = bushWidth * Scale;
+
+                if (curColor != color) {
+                    curColor = color;
+                    penWithRealColor.Brush = new SolidColorBrush(color.GetRealColor());
+                    penForStrokesStruct.Brush = new SolidColorBrush(color.GetArtificialColor());
+                }
+                if (penWithRealColor.Thickness != brushWidth * Scale) {
+                    penWithRealColor.Thickness = brushWidth * Scale;
+                    penForStrokesStruct.Thickness = brushWidth * Scale;
+                }
             }
 
             internal void AddToGeometry(Stroke stroke) {
@@ -142,19 +143,15 @@ namespace GUI.PLT {
                                               in double scale) {
             BuildingImages builded = new(settings, scale);
             builded.SetBackground(Brushes.White, picture.Width, picture.Height);
-            builded.ColorChanged(picture.Strokes[0].StroceColor);
-            builded.BushWidthChanged(picture.Strokes[0].BrushWidth);
+            builded.UpdatePen(picture.Strokes[0].StroceColor, picture.Strokes[0].BrushWidth);
 
             for (int i = 0; i < picture.Strokes.Count; ++i) {
                 CurPercent = i*maxPercentForBuilding / picture.Strokes.Count;
                 var stroke = picture.Strokes[i];
 
-                if (!builded.IsColorSame(picture.Strokes[i].StroceColor)) {
+                if (builded.NeedUpdate(stroke.StroceColor, stroke.BrushWidth)) {
                     builded.SaveGeometry();
-                    builded.ColorChanged(stroke.StroceColor);
-                } else if (!builded.IsBrushWidthSame(picture.Strokes[i].BrushWidth)) {
-                    builded.SaveGeometry();
-                    builded.BushWidthChanged(picture.Strokes[i].BrushWidth);
+                    builded.UpdatePen(stroke.StroceColor, stroke.BrushWidth);
                 }
 
                 builded.AddToGeometry(stroke);
