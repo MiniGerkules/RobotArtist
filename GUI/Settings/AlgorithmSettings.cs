@@ -24,9 +24,6 @@ namespace GUI.Settings {
         /// <summary> The error of taking a smear </summary>
         public double PixTolBest { get; private set; } = 4;
 
-        /// <summary> The width of the brush </summary>
-        public uint BrushWidth { get; private set; } = 4;
-
         /// <summary> Number of neibors for proportion classification </summary>
         public uint NumOfNeibForPropClass { get; private set; } = 10;
 
@@ -47,7 +44,6 @@ namespace GUI.Settings {
             nameof(PixTol) => "Possible color deviation at the end",
             nameof(PixTol2) => "Possible color deviation on average",
             nameof(PixTolBest) => "The Error of taking a smear",
-            nameof(BrushWidth) => "The width of the brush",
             nameof(NumOfNeibForPropClass) => "Number of neibors for proportion classification",
             nameof(NumOfNeibForPropReg) => "Number of neibors for proportion regression",
             nameof(NumOfNeibForHSVReg) => "Number of neibors for HSV-color regression",
