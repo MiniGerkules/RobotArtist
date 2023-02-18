@@ -45,10 +45,8 @@ namespace GUI.PLT {
                 strokesContext.DrawRectangle(brush, null, background);
             }
 
-            internal bool IsColorSame(IColor stroceColor) {
-                if (curColor == null) return false;
-                else return stroceColor == curColor;
-            }
+            internal bool IsColorSame(IColor stroceColor) => curColor == stroceColor;
+            internal bool IsBrushWidthSame(double brushWidth) => penWithRealColor.Thickness == brushWidth;
 
             internal void ColorChanged(IColor newColor) {
                 geometry = new();
@@ -56,6 +54,12 @@ namespace GUI.PLT {
                 penForStrokesStruct.Brush = new SolidColorBrush(newColor.GetArtificialColor());
 
                 curColor = newColor;
+            }
+
+            internal void BushWidthChanged(double bushWidth) {
+                geometry = new();
+                penWithRealColor.Thickness = bushWidth * Scale;
+                penForStrokesStruct.Thickness = bushWidth * Scale;
             }
 
             internal void AddToGeometry(Stroke stroke) {
@@ -139,6 +143,7 @@ namespace GUI.PLT {
             BuildingImages builded = new(settings, scale);
             builded.SetBackground(Brushes.White, picture.Width, picture.Height);
             builded.ColorChanged(picture.Strokes[0].StroceColor);
+            builded.BushWidthChanged(picture.Strokes[0].BrushWidth);
 
             for (int i = 0; i < picture.Strokes.Count; ++i) {
                 CurPercent = i*maxPercentForBuilding / picture.Strokes.Count;
@@ -147,6 +152,9 @@ namespace GUI.PLT {
                 if (!builded.IsColorSame(picture.Strokes[i].StroceColor)) {
                     builded.SaveGeometry();
                     builded.ColorChanged(stroke.StroceColor);
+                } else if (!builded.IsBrushWidthSame(picture.Strokes[i].BrushWidth)) {
+                    builded.SaveGeometry();
+                    builded.BushWidthChanged(picture.Strokes[i].BrushWidth);
                 }
 
                 builded.AddToGeometry(stroke);
