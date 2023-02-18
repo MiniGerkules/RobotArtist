@@ -19,8 +19,8 @@ namespace GUI.PLT {
 
             private GeometryGroup geometry = new();
             private IColor? curColor = null;
-            private Pen? penWithRealColor = null;
-            private Pen? penForStrokesStruct = null;
+            private readonly MyPen penWithRealColor = new();
+            private readonly MyPen penForStrokesStruct = new();
 
             public BuildingImages(AlgorithmSettings settings, double scale) {
                 MainImage = new();
@@ -54,18 +54,8 @@ namespace GUI.PLT {
 
             internal void ColorChanged(IColor newColor) {
                 geometry = new();
-                penWithRealColor = new() {
-                    Thickness = settings.BrushWidth * Scale,
-                    StartLineCap = PenLineCap.Round,
-                    EndLineCap = PenLineCap.Round,
-                    Brush = new SolidColorBrush(newColor.GetRealColor()),
-                };
-                penForStrokesStruct = new() {
-                    Thickness = settings.BrushWidth * Scale,
-                    StartLineCap = PenLineCap.Round,
-                    EndLineCap = PenLineCap.Round,
-                    Brush = new SolidColorBrush(newColor.GetArtificialColor()),
-                };
+                penWithRealColor.Brush = new SolidColorBrush(newColor.GetRealColor());
+                penForStrokesStruct.Brush = new SolidColorBrush(newColor.GetArtificialColor());
 
                 curColor = newColor;
             }
@@ -77,8 +67,8 @@ namespace GUI.PLT {
             }
 
             internal void SaveGeometry() {
-                mainContext.DrawGeometry(null, penWithRealColor, geometry);
-                strokesContext.DrawGeometry(null, penForStrokesStruct, geometry);
+                mainContext.DrawGeometry(null, penWithRealColor.Pen, geometry);
+                strokesContext.DrawGeometry(null, penForStrokesStruct.Pen, geometry);
             }
         }
 
