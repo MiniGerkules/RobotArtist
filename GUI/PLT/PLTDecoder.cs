@@ -27,9 +27,14 @@ namespace GUI.PLT {
         }
         public void ResetCurPercent() { curPercent = 0; }
 
-        private Point2D? lastPoint = null;
-        private IColor? curColor = null;
-        private double brushWidth = 0;
+        private Point2D? lastPoint;
+        private IColor? curColor;
+        private double brushWidth; 
+        private readonly double defaultBrushWidth;
+
+        public PLTDecoder(in double defaultBrushWidth) {
+            this.defaultBrushWidth = defaultBrushWidth;
+        }
 
         /// <summary>
         /// The method decodes the plt code passed in the string
@@ -51,7 +56,7 @@ namespace GUI.PLT {
                 throw new Exception("ERROR! PLT file have to end with ';' character!");
 
             List<Stroke> decodedPlt = new();
-            lastPoint = null; curColor = null; brushWidth = 0;
+            lastPoint = null; curColor = null; brushWidth = defaultBrushWidth;
             int curPos = 3; // Start from 3 to cut [IN] operator
             for (int endPos = pltCode.Length; curPos < endPos; ++curPos) {
                 CurPercent = curPos*MaxPercent / endPos;
