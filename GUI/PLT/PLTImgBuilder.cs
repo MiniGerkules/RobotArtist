@@ -10,8 +10,6 @@ namespace GUI.PLT {
         private class BuildingImages {
             public DrawingVisual MainImage { get; } = new();
             public DrawingVisual StrokesStructure { get; } = new();
-
-            private readonly AlgorithmSettings settings;
             public double Scale { get; }
 
             private readonly DrawingContext mainContext;
@@ -22,14 +20,13 @@ namespace GUI.PLT {
             private readonly MyPen penWithRealColor = new();
             private readonly MyPen penForStrokesStruct = new();
 
-            public BuildingImages(AlgorithmSettings settings, double scale) {
+            public BuildingImages(double scale) {
                 MainImage = new();
                 StrokesStructure = new();
 
                 mainContext = MainImage.RenderOpen();
                 strokesContext = StrokesStructure.RenderOpen();
 
-                this.settings = settings;
                 Scale = scale;
             }
 
@@ -141,7 +138,7 @@ namespace GUI.PLT {
         private BuildingImages ProcessStrokes(in AlgorithmSettings settings,
                                               in PLTDecoderRes picture,
                                               in double scale) {
-            BuildingImages builded = new(settings, scale);
+            BuildingImages builded = new(scale);
             builded.SetBackground(Brushes.White, picture.Width, picture.Height);
             builded.UpdatePen(picture.Strokes[0].StroceColor, picture.Strokes[0].BrushWidth);
 
