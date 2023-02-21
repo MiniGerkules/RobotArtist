@@ -53,7 +53,7 @@
                                 </Grid.ColumnDefinitions>
 
                                 <TextBlock Text="{Binding Decs, Mode=OneWay}" Grid.Column="0"
-                                           Style="{StaticResource UsualTextBlock}"/>
+                                           Style="{StaticResource UsualTextBlock}" TextAlignment="Right"/>
                                 <TextBox Text="{Binding Value, Mode=TwoWay}" Grid.Column="1"
                                          Style="{StaticResource UsualTextBox}"/>
                             </Grid>
