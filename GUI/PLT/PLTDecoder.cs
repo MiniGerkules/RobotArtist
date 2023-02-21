@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using GeneralComponents;
+using System.Globalization;
 using System.Collections.Generic;
 
 using GUI.Colors;
@@ -28,7 +29,7 @@ namespace GUI.PLT {
 
         private Point2D? lastPoint = null;
         private IColor? curColor = null;
-        private uint brushWidth = 0;
+        private double brushWidth = 0;
 
         /// <summary>
         /// The method decodes the plt code passed in the string
@@ -67,7 +68,7 @@ namespace GUI.PLT {
         private void ProcessPart(List<Stroke> decodedPlt, in string part) {
             switch (part[..2]) {
                 case "PW":
-                    brushWidth = uint.Parse(part[2..]);
+                    brushWidth = double.Parse(part[2..], CultureInfo.InvariantCulture);
                     break;
                 case "PP":
                     curColor = new CMYBWColor(part[2..].Split(','));
