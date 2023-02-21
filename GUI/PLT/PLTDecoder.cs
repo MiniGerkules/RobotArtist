@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using GeneralComponents;
+using System.Globalization;
 using System.Collections.Generic;
 
 using GUI.Colors;
@@ -26,9 +27,14 @@ namespace GUI.PLT {
         }
         public void ResetCurPercent() { curPercent = 0; }
 
-        private Point2D? lastPoint = null;
-        private IColor? curColor = null;
-        private uint brushWidth = 0;
+        private Point2D? lastPoint;
+        private IColor? curColor;
+        private double brushWidth; 
+        private readonly double defaultBrushWidth;
+
+        public PLTDecoder(in double defaultBrushWidth) {
+            this.defaultBrushWidth = defaultBrushWidth;
+        }
 
         /// <summary>
         /// The method decodes the plt code passed in the string
@@ -50,7 +56,7 @@ namespace GUI.PLT {
                 throw new Exception("ERROR! PLT file have to end with ';' character!");
 
             List<Stroke> decodedPlt = new();
-            lastPoint = null; curColor = null; brushWidth = 0;
+            lastPoint = null; curColor = null; brushWidth = defaultBrushWidth;
             int curPos = 3; // Start from 3 to cut [IN] operator
             for (int endPos = pltCode.Length; curPos < endPos; ++curPos) {
                 CurPercent = curPos*MaxPercent / endPos;
@@ -67,7 +73,7 @@ namespace GUI.PLT {
         private void ProcessPart(List<Stroke> decodedPlt, in string part) {
             switch (part[..2]) {
                 case "PW":
-                    brushWidth = uint.Parse(part[2..]);
+                    brushWidth = double.Parse(part[2..], CultureInfo.InvariantCulture);
                     break;
                 case "PP":
                     curColor = new CMYBWColor(part[2..].Split(','));

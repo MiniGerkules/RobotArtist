@@ -23,7 +23,7 @@ namespace GUI {
         /// <summary> Key -- path to plt file, value -- path to saved image </summary>
         private readonly Dictionary<string, string> savedFiles = new();
 
-        private readonly PLTDecoder pltDecoder = new();
+        private readonly PLTDecoder pltDecoder;
         private readonly PLTImgBuilder pltImgBuilder = new();
 
         private readonly IImgFileContainer filesContainer;
@@ -33,6 +33,7 @@ namespace GUI {
         public MainWindow() {
             InitializeComponent();
 
+            pltDecoder = new(pltImgBuilder.Settings.DefaultBrushWidth);
             footer.DataContext = new BuildingImgProcessVM(pltDecoder, pltImgBuilder);
             filesContainer = new ViewPage(viewButton, pltDecoder, pltImgBuilder);
             pages = new() {
