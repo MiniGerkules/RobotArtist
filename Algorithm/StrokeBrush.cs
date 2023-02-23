@@ -13,12 +13,10 @@ namespace Algorithm
         {
             //try
             //{
-                this.thickness = (int)Math.Round(brushWidthMM / sfX);
-                if (thickness == 0)
-                    throw new ArgumentException();
-                this.smallThickness = (int)Math.Ceiling((double)thickness / 2);
+                this.thickness = Math.Max(2, (int)Math.Round(brushWidthMM / sfX));
+                this.smallThickness = Math.Max(1, (int)Math.Ceiling((double)thickness / 2));
                 this.maxStrokeLength = thickness * 10;
-                this.bsQuad = ((double)thickness / 2) * ((double)thickness / 2); // is that ok?
+                this.bsQuad = ((double)thickness / 2d) * ((double)thickness / 2d); // is that ok?
             //}
             //catch (ArgumentException e)
             //{
