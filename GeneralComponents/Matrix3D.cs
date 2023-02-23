@@ -44,6 +44,12 @@ namespace GeneralComponents {
             }
         }
 
+        public Matrix3D(Matrix3D matrix)
+        {
+            for (int i = 0; i < matrix.Layers; ++i)
+                this.matrix[i] = new Matrix2D(matrix.matrix[i]);
+        }
+
         public static Matrix3D operator -(Matrix3D first, Matrix3D second) => ByElem(first, second, MathFunctions.Minus);
 
         private static Matrix3D ByElem(Matrix3D first, Matrix3D second,
