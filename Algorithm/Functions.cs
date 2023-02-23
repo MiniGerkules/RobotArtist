@@ -3,16 +3,26 @@ using System.Linq;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Collections.Generic;
-
 using GeneralComponents;
-using System.Drawing;
-using Microsoft.VisualBasic;
-using static System.Net.Mime.MediaTypeNames;
+using Matrix3D = GeneralComponents.Matrix3D;
+using Point = System.Windows.Point;
 
 namespace Algorithm
 {
     public static class Functions
     {
+        const double eps = 2.2204e-16;
+        /*
+         * returns a vector of vectorSize of random integer numbers in range 1:limit
+         */
+        public static int[] Randperm(int limit, int vectorSize)
+        {
+            int[] answer = new int[vectorSize];
+            var rand = new Random();
+            for (int i = 0; i < vectorSize; i++)
+                answer[i] = rand.Next(limit - 1) + 1;
+            return answer;
+        }
         public static Matrix2D drawPiece(Point startPoint, StrokeCandidate candidate, double bs2, double bsQuad, 
             ref Matrix3D canvas, ref Matrix3D canvas2, ref Matrix2D ColorClass, ref Matrix2D VolumeOfWhite, double[] meanColorPixel, double[] col2,
             Matrix2D imggray, int mSize, int nSize, ColorMixType mixTypes, double volumeOfWhite)
@@ -40,20 +50,20 @@ namespace Algorithm
                                 // % test for overlap: number of mixtype is >=, and
                                 // % amount of white is lower
                                 if (((int)ColorClass[(int)Xl, (int)Yl] == (int)mixTypes) && (VolumeOfWhite[(int)Xl, (int)Yl] < volumeOfWhite)
-                                    || ((int)ColorClass[(int)Xl, (int)Yl] == 0) || ((int)ColorClass[(int)Xl, (int)Yl] < (int)mixTypes)); 
-                                // %if canvas is free
-                                for (int i = 0; i < meanColorPixel.Length; i++)
-                                    canvasOut[(int)Xl, (int)Yl, i] = meanColorPixel[i];
-                                colorClass[(int)Xl, (int)Yl] = (int)mixTypes;
-                                volOfWhite[(int)Xl, (int)Yl] = volumeOfWhite;
+                                    || ((int)ColorClass[(int)Xl, (int)Yl] == 0) || ((int)ColorClass[(int)Xl, (int)Yl] < (int)mixTypes))
+                                {
+                                    // %if canvas is free
+                                    for (int i = 0; i < meanColorPixel.Length; i++)
+                                        canvasOut[(int)Xl, (int)Yl, i] = meanColorPixel[i];
+                                    colorClass[(int)Xl, (int)Yl] = (int)mixTypes;
+                                    volOfWhite[(int)Xl, (int)Yl] = volumeOfWhite;
 
-                                for (int i = 0; i < col2.Length; i++)
-                                    canvas2Out[(int)Xl, (int)Yl, i] = col2[i]; // % new variant
+                                    for (int i = 0; i < col2.Length; i++)
+                                        canvas2Out[(int)Xl, (int)Yl, i] = col2[i]; // % new variant
+                                }
                             }
                         }
-
                     }
-
                 }
             }
 
@@ -81,7 +91,7 @@ namespace Algorithm
                 candidate.error = double.MaxValue; // changed!
             else
             {
-                // if dot is with small error and doen't match with canvas color on tha data picture
+                // if dot is with small error and doesn't match with canvas color on the data picture
                 int nX = (int)candidate.x;
                 int nY = (int)candidate.y;
                 double[] doublePix = new double[] { img[nX, nY, 0], img[nX, nY, 1], img[nX, nY, 2] }; // one pixel
@@ -164,16 +174,26 @@ namespace Algorithm
             return accepted;
         }
 
-        public static void getDirection (Point startPoint, List<Stroke> strokePoints, Gradient gradient, out double cosA, out double sinA)
+        public static void getDirection (Point startPoint, Stroke stroke, Gradient gradient, bool goNormal, out double cosA, out double sinA)
         {
-            if (strokePoints == null)
-                throw new ArgumentNullException();
-            cosA = -gradient.U[startPoint.X, startPoint.Y];
-            sinA = gradient.V[startPoint.X, startPoint.Y]; // %normally to gradient
-            if (strokePoints.Count > 1) // %if not a single point, get previous direction
+            if (stroke.points.Count == 0)
+                throw new ArgumentException();
+
+            if (goNormal)
             {
-                double dX = startPoint.X - strokePoints[strokePoints.Count - 1].points[0].X;
-                double dY = startPoint.Y - strokePoints[strokePoints.Count - 1].points[0].Y;
+                cosA = -gradient.U[(int)startPoint.X, (int)startPoint.Y];
+                sinA = gradient.V[(int)startPoint.X, (int)startPoint.Y]; // normally to gradient
+            }
+            else
+            {
+                cosA = gradient.U[(int)startPoint.X, (int)startPoint.Y];
+                sinA = gradient.V[(int)startPoint.X, (int)startPoint.Y]; // collinearly to gradient
+            }
+
+            if (stroke.points.Count > 1) // %if not a single point, get previous direction
+            {
+                double dX = startPoint.X - stroke.points[stroke.points.Count - 1].X;
+                double dY = startPoint.Y - stroke.points[stroke.points.Count - 1].Y;
 
                 // %get scalar product
                 double scalar = cosA * dX + sinA * dY;
@@ -345,36 +365,6 @@ namespace Algorithm
             return true;
         }
 
-        public static void getYcellWcell(List<List<List<double>>> colorDB, out List<List<List<double>>> Ycell, out List<List<List<double>>> Wcell)
-        {
-            // in colorDB [i][j][k] double-element where i is sheet, j is row on this sheet, k is column on this sheet
-            Ycell = new(colorDB.Count);
-            Wcell = new(colorDB.Count);
-
-            for (int i = 0; i < colorDB.Count; i++)
-            {
-                Ycell.Add(new(colorDB[i].Count));
-                Wcell.Add(new(colorDB[i].Count));
-
-                for (int j = 0; j < colorDB[i].Count; j++)
-                {
-                    if (colorDB[i][j].Count != 6)
-                        throw new ArgumentException("amount of columns on every sheet should equals 6!");
-
-                    Ycell[i].Add(new(colorDB[i][j].Count));
-                    Wcell[i].Add(new(colorDB[i][j].Count));
-
-                    for (int k = 0; k < colorDB[i][j].Count; k++)
-                    {
-                        if (k < 3)
-                            Ycell[i][j].Add(colorDB[i][j][k]);
-                        else
-                            Wcell[i][j].Add(colorDB[i][j][k]);
-                    }
-                }
-            }
-        }
-
         public static double EuclideanDistance(double[] first, double[] second)
         {
             double distance = 0;
@@ -397,31 +387,16 @@ namespace Algorithm
             return val;
         }
 
-        public static int Mode(int[] numbers)
-        {
-
-            var q = numbers.GroupBy(number => number)
-            .Select(temp => new { Value = temp.Key, Count = temp.Count() })
-            .OrderByDescending(number => number.Count) // first will be the most frequently seen number
-            .OrderBy(number => number)
-            .First(); // having the smallest value
-
-            return q.Value;
-        }
-
-
-
-
         internal static void PredictProportions(out double[] proportions, out ColorMixType mixTypes, double[] hsvColor, List<List<List<double>>> Ycell, List<List<List<double>>> Wcell, int sheetsAmount = 4)
         {
 
             int K = 25;
-            double tolerance = 0.2; // tolerance of color error in rgb
+            double tolerance = 0.2; // #tol - tolerance of color error in rgb
 
             List<List<double>> Tbl = new List<List<double>>();
-            List<int> Clss = new List<int>(); // один большой столбец индексов
+            List<int> Clss = new List<int>(); // one big column of indicies
 
-            // Ycell и Wcell гарантированно не null
+            // Ycell and Wcell are guaranteed not null here
 
             for (int i = 0; i < sheetsAmount; i++)
             {
@@ -459,7 +434,7 @@ namespace Algorithm
                 dst[n] = EuclideanDistance(hsvColorCurrent, Tbl[n].ToArray());
 
             int[] I = dst.GetIndexesForSorted();
-            int[] clssIndexes = I.Take(Ks).ToArray();
+            //int[] clssIndexes = I.Take(Ks).ToArray();
             int[] clvec = new int[Ks];
 
             for (int i = 0; i < Ks; i++)
@@ -541,7 +516,6 @@ namespace Algorithm
                 // %take first K points, make linear regression
                 for (int j = 0; j < 3; j++)
                 {
-
                     Matrix2D X = new Matrix2D(Y_IK);
 
                     Matrix2D E = new Matrix2D(K, 4); // evaluated polynomial
@@ -708,7 +682,7 @@ namespace Algorithm
                 // h = (E'*E)\(E'*V); %OLS
                 Matrix2D Etransposed = E.Transpose();
 
-                GeneralComponents.Matrix h2 = GeneralComponents.GausMethod.Solve(
+                GeneralComponents.Matrix2D h2 = GeneralComponents.GausMethod.Solve(
                     (Etransposed * E), (Etransposed * Wj));
 
                 // predict proportion
@@ -732,108 +706,6 @@ namespace Algorithm
 
             return hsvcol;
         }
-
-        public static double[] array2dimsToarray1dim(double[,] array)
-        {
-            int rowsAmount = array.GetLength(0);
-            int columnsAmount = array.GetLength(1);
-            double[] array1D = new double[rowsAmount * columnsAmount];
-            for (int i = 0; i < rowsAmount; i++)
-            {
-                for (int j = 0; j < columnsAmount; j++)
-                {
-                    array1D[i * columnsAmount + j] = array[i, j];
-                }
-            }
-            return array1D;
-        }
-
-        public static double[][] array1DToArray2DColumn(double[] array)
-        {
-            double[][] array2D = new double[array.Length][];
-            for (int i = 0; i < array.Length; i++)
-            {
-                array2D[i] = new double[1];
-                array2D[i][0] = array[i];
-            }
-            return array2D;
-        }
-
-        public static double[][] array1DToArray2DRow(double[] array)
-        {
-            double[][] array2D = new double[1][];
-            array2D[0] = new double[array.Length];
-            for (int i = 0; i < array.Length; i++)
-            {
-                array2D[0][i] = array[i];
-            }
-            return array2D;
-        }
-
-        public static double[,] getTransposed(double[,] matrix)
-        {
-            int rowsAmount = matrix.GetLength(0);
-            int columnsAmount = matrix.GetLength(1);
-            double[,] transposed = new double[columnsAmount, rowsAmount];
-            for (int i = 0; i < rowsAmount; i++)
-            {
-                for (int j = 0; j < columnsAmount; j++)
-                {
-                    transposed[j, i] = matrix[i, j];
-                }
-            }
-            return transposed;
-        }
-
-        /**
-         * converts array [,] with two dimensions to array [][] 2D array
-        */
-        public static double[][] array2dimsTo2DArray(double[,] array)
-        {
-            int rowsAmount = array.GetLength(0);
-            int columnsAmount = array.GetLength(1);
-            double[][] array2D = new double[rowsAmount][];
-            for (int i = 0; i < rowsAmount; i++)
-            {
-                array2D[i] = new double[columnsAmount];
-                for (int j = 0; j < columnsAmount; j++)
-                {
-                    array2D[i][j] = array[i, j];
-                }
-            }
-            return array2D;
-        }
-
-        /**
-         * converts array [] with to array [ , 1] column
-        */
-        public static double[,] arrayToArray2dimsColumn(double[] array)
-        {
-            double[,] column = new double[array.Length, 1];
-            for (int i = 0; i < array.Length; i++)
-                column[i, 0] = array[i];
-            return column;
-        }
-
-        public static double[,] getMultiplied(double[,] first, double[,] second)
-        {
-            int rowsAmount = first.GetLength(0);
-            int columnsAmount = second.GetLength(1);
-            int commonSize = first.GetLength(1);
-            if (commonSize != second.GetLength(0))
-                throw new ArgumentException("matrix sizes didn't match to produce a multiplication");
-            double[,] multiplied = new double[rowsAmount, columnsAmount];
-            for (int i = 0; i < rowsAmount; i++)
-            {
-                for (int j = 0; j < columnsAmount; j++)
-                {
-                    for (int k = 0; k < commonSize; k++)
-                        multiplied[i, j] += first[i, k] * second[k, j];
-                }
-            }
-            return multiplied;
-        }
-
         public static double[] prod2(Matrix2D matrix) // prod(matrix, 2) 
         {
             int length = matrix.Rows;
@@ -999,10 +871,13 @@ namespace Algorithm
             return (dividend - divisor * Math.Floor(dividend / divisor));
         }
 
-        public static double[,] fspecial(int radius, string type = "disk")
+        public static Matrix2D fspecial(int radius, string type = "disk", int[] hSize = null, double sigma = 0.5)
         {
-            double[,] answer = { { 1 } };
-            if (type == "disk")
+            Matrix2D answer = new Matrix2D (new double[,]{ { 1 } });
+
+            if (type == "disk") // %   H = FSPECIAL('disk',RADIUS) returns a circular averaging filter
+                                // % (pillbox)within the square matrix of side 2 * RADIUS + 1.
+                                // % The default RADIUS is 5.
             {
                 if (radius < 0)
                     throw new ArgumentException("fspecial: RADIUS for disk must be a real scalar");
@@ -1015,7 +890,6 @@ namespace Algorithm
                 int dimension = 2 * radius + 1;
                 double[,] X = new double[dimension, dimension];
                 double[,] Y = new double[dimension, dimension];
-                answer = new double[dimension, dimension];
                 for (int i = 0; i < dimension; i++)
                 {
                     for (int j = 0; j < dimension; j++)
@@ -1026,7 +900,7 @@ namespace Algorithm
                 }
                 double[,] rhi = plus(getMatrixWithSquaredElements(plus(getMatrixAbs(X), 0.5)),
                     getMatrixWithSquaredElements(plus(getMatrixAbs(Y), 0.5)));
-                answer = getMatrixWithLessOrEqualElements10(rhi, rsq);
+                answer = new Matrix2D(getMatrixWithLessOrEqualElements10(rhi, rsq));
                 double[] xx = linspace(0.5, radius - 0.5, radius);
                 double[] ii = arrayWithExtratedRootFromAbsElements(scalarMinusArray(rsq, getArrayWithSquaredElements(xx))); // intersection points for sqrt (r^2 - x^2)
                                                                                                                             // Set the values at the axis caps
@@ -1110,8 +984,46 @@ namespace Algorithm
 
                 }
                 // Normalize
-                answer = getMatrixMultipliedByScalar(answer, 1 / (Math.PI * rsq));
+                answer /= (Math.PI * rsq);
             }
+            else if (type == "gaussian") // %   H = FSPECIAL('gaussian',HSIZE,SIGMA) returns a rotationally
+                                         // % symmetric Gaussian lowpass filter of size HSIZE with standard
+                                         // % deviation SIGMA(positive).HSIZE can be a vector specifying the
+                                         // % number of rows and columns in H or a scalar, in which case H is a
+                                         // % square matrix.Not recommended. Use imgaussfilt or imgaussfilt3
+                                         // % instead.
+                                         // % The default HSIZE is [3 3], the default SIGMA is 0.5.
+            {
+                int defaultSize = 2 * (int)Math.Ceiling(2 * sigma) + 1;
+                if (hSize == null)
+                    hSize = new int[] { defaultSize, defaultSize };
+                double[] siz = new double[] { (hSize[0] - 1) / 2d, (hSize[1] - 1) / 2d };
+                double std = sigma;
+                double[] x = createMinusPlusArray(siz[2]);
+                double[] y = createMinusPlusArray(siz[1]);
+                var xy = meshgrid(x, y);
+                Matrix2D xOnx = (new Matrix2D(xy.x)) ^ (new Matrix2D(xy.x));
+                Matrix2D yOny = (new Matrix2D(xy.y)) ^ (new Matrix2D(xy.y));
+                Matrix2D arg = (-xOnx - yOny) / (2d * std * std);
+                Matrix2D h = exp(arg);
+                double max = h.GetMaxValue();
+                for (int i = 0; i < h.Rows; i++)
+                    for (int j = 0; j < h.Columns; j++)
+                        if (h[i, j] < max * eps) // const eps = 2.2204e-16
+                            h[i, j] = 0;
+                double sumh = h.GetSum();
+                if (sumh != 0)
+                    h /= sumh;
+                answer = h;
+            }
+            return answer;
+        }
+
+        public static double[] createMinusPlusArray(double number)
+        {
+            double[] answer = new double[(int)(number * 2) + 1];
+            for (int i = 0; i <= number * 2; i++)
+                answer[i] = i - number;
             return answer;
         }
 
@@ -1135,25 +1047,13 @@ namespace Algorithm
             }
             return result;
         }
-        public static void printMatrixToConsole(double[,] matrix)
-        {
-            int dataMsize = matrix.GetLength(0);
-            int dataNsize = matrix.GetLength(1);
-            for (int m = 0; m < dataMsize; m++)
-            {
-                for (int n = 0; n < dataNsize; n++)
-                {
-                    Console.Write(matrix[m, n] + " ");
-                }
-                Console.WriteLine();
-            }
-        }
-        public static Matrix2D conv2(Matrix2D data, double[,] kernel, string mode = "same") // mode: only "full" and "same" options
+
+        public static Matrix2D conv2(Matrix2D data, Matrix2D kernel, string mode = "same") // mode: only "full" and "same" options
         {
             int dataMsize = data.Rows;
             int dataNsize = data.Columns;
-            int kernelMsize = kernel.GetLength(0);
-            int kernelNsize = kernel.GetLength(1);
+            int kernelMsize = kernel.Rows;
+            int kernelNsize = kernel.Columns;
             Matrix2D answer = new Matrix2D(dataMsize, dataNsize); // fills with zeros by default
 
             if (mode == "full")
@@ -1235,13 +1135,13 @@ namespace Algorithm
             return answer;
         }
 
-        public static Matrix3D conv2(Matrix3D rgb, double[,] kernel, string mode = "same") // mode: only "full" and "same" options
+        public static Matrix3D conv2(Matrix3D rgb, Matrix2D kernel, string mode = "same") // mode: only "full" and "same" options
         {
             int dataMsize = rgb[0].Rows;
             int dataNsize = rgb[0].Columns;
             int dataKsize = rgb.Layers;
-            int kernelMsize = kernel.GetLength(0);
-            int kernelNsize = kernel.GetLength(1);
+            int kernelMsize = kernel.Rows;
+            int kernelNsize = kernel.Columns;
             Matrix3D answer = new Matrix3D(dataMsize, dataNsize, dataKsize); // fills with zeros by default
 
             if (mode == "full")
@@ -1329,41 +1229,29 @@ namespace Algorithm
                     }
                 }
             }
-            //byte[,,] pixes = answer.Clone() as byte[,,];
             return answer;
         }
 
-        public static double[,] minus(double[,] matrix)
+        public static Matrix2D conv2(Matrix2D H1, Matrix2D H2, Matrix2D A, string mode = "same")
         {
-            double[,] matrixcp = new double[matrix.GetLength(0), matrix.GetLength(1)];
-            for (int i = 0; i < matrix.GetLength(0); i++)
+            Matrix2D column = new Matrix2D(H1.Columns * H1.Rows, 1);
+            Matrix2D row = new Matrix2D(1, H2.Columns * H2.Rows);
+            for (int i = 0; i < H1.Columns; i++)
             {
-                for (int j = 0; j < matrix.GetLength(1); j++)
+                for (int j = 0; j < H1.Rows; j++)
                 {
-                    matrixcp[i, j] = -matrix[i, j];
+                    column[i * H1.Rows + j] = H1[i, j];
                 }
             }
-            return matrixcp;
-        }
-
-        public static double[,] minus(double[,] m1, double[,] m2)
-        {
-            int sizeM = m1.GetLength(0);
-            int sizeN = m1.GetLength(1);
-            double[,] matrixcp = new double[sizeM, sizeN];
-            if ((sizeM == m2.GetLength(0)) && (sizeN == m2.GetLength(1)))
+            for (int i = 0; i < H2.Columns; i++)
             {
-                for (int i = 0; i < sizeM; i++)
+                for (int j = 0; j < H2.Rows; j++)
                 {
-                    for (int j = 0; j < sizeN; j++)
-                    {
-                        matrixcp[i, j] = m1[i, j] - m2[i, j];
-                    }
+                    row[i * H2.Rows + j] = H2[i, j];
                 }
             }
-            return matrixcp;
+            return conv2(column * row, A, mode);
         }
-
         public static double[,] getMatrixAbs(double[,] m1)
         {
             int sizeM = m1.GetLength(0);
@@ -1409,40 +1297,6 @@ namespace Algorithm
             }
             return matrixcp;
         }
-
-        public static double[,] plus(double[,] m1, double[,] m2, double[,] m3)
-        {
-            int sizeM = m1.GetLength(0);
-            int sizeN = m1.GetLength(1);
-            double[,] matrixcp = new double[sizeM, sizeN];
-            if ((sizeM == m2.GetLength(0)) && (sizeN == m2.GetLength(1))
-                && (sizeM == m3.GetLength(0)) && (sizeN == m3.GetLength(1)))
-            {
-                for (int i = 0; i < sizeM; i++)
-                {
-                    for (int j = 0; j < sizeN; j++)
-                    {
-                        matrixcp[i, j] = m1[i, j] + m2[i, j] + m3[i, j];
-                    }
-                }
-            }
-            return matrixcp;
-        }
-
-        public static double[,] getMatrixMultipliedByScalar(double[,] matrix, double scalar)
-        {
-            double[,] matrixcp = new double[matrix.GetLength(0), matrix.GetLength(1)];
-            for (int i = 0; i < matrix.GetLength(0); i++)
-            {
-                for (int j = 0; j < matrix.GetLength(1); j++)
-                {
-
-                    matrixcp[i, j] = matrix[i, j] * scalar;
-                }
-            }
-            return matrixcp;
-        }
-
         public static double[] getArrayWithSquaredElements(double[] matrix)
         {
             int size = matrix.Length;
@@ -1465,20 +1319,6 @@ namespace Algorithm
             }
             return matrixcp;
         }
-
-        public static double[,] getMatrixWithRootExtractedElements(double[,] matrix)
-        {
-            double[,] matrixcp = new double[matrix.GetLength(0), matrix.GetLength(1)];
-            for (int i = 0; i < matrix.GetLength(0); i++)
-            {
-                for (int j = 0; j < matrix.GetLength(1); j++)
-                {
-                    matrixcp[i, j] = Math.Sqrt(matrix[i, j]);
-                }
-            }
-            return matrixcp;
-        }
-
         /**
          * returns matrix where element is 1 if element of matrix is <= scalar 
          * and returns zero otherwise
@@ -1521,90 +1361,6 @@ namespace Algorithm
             }
             return matrixcp;
         }
-
-        /**
-         * returns matrix where element is 1 if it is not equals zero and element is 0 if equals
-         * (~= 0 in matlab)
-        **/
-        public static Matrix2D getMatrixWithElementsNotEqualsToZero10(Matrix2D matrix)
-        {
-            Matrix2D matrixcp = new Matrix2D(matrix.Rows, matrix.Columns);
-            for (int i = 0; i < matrix.Rows; i++)
-            {
-                for (int j = 0; j < matrix.Columns; j++)
-                {
-                    if (matrix[i, j] == 0)
-                        matrixcp[i, j] = 0;
-                    else
-                        matrixcp[i, j] = 1;
-                }
-            }
-            return matrixcp;
-        }
-
-        public static Matrix2D getMatrixWithMultipliedElements(Matrix2D m1, Matrix2D m2)
-        {
-            int sizeM = m1.Rows;
-            int sizeN = m1.Columns;
-            Matrix2D matrixcp = new Matrix2D(sizeM, sizeN);
-            if ((sizeM == m2.Rows) && (sizeN == m2.Columns))
-            {
-                for (int i = 0; i < sizeM; i++)
-                {
-                    for (int j = 0; j < sizeN; j++)
-                    {
-                        matrixcp[i, j] = m1[i, j] * m2[i, j];
-                    }
-                }
-            }
-            return matrixcp;
-        }
-
-        public static double[] getMatrixWithMultipliedElements(double[] m1, double[] m2)
-        {
-            int size = m1.GetLength(0);
-            double[] matrixcp = new double[size];
-            for (int i = 0; i < size; i++)
-            {
-                matrixcp[i] = m1[i] * m2[i];
-            }
-            return matrixcp;
-        }
-
-        public static double[,] getMatrixWithDividedElements(double[,] m1, double[,] m2)
-        {
-            int sizeM = m1.GetLength(0);
-            int sizeN = m1.GetLength(1);
-            double[,] matrixcp = new double[sizeM, sizeN];
-            if ((sizeM == m2.GetLength(0)) && (sizeN == m2.GetLength(1)))
-            {
-                for (int i = 0; i < sizeM; i++)
-                {
-                    for (int j = 0; j < sizeN; j++)
-                    {
-                        if (m2[i, j] != 0)
-                            matrixcp[i, j] = m1[i, j] / m2[i, j];
-                        else
-                            matrixcp[i, j] = double.NaN; // is that ok?
-                    }
-                }
-            }
-            return matrixcp;
-        }
-
-        public static double[,] getSquareMatrixOfSize_FilledBy_(int size, double scalar)
-        {
-            double[,] matrixcp = new double[size, size];
-            for (int i = 0; i < size; i++)
-            {
-                for (int j = 0; j < size; j++)
-                {
-                    matrixcp[i, j] = scalar;
-                }
-            }
-            return matrixcp;
-        }
-
         public static Matrix2D matrixToMatrixDegrees(Matrix2D data, Matrix2D degrees)
         {
             int rows = data.Rows;
@@ -1628,24 +1384,6 @@ namespace Algorithm
                 answer[i] = Math.Pow(data[i], degrees[i]);
             return answer;
         }
-        public static double[][] matrixToMatrixDegrees(double[][] data, double[,] degrees)
-        {
-            int sizeM = data.GetLength(0);
-            int sizeN = data[0].GetLength(0);
-            if (sizeM != degrees.GetLength(0) || sizeN != degrees.GetLength(1))
-                throw new ArgumentException("matrix dimensions should match!");
-            double[][] answer = new double[sizeM][];
-            for (int i = 0; i < sizeM; i++)
-            {
-                answer[i] = new double[sizeN];
-                for (int j = 0; j < sizeN; j++)
-                {
-                    answer[i][j] = Math.Pow(data[i][j], degrees[i, j]);
-                }
-            }
-            return answer;
-        }
-
         public static double[] getMeanColor(Matrix3D InitialImage, int pX, int pY, double bs2, double bsQuad, int m, int n) // will return [R, G, B] - one pixel
         {
             int xo = pX + 1;
@@ -1678,6 +1416,27 @@ namespace Algorithm
             sumB /= ncol;
 
             return new double[] { sumR, sumG, sumB };
+        }
+
+        public static (double[,] x, double[,] y) meshgrid(double[] x, double[] y)
+        {
+            double[,] xx = new double[0, 0];
+            double[,] yy = new double[0, 0];
+            if (x.Length != 0 && y.Length != 0)
+            {
+                xx = repmat(x, y.Length, y.Length);
+                yy = repmat(y, x.Length, x.Length);
+            }
+            return (xx, yy);
+        }
+
+        public static Matrix2D exp(Matrix2D matrix)
+        {
+            Matrix2D answer = new Matrix2D(matrix);
+            for (int i = 0; i < matrix.Rows; i++)
+                for (int j = 0; j < matrix.Columns; j++)
+                    answer[i, j] = Math.Exp(answer[i, j]);
+            return answer;
         }
     }
 }
