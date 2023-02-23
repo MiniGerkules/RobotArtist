@@ -9,11 +9,11 @@ namespace Algorithm
     public struct Stroke
     {
         public List<System.Windows.Point> points;
-        double[] color;
+        public double[] color;
         double[] col8paints;
         double[] proportions;
         ColorMixType mixType;
-        double length = 0;
+        public double length = 0;
         public Stroke(System.Windows.Point point, double[] col, double[] col8paints, 
             double[] proportions, ColorMixType mixType, int length = 0)
         {
