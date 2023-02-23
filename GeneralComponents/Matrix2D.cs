@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 
 namespace GeneralComponents {
     public class Matrix2D {
@@ -117,6 +118,19 @@ namespace GeneralComponents {
                 this.matrix[i] = new(matrix.matrix[i]);
         }
 
+        public Matrix2D(double[,] matrix)
+        {
+            Rows = matrix.GetLength(0);
+            Columns = matrix.GetLength(1);
+            this.matrix = new Vector[Rows];
+            for (int i = 0; i < Rows; ++i)
+            {
+                this.matrix[i] = new Vector(Columns);
+                for (int j = 0; j < Columns; j++)
+                    this.matrix[i][j] = matrix[i, j];
+            }
+        }
+
         public Vector GetRow(int rowIndex) {
             double[] vector = new double[Columns];
             for (int i = 0; i < Columns; ++i)
@@ -171,6 +185,17 @@ namespace GeneralComponents {
                         result[i * Rows + j, k] = this[j, k];
 
             return result;
+        }
+
+        public double GetMaxValue()
+        {
+            List<List<double>> listMatrix = this.ToList();
+            double max = this.matrix[0][0];
+            for (int i = 0; i < Rows; i++)
+            {
+                max = (listMatrix[i].Max() > max) ? listMatrix[i].Max() : max;
+            }
+            return max;
         }
 
         public int[] GetIndexesForSorted() {
