@@ -6,16 +6,16 @@ namespace Algorithm
     public struct GUITrace // GUI_Trace
     {
         // this constructor sholdn't be used, use constructor with parameters
-        public GUITrace() // just some parameters to avoid fatal errors
+        public GUITrace() // just some parameters to avoid fatal errors // DELETE THIS AFTER ALL IS DONE
         {
-            this.colorsAmount = 120;
+            this.colorsAmount = 255;
             this.brushWidthMM = 2;
             this.canvasWidthMM = 10; //390; 
             this.canvasHeightMM = 10; //290;
         }
-        public double brushWidthMM { get; private set; } // brushWidth_mm
-        public double canvasWidthMM { get; private set; } // canvasW_mm
-        public double canvasHeightMM { get; private set; } // canvasH_mm
+        public double brushWidthMM { get; private set; } // #brushWidth_mm
+        public double canvasWidthMM { get; private set; } // #canvasW_mm
+        public double canvasHeightMM { get; private set; } // #canvasH_mm
         //public uint usespp { get; private set; } // всегда PP, не PC - кодирование в пропорциях красок
         public uint colorsAmount { get; private set; } // amount of colors in the final picture // nColors
         public GUITrace(uint colorsAmount = 256, params double[] sizesListMM) // is that ok to set colorsAmount to 256?
