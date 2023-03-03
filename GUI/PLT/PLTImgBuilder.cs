@@ -10,8 +10,6 @@ namespace GUI.PLT {
         private class BuildingImages {
             public DrawingVisual MainImage { get; } = new();
             public DrawingVisual StrokesStructure { get; } = new();
-
-            private readonly AlgorithmSettings settings;
             public double Scale { get; }
 
             private readonly DrawingContext mainContext;
@@ -19,17 +17,16 @@ namespace GUI.PLT {
 
             private GeometryGroup geometry = new();
             private IColor? curColor = null;
-            private Pen? penWithRealColor = null;
-            private Pen? penForStrokesStruct = null;
+            private readonly MyPen penWithRealColor = new();
+            private readonly MyPen penForStrokesStruct = new();
 
-            public BuildingImages(AlgorithmSettings settings, double scale) {
+            public BuildingImages(double scale) {
                 MainImage = new();
                 StrokesStructure = new();
 
                 mainContext = MainImage.RenderOpen();
                 strokesContext = StrokesStructure.RenderOpen();
 
-                this.settings = settings;
                 Scale = scale;
             }
 
@@ -39,35 +36,28 @@ namespace GUI.PLT {
             }
 
             internal void SetBackground(SolidColorBrush brush, double width, double height) {
-                double brushWidth = settings.BrushWidth * Scale;
-                Rect background = new(-brushWidth / 2, -brushWidth / 2,
-                                      width*Scale + brushWidth, height*Scale + brushWidth);
+                Rect background = new(0, 0, width*Scale, height*Scale);
 
                 mainContext.DrawRectangle(brush, null, background);
                 strokesContext.DrawRectangle(brush, null, background);
             }
 
-            internal bool IsColorSame(IColor stroceColor) {
-                if (curColor == null) return false;
-                else return stroceColor == curColor;
+            internal bool NeedUpdate(IColor color, double brushWidth) {
+                return curColor != color || penWithRealColor.Thickness != brushWidth * Scale;
             }
 
-            internal void ColorChanged(IColor newColor) {
+            internal void UpdatePen(IColor color, double brushWidth) {
                 geometry = new();
-                penWithRealColor = new() {
-                    Thickness = settings.BrushWidth * Scale,
-                    StartLineCap = PenLineCap.Round,
-                    EndLineCap = PenLineCap.Round,
-                    Brush = new SolidColorBrush(newColor.GetRealColor()),
-                };
-                penForStrokesStruct = new() {
-                    Thickness = settings.BrushWidth * Scale,
-                    StartLineCap = PenLineCap.Round,
-                    EndLineCap = PenLineCap.Round,
-                    Brush = new SolidColorBrush(newColor.GetArtificialColor()),
-                };
 
-                curColor = newColor;
+                if (curColor != color) {
+                    curColor = color;
+                    penWithRealColor.Brush = new SolidColorBrush(color.GetRealColor());
+                    penForStrokesStruct.Brush = new SolidColorBrush(color.GetArtificialColor());
+                }
+                if (penWithRealColor.Thickness != brushWidth * Scale) {
+                    penWithRealColor.Thickness = brushWidth * Scale;
+                    penForStrokesStruct.Thickness = brushWidth * Scale;
+                }
             }
 
             internal void AddToGeometry(Stroke stroke) {
@@ -77,8 +67,8 @@ namespace GUI.PLT {
             }
 
             internal void SaveGeometry() {
-                mainContext.DrawGeometry(null, penWithRealColor, geometry);
-                strokesContext.DrawGeometry(null, penForStrokesStruct, geometry);
+                mainContext.DrawGeometry(null, penWithRealColor.Pen, geometry);
+                strokesContext.DrawGeometry(null, penForStrokesStruct.Pen, geometry);
             }
         }
 
@@ -148,17 +138,17 @@ namespace GUI.PLT {
         private BuildingImages ProcessStrokes(in AlgorithmSettings settings,
                                               in PLTDecoderRes picture,
                                               in double scale) {
-            BuildingImages builded = new(settings, scale);
+            BuildingImages builded = new(scale);
             builded.SetBackground(Brushes.White, picture.Width, picture.Height);
-            builded.ColorChanged(picture.Strokes[0].StroceColor);
+            builded.UpdatePen(picture.Strokes[0].StroceColor, picture.Strokes[0].BrushWidth);
 
             for (int i = 0; i < picture.Strokes.Count; ++i) {
                 CurPercent = i*maxPercentForBuilding / picture.Strokes.Count;
                 var stroke = picture.Strokes[i];
 
-                if (!builded.IsColorSame(picture.Strokes[i].StroceColor)) {
+                if (builded.NeedUpdate(stroke.StroceColor, stroke.BrushWidth)) {
                     builded.SaveGeometry();
-                    builded.ColorChanged(stroke.StroceColor);
+                    builded.UpdatePen(stroke.StroceColor, stroke.BrushWidth);
                 }
 
                 builded.AddToGeometry(stroke);

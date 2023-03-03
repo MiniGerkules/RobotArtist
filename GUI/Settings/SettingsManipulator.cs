@@ -3,8 +3,8 @@ using System.Reflection;
 
 namespace GUI.Settings {
     internal class SettingsManipulator {
-        private static string defaultConfDir = "configs";
-        private static string defaultFile = "default.json";
+        private static readonly string defaultConfDir = "configs";
+        private static readonly string defaultFile = "default.json";
 
         public static string GetPathToConfigsDir() {
             string initDir = Assembly.GetExecutingAssembly().Location;
