@@ -6,6 +6,11 @@ using System.Collections.Generic;
 using GeneralComponents;
 using Matrix3D = GeneralComponents.Matrix3D;
 using Point = System.Windows.Point;
+using System.Data.Common;
+using System.Security.Policy;
+using System.Windows.Controls;
+using System.IO;
+using System.Windows.Media.Media3D;
 
 namespace Algorithm
 {
@@ -15,6 +20,12 @@ namespace Algorithm
         /*
          * returns a vector of vectorSize of random integer numbers in range 1:limit
          */
+        /// <summary>
+        /// The method returns a vector of vectorSize of random integer numbers in range 1:limit
+        /// </summary>
+        /// <param name="limit"> upper bound of the range </param>
+        /// <param name="vectorSize"> the size of the generted vector </param>
+        /// <returns> vector of integer numbers </returns>
         public static int[] Randperm(int limit, int vectorSize)
         {
             int[] answer = new int[vectorSize];
@@ -387,7 +398,9 @@ namespace Algorithm
             return val;
         }
 
-        internal static void PredictProportions(out double[] proportions, out ColorMixType mixTypes, double[] hsvColor, List<List<List<double>>> Ycell, List<List<List<double>>> Wcell, int sheetsAmount = 4)
+        internal static void PredictProportions(out double[] proportions, out ColorMixType mixTypes, 
+            out double[] hsvNewColor, double[] hsvColor, List<List<List<double>>> Ycell, 
+            List<List<List<double>>> Wcell, int sheetsAmount = 4)
         {
 
             int K = 25;
@@ -417,7 +430,7 @@ namespace Algorithm
             // #Nhsv is 1, so delete it
 
             //now, create classification table and class list
-            double[] hsvNewColor = hsvColor.Clone() as double[]; // #hsvnew
+            hsvNewColor = hsvColor.Clone() as double[]; // #hsvnew
             proportions = new double[3];
             mixTypes = (ColorMixType)0; // #cls
             double[] hsvArray = new double[3];
@@ -445,7 +458,7 @@ namespace Algorithm
             for (int i = 0; i < Ks; i++)
                 classes[clvec[i]]++;
 
-            int clsvect = classes.ToList().IndexOf(classes.Max());
+            int clsvect = classes.ToList().IndexOf(classes.Max()); // ##ok
             mixTypes = (ColorMixType)clsvect; // #cls(i) (i = 1)
             // then, find second possible class
             int ctr = 0; // index
@@ -466,7 +479,7 @@ namespace Algorithm
             for (int i = 0; i < ctri; i++)
                 classes[(int)class2vect[i]]++;
 
-            int class2 = classes.ToList().IndexOf(classes.Max());
+            int class2 = classes.ToList().IndexOf(classes.Max()); // ##ok
             bool flag = true;
             ctr = 0; // index
             double[] props0 = new double[3]; // initial proportions?
@@ -500,7 +513,7 @@ namespace Algorithm
                     ds[0, p] = Math.Sqrt(d[p]);
                 }
 
-                Matrix2D D = d.MakeDiag();
+                Matrix2D D = d.MakeDiag(); // ##ok
                 // hsvpossible = ds'*Y(I(1:K),:)/sum(ds); 
                 List<List<double>> Y_IK = new List<List<double>>();
                 for (int i = 0; i < K; i++)
@@ -510,8 +523,7 @@ namespace Algorithm
                 for (int i = 0; i < hsvNewColor.Length; i++)
                     hsvNewColor[i] = hsvpossible[i] * (1 - al) + hsvColorCurrent[i] * al;
 
-                hsvColorCurrent = hsvNewColor.Clone() as double[];
-
+                hsvColorCurrent = hsvNewColor.Clone() as double[]; // ##ok
 
                 // %take first K points, make linear regression
                 for (int j = 0; j < 3; j++)
@@ -565,10 +577,9 @@ namespace Algorithm
                 }
 
                 // get into ranges [0,1]
-                propscur = saturation(propscur);
+                propscur = saturation(propscur); // ##ok
                 // test inversion
-                hsvinv = prop2hsv(propscur, mixTypes, Wcell, Ycell);
-
+                hsvinv = prop2hsv(propscur, mixTypes, Wcell, Ycell); // ##ok
                 // here a section about h_alt, remake
                 double[] hsvinv2 = hsvinv.Clone() as double[];
                 hsvinv2[0] = (Math.Abs(hsvinv[0] - hsvColorCurrent[0]) < Math.Abs(hsvinv[0] - 1 - hsvColorCurrent[0])) ? hsvinv[0] : (hsvinv[0] - 1);
@@ -603,12 +614,10 @@ namespace Algorithm
                 }
             }
             proportions = propscur;
-            // now have right hsvNewColor
-            hsvArray = hsvNewColor.Clone() as double[];
         }
         internal static double[] prop2hsv(double[] proportions, ColorMixType mixTypes, List<List<List<double>>> Ycell, List<List<List<double>>> Wcell, int sheetsAmount = 4)
         {
-            int K = 150;
+            int K = 14;
 
             // Ycell and Wcell are granted not null
 
@@ -635,9 +644,16 @@ namespace Algorithm
             int NY = Y.Count;
             Matrix2D dst = new Matrix2D(NY, 1);
             for (int k = 0; k < NY; k++)
-                dst[k] = Math.Sqrt(EuclideanDistance(proportions, Y[k].ToArray()));
+                dst[k] = EuclideanDistance(proportions, Y[k].ToArray()); // ##ok
 
             int[] indexes = dst.GetIndexesForSorted();
+
+            double[] d = new double[K];
+
+            for (int c = 0; c < K; c++)
+                d[c] = 1d / (dst[indexes[c]] + 1e-4);
+
+            Matrix2D D = (new Matrix2D(d.ToList())).MakeDiag();
 
             double[] hsvcolcur = new double[3];
 
@@ -683,10 +699,10 @@ namespace Algorithm
                 Matrix2D Etransposed = E.Transpose();
 
                 GeneralComponents.Matrix2D h2 = GeneralComponents.GausMethod.Solve(
-                    (Etransposed * E), (Etransposed * Wj));
+                    ((Etransposed * D * E) + (Matrix2D.Eye(N) * 1e-4)), (Etransposed * D * Wj));
 
                 // predict proportion
-
+                
                 hsvcolcur[j] = 0;
                 double[] x = proportions;
 
@@ -729,17 +745,27 @@ namespace Algorithm
             return answer;
         }
 
-        public static double[,] repmat(double[] data, int repeatRows = 1, int repeatColumns = 1)
+        static double[,] repeatRows(double[] data, int repeatRows)
         {
-            double[,] answer = new double[repeatRows, data.Length * repeatColumns];
+            int sizeN = data.Length;
+            int sizeM = repeatRows;
+            double[,] answer = new double[sizeM, sizeN];
 
-            for (int j = 0; j < data.Length * repeatColumns; j++)
-            {
-                for (int i = 0; i < repeatRows; i++)
-                {
+            for (int j = 0; j < sizeN; j++)
+                for (int i = 0; i < sizeM; i++)
                     answer[i, j] = data[j - (j / data.Length) * data.Length];
-                }
-            }
+            return answer;
+        }
+
+        static double[,] repeatColumns(double[] data, int repeatColumns)
+        {
+            int sizeN = repeatColumns;
+            int sizeM = data.Length;
+            double[,] answer = new double[sizeM, sizeN];
+
+            for (int j = 0; j < sizeN; j++)
+                for (int i = 0; i < sizeM; i++)
+                    answer[i, j] = data[i - (i / data.Length) * data.Length];
             return answer;
         }
 
@@ -817,7 +843,8 @@ namespace Algorithm
             }
             if (h < 0)
                 h++;
-            s = 1 - s / v;
+            if (del != 0)
+                s = 1 - s / v;
             return new double[] { h, s, v };
         }
 
@@ -999,8 +1026,8 @@ namespace Algorithm
                     hSize = new int[] { defaultSize, defaultSize };
                 double[] siz = new double[] { (hSize[0] - 1) / 2d, (hSize[1] - 1) / 2d };
                 double std = sigma;
-                double[] x = createMinusPlusArray(siz[2]);
-                double[] y = createMinusPlusArray(siz[1]);
+                double[] x = createMinusPlusArray(siz[1]);
+                double[] y = createMinusPlusArray(siz[0]);
                 var xy = meshgrid(x, y);
                 Matrix2D xOnx = (new Matrix2D(xy.x)) ^ (new Matrix2D(xy.x));
                 Matrix2D yOny = (new Matrix2D(xy.y)) ^ (new Matrix2D(xy.y));
@@ -1232,25 +1259,46 @@ namespace Algorithm
             return answer;
         }
 
-        public static Matrix2D conv2(Matrix2D H1, Matrix2D H2, Matrix2D A, string mode = "same")
+        public static Matrix2D conv2(Matrix2D H1, Matrix2D H2, Matrix2D A, string mode = "full")
         {
-            Matrix2D column = new Matrix2D(H1.Columns * H1.Rows, 1);
-            Matrix2D row = new Matrix2D(1, H2.Columns * H2.Rows);
-            for (int i = 0; i < H1.Columns; i++)
+            // mc = max([ma+n1-1,ma,n1]) and nc = max([na+n2-1,na,n2]).
+            int sizeM = Math.Max(A.Rows + H1.Rows - 1, Math.Max(A.Rows, H1.Rows));
+            int sizeN = Math.Max(A.Columns + H2.Rows - 1, Math.Max(A.Columns, H1.Rows));
+            Matrix2D answer = new Matrix2D(sizeM, sizeN);
+            if (mode == "full")
             {
-                for (int j = 0; j < H1.Rows; j++)
+                Matrix2D column = new Matrix2D(H1.Columns * H1.Rows, 1);
+                Matrix2D row = new Matrix2D(1, H2.Columns * H2.Rows);
+                for (int i = 0; i < H1.Rows; i++)
                 {
-                    column[i * H1.Rows + j] = H1[i, j];
+                    for (int j = 0; j < H1.Columns; j++)
+                    {
+                        column[i * H1.Rows + j] = H1[i, j];
+                    }
                 }
-            }
-            for (int i = 0; i < H2.Columns; i++)
-            {
-                for (int j = 0; j < H2.Rows; j++)
+                for (int i = 0; i < H2.Rows; i++)
                 {
-                    row[i * H2.Rows + j] = H2[i, j];
+                    for (int j = 0; j < H2.Columns; j++)
+                    {
+                        row[i * H2.Rows + j] = H2[i, j];
+                    }
                 }
+                answer = cutToSize(conv2(column * row, A, mode), sizeM, sizeN);
             }
-            return conv2(column * row, A, mode);
+            return answer;
+        }
+
+        static Matrix2D cutToSize(Matrix2D matrix, int rows, int columns)
+        {
+            int countRowsToCutDown = (matrix.Rows - rows) / 2;
+            int countRowsToCutUp = matrix.Rows - rows - countRowsToCutDown;
+            int countColumnsToCutRight = (matrix.Columns - columns) / 2;
+            int countColumnsToCutLeft = matrix.Columns - columns - countColumnsToCutRight;
+            Matrix2D answer = new Matrix2D(rows, columns);
+            for (int i = countRowsToCutUp; i < matrix.Rows - countRowsToCutDown; i++)
+                for (int j = countColumnsToCutLeft; j < matrix.Columns - countColumnsToCutRight; j++)
+                    answer[i - countRowsToCutUp, j - countColumnsToCutLeft] = matrix[i, j];
+            return answer;
         }
         public static double[,] getMatrixAbs(double[,] m1)
         {
@@ -1386,21 +1434,17 @@ namespace Algorithm
         }
         public static double[] getMeanColor(Matrix3D InitialImage, int pX, int pY, double bs2, double bsQuad, int m, int n) // will return [R, G, B] - one pixel
         {
-            int xo = pX + 1;
-            int yo = pY + 1;
             double sumR = 0;
             double sumG = 0;
             double sumB = 0;
             int ncol = 0;
-            // в квадрате +/ -bs2
-            // тут почти что просто скалдываются все числа в каждом из слоев
-            for (double Xl = Math.Round(xo - bs2); Xl < Math.Round(xo + bs2); Xl++)
+            for (double Xl = Math.Max(Math.Round(pX - bs2), 0); Xl < Math.Round(pX + bs2); Xl++)
             {
-                for (double Yl = Math.Round(yo - bs2); Yl < Math.Round(yo + bs2); Yl++)
+                for (double Yl = Math.Max(Math.Round(pY - bs2), 0); Yl < Math.Round(pY + bs2); Yl++)
                 {
-                    if (Xl > 0 && Xl < m && Yl > 0 && Yl < n) // если квадрат не вылез за рамки холста, было <= m, <= n
+                    if (Xl >= 0 && Xl < m && Yl >= 0 && Yl < n) // if indexes are inside the canvas
                     {
-                        if ((Xl - xo) * (Xl - xo) + (Yl - yo) * (Yl - yo) < bsQuad) // если расстояние до точки удовлетворяет уравнению круга
+                        if ((Xl - pX) * (Xl - pX) + (Yl - pY) * (Yl - pY) < bsQuad) // if indexes solve the circle equation
                         {
                             sumR += InitialImage[(int)Xl, (int)Yl, 0];
                             sumG += InitialImage[(int)Xl, (int)Yl, 1];
@@ -1411,21 +1455,29 @@ namespace Algorithm
                 }
             }
             // average colour of region count
-            sumR /= ncol;
-            sumG /= ncol;
-            sumB /= ncol;
+            if (ncol > 0)
+            {
+                sumR /= ncol;
+                sumG /= ncol;
+                sumB /= ncol;
+            }
 
             return new double[] { sumR, sumG, sumB };
         }
-
+        // %MESHGRID   Cartesian rectangular grid in 2-D or 3-D
+        // %   [X, Y] = MESHGRID(x, y) returns 2-D grid coordinates based on the
+        // %   coordinates contained in vectors x and y. X is a matrix where each row
+        // %   is a copy of x, and Y is a matrix where each column is a copy of y. The
+        // %   grid represented by the coordinates X and Y has length(y) rows and
+        // %   length(x) columns.
         public static (double[,] x, double[,] y) meshgrid(double[] x, double[] y)
         {
             double[,] xx = new double[0, 0];
             double[,] yy = new double[0, 0];
             if (x.Length != 0 && y.Length != 0)
             {
-                xx = repmat(x, y.Length, y.Length);
-                yy = repmat(y, x.Length, x.Length);
+                xx = repeatRows(x, y.Length); 
+                yy = repeatColumns(y, x.Length);
             }
             return (xx, yy);
         }
@@ -1438,5 +1490,51 @@ namespace Algorithm
                     answer[i, j] = Math.Exp(answer[i, j]);
             return answer;
         }
+
+        // ONLY FOR DEBUGGING BLOCK -- TO BE DELETED
+        //public static void printToFile(Vector vector)
+        //{
+        //    try
+        //    {
+        //        //Pass the filepath and filename to the StreamWriter Constructor and append the text
+        //        string filePath = "C:\\Users\\varka\\Documents\\RobotArtist extra\\matrix2d.txt";
+        //        StreamWriter sw = new StreamWriter(filePath, append: true);
+
+        //        for (int j = 0; j < vector.Size; j++)
+        //            sw.Write("{ 0,-10}{ 1}", vector[j]);
+        //        sw.WriteLine();
+        //        //Write a line of text
+        //        sw.WriteLine("Hello World!!");
+        //        //Write a second line of text
+        //        sw.WriteLine("From the StreamWriter class");
+        //        //Close the file
+        //        sw.Close();
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        Console.WriteLine("Exception: " + e.Message);
+        //    }
+        //}
+        //public static void printToFile(Matrix2D matrix)
+        //{
+        //    try
+        //    {
+        //        //Pass the filepath and filename to the StreamWriter Constructor
+        //        string filePath = "C:\\Users\\varka\\Documents\\RobotArtist extra\\matrix2d.txt";
+        //        StreamWriter sw = new StreamWriter(filePath);
+        //        for (int i = 0; i < matrix.Rows; i++)
+        //            printToFile(matrix.matrix[i]);
+        //        //Write a line of text
+        //        sw.WriteLine("Hello World!!");
+        //        //Write a second line of text
+        //        sw.WriteLine("From the StreamWriter class");
+        //        //Close the file
+        //        sw.Close();
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        Console.WriteLine("Exception: " + e.Message);
+        //    }
+        //}
     }
 }

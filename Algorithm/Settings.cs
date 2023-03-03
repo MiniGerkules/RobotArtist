@@ -31,7 +31,7 @@ namespace Algorithm
             double canvasColorFault = 2,
             uint itersAmountWithSmallOverlap = 1, // #itersMinOverlap
             int[] minLenFactor = null, // #minlenfactor
-            int maxLenFactor = 5, //30, // #maxlenfactor // RETURN BACK TO 30!!!!!!!!
+            int maxLenFactor = 30, // #maxlenfactor
             double minInitOverlapRatio = 0.6,
             double maxInitOverlapRatio = 0.8,
             double pixTol = 9, // 6, // possible color deviation from the original at the end

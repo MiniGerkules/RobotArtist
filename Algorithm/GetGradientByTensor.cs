@@ -54,8 +54,8 @@ namespace Algorithm
             //new List<double> {  0.5 * p1, 0.5 - p1,  0.5 * p1 }
             //});
 
-            Matrix2D fx = Functions.conv2(new Matrix2D(k), new Matrix2D(d), imgGray, "same"); //  % derivative horizontally (wrt X)
-            Matrix2D fy = Functions.conv2(new Matrix2D(d), new Matrix2D(k), imgGray, "same"); // % derivative vertically (wrt Y)
+            Matrix2D fx = Functions.conv2(new Matrix2D(k), new Matrix2D(d), imgGray); //  % derivative horizontally (wrt X)
+            Matrix2D fy = Functions.conv2(new Matrix2D(d), new Matrix2D(k), imgGray, "full"); // % derivative vertically (wrt Y)
 
             //Matrix2D E = fx.Square();
             //Matrix2D F = Functions.getMatrixWithMultipliedElements(fx, fy);

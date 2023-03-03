@@ -37,8 +37,8 @@ namespace Algorithm {
             MaxAmountOfIters = strokeBrush.thickness; // the max amount of attempts to find a new line section
             InitialImage = Functions.imageToMatrix3D(Image); // ##ok
 
-            Ycell = database.GetHSV().Copy(); // ##NOTok
-            Wcell = database.GetProportions().Copy(); // ##NOTok
+            Ycell = database.GetHSV().Copy(); // ##ok
+            Wcell = database.GetProportions().Copy(); // ##ok
 
             ColorClass = new Matrix2D(Image.PixelHeight, Image.PixelWidth); // #canvasgraymix 1 ColorMixType only // ##ok
             VolumeOfWhite = new Matrix2D(Image.PixelHeight, Image.PixelWidth); // #canvasgraymix 2 // ##ok
@@ -54,7 +54,7 @@ namespace Algorithm {
 
             GrayInitialImage = InitialImage.rgb2gray(); // #imggray // ##ok
 
-            Gradients = new Gradient(GrayInitialImage, strokeBrush.thickness); // ##NOTok
+            Gradients = new Gradient(GrayInitialImage, strokeBrush.thickness); // ##ok
 
             // ale iterations
             doIterations();
@@ -82,12 +82,24 @@ namespace Algorithm {
                 else
                     overlap = settings.minInitOverlapRatio;
 
-                int[] pvect = Functions.Randperm(mSize, nSize);
+                int[] pvect = Functions.Randperm(mSize * nSize, mSize * nSize);
+                //int[] pvect = new int[] {
+                //    94,  44,  81,  61,  41,  65,  71,  28,  36,  69,  
+                //    96,  18,  91,  24,  16,  80,  11,  35,  17,  19,
+                //    14,  54,  49,  92,  29,  66,  32,  42,  37,  12,
+                //    21,  38,  78,  67,  5,   59,  2,   58,  30,  39,
+                //    23,  20,  27,  50,  13,  100, 84,  47,  55,  95,
+                //    73,  83,  99,  40,  53,  4,   52,  8,   90,  48,
+                //    10,  31,  33,  86,  87,  9,   56,  1,   72,  57,
+                //    68,  79,  34,  98,  75,  70,  46,  82,  74,  64,
+                //    43,  89,  3,   15,  88,  7,   62,  93,  77,  76,
+                //    85,  25,  63,  22,  45,  6,   51,  97,  26,  60
+                //};
 
                 for (int iCounter = 0; iCounter < mSize; iCounter++) { //# ictr
                     for (int jCounter = 0; jCounter < nSize; jCounter++) { // #jctr
 
-                        int pCounter = ((iCounter - 1) * nSize + jCounter); // #pctr
+                        int pCounter = (iCounter * nSize + jCounter); // #pctr
                         int pij = pvect[pCounter] - 1;
                         int j = pij % nSize; 
                         int i = (pij - j) / nSize; // (pij - j + 1) or (pij - j) ?
@@ -100,7 +112,7 @@ namespace Algorithm {
                             //meancol is [r, g, b], col is the same but in shape of 3d array like (0,0,k) element
 
                             // find average color of the circle area with radius equals to brush radius
-                            double[] meanColorPixel = Functions.getMeanColor( // #col? #meancol
+                            double[] meanColorPixel = Functions.getMeanColor( // #col? #meancol // ##ok
                                 InitialImage, prevX, prevY, strokeBrush.smallThickness, 
                                 strokeBrush.bsQuad, mSize, nSize);
 
@@ -109,20 +121,20 @@ namespace Algorithm {
                             for (int m = 0; m < meanColorPixel.Length; m++)
                                 hsvMeanColorPixel[m] = meanColorPixel[m] / 255;
 
-                            hsvMeanColorPixel = Functions.rgb2hsv(hsvMeanColorPixel);
+                            hsvMeanColorPixel = Functions.rgb2hsv(hsvMeanColorPixel); // ##ok
 
                             double[] proportions;
+                            double[] hsvNewColor;
                             ColorMixType mixTypes;
 
                             // define proportions and type of the mixture in this area
-                            Functions.PredictProportions(out proportions, out mixTypes, hsvMeanColorPixel, Ycell, Wcell, Ycell.Count);
-                            // СТОИТ ПРОВЕРИТЬ ФУНКЦИЮ PredictProportions на изменения 
+                            Functions.PredictProportions(out proportions, out mixTypes, out hsvNewColor, hsvMeanColorPixel, Ycell, Wcell, Ycell.Count); // ##ok
                             // proportions of paints in real values
                             double[] col8paints = Functions.proportions2pp(proportions, mixTypes);
                             // the volume of white in the paint mixture for sorting smears by overlap
-                            double volumeOfWhite = col8paints[5];
+                            double volumeOfWhite = col8paints[4]; // ##ok
 
-                            var col2 = Functions.hsv2rgb(hsvMeanColorPixel);
+                            var col2 = Functions.hsv2rgb(hsvNewColor); // ##ok
 
                             // draw a synthetic map of smears with colour
                             // that fits the type of mixture
@@ -155,7 +167,6 @@ namespace Algorithm {
                             Matrix2D canvasgraymixCopyColorClass = new Matrix2D(ColorClass); // #canvasgraymix_copy first layer
                             Matrix2D canvasgraymixCopyVolumeOfWhite = new Matrix2D(VolumeOfWhite); // #canvasgraymix_copy first layer
                             Matrix3D canvas2Copy = new Matrix3D(syntheticSmearMap); // #canvas2_copy
-                            // НАДО ПРОВЕРИТЬ ЧТО МАТРИЦЫ КОПИРУЮТСЯ
 
                             Stroke stroke = new Stroke(new System.Windows.Point(prevX, prevY), meanColorPixel, col8paints, proportions, mixTypes);
                             // one stroke consists of several strokes of the same type but other directions
@@ -163,7 +174,7 @@ namespace Algorithm {
                             while (!isStrokeEnded)
                             {
                                 // %find new direction
-                                int counter = 0; // #ctr index
+                                int counter = 1; // #ctr index
                                 StrokeCandidate candidate = new StrokeCandidate(-1, -1, Double.MaxValue);
                                 while (counter < MaxAmountOfIters)
                                 {
@@ -171,7 +182,7 @@ namespace Algorithm {
                                     Functions.getDirection(new Point(prevX, prevY), 
                                         stroke, Gradients, settings.goNormal, out cosA, out sinA);
                                     
-                                    int r = MaxAmountOfIters - counter - 1;
+                                    int r = MaxAmountOfIters - counter;
 
                                     candidate.x = prevX + Math.Round(r * cosA); // %new X
                                     candidate.y = prevY + Math.Round(r * sinA); // %new Y 
@@ -198,42 +209,8 @@ namespace Algorithm {
                                         ref candidate
                                     );
 
-                                    // #### to here all is OK ####
-
                                     if (isNewPieceAccepted) //%if error is small, accept the stroke immediately
                                         counter = MaxAmountOfIters;
-                                   // else
-                                //    {
-                                //        //% also try opposite direction
-                                //        candidate.x = prevX - Math.Round(r * cosA); // % new X
-                                //        candidate.y = prevY - Math.Round(r * sinA); // % new Y
-
-                                //        // % test new fragment of the stroke
-
-                                //        isNewPieceAccepted = Functions.testNewPieceAccepted( // #accepted
-                                //            startPoint: new System.Drawing.Point(prevX, prevY),
-                                //            img: InitialImage,
-                                //            canvasColor: settings.canvasColor,
-                                //            canvasEps: settings.canvasColorFault,
-                                //            canvas2: syntheticSmearMap,
-                                //            ColorClass: ColorClass,
-                                //            VolumeOfWhite: VolumeOfWhite,
-                                //            pixTol: settings.pixTol,
-                                //            pixTolAverage: settings.pixTolAverage,
-                                //            meanColorPixel: meanColorPixel,
-                                //            mSize: mSize,
-                                //            nSize: nSize,
-                                //            overlap: overlap,
-                                //            bs2: strokeBrush.smallThickness,
-                                //            bsQuad: strokeBrush.bsQuad,
-                                //            mixTypes: mixTypes,
-                                //            volumeOfWhite: volumeOfWhite,
-                                //            ref candidate
-                                //        );
-
-                                //        if (isNewPieceAccepted) //%if error is small, accept the stroke immediately
-                                //         counter = MaxAmountOfIters;
-                                //    }
                                     counter++;
                                 }
                                 // %draw the stroke fragment
@@ -283,7 +260,7 @@ namespace Algorithm {
                                 else
                                     isStrokeEnded = true;
                             }
-                            if (nPoints > 1)
+                            if (nPoints > 1) // ##ok
                             { 
                                 if (stroke.length < minLen)
                                 {
@@ -304,18 +281,19 @@ namespace Algorithm {
                                     //double[] dcol = stroke.color;
                                     //stroke.color = new double[] { dcol[0], dcol[1], dcol[2] };
                                     strokes.Add(stroke);
+                                    // %new message, update message bar
                                 }
                             }
                         }
                     }
-                    // after each row iteration, show canvas
+                    // %after each row iteration, show canvas
                     // #? show #canvas and #canvas2
                 }
                 // #? draw somwthing
             }
             // %%%%%%%%%%%%%%%%%%%
             // % create array for each mix type
-
+            // ##ok
 
 
 
