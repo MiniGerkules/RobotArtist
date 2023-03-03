@@ -18,8 +18,8 @@ using GUI.Pages.SettingsPage;
 
 namespace GUI {
     public partial class MainWindow : Window {
-        private static readonly string pathToDatabase = @"resources/ModelTable600_initial.xls";
-
+        //private static readonly string pathToDatabase = @"resources/ModelTable600_initial.xls";
+        private static readonly string pathToDatabase = @"resources/ModelTable600.xls";
         /// <summary> Key -- path to plt file, value -- path to saved image </summary>
         private readonly Dictionary<string, string> savedFiles = new();
 
