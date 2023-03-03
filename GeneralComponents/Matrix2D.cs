@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.IO;
 using System.Linq;
 
 namespace GeneralComponents {
@@ -504,6 +505,19 @@ namespace GeneralComponents {
             }
 
             return list;
+        }
+
+        // ONLY FOR DEBUGGING BLOCK -- TO BE DELETED
+        public void printToFile(bool append = true, string filePath = "C:\\Users\\varka\\Documents\\RobotArtist extra\\matrix2d.txt")
+        {
+            if (!append)
+            {
+                StreamWriter sw = new StreamWriter(filePath);
+                sw.Close();
+            }
+            for (int i = 0; i < Rows - 1; i++)
+                matrix[i].printToFile(true, filePath);
+            matrix[Rows - 1].printToFile(true, filePath, true);
         }
     }
 }

@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.IO;
 
 namespace GeneralComponents {
     public class Vector {
@@ -48,6 +49,28 @@ namespace GeneralComponents {
 
         public void Transpose() {
             IsRow = !IsRow;
+        }
+
+        // ONLY FOR DEBUGGING BLOCK -- TO BE DELETED
+        public void printToFile(bool append = true, string filePath = "C:\\Users\\varka\\Documents\\RobotArtist extra\\matrix2d.txt", bool addEmptyString = false)
+        {
+            try
+            {
+                //Pass the filepath and filename to the StreamWriter Constructor and append the text
+                StreamWriter sw = new StreamWriter(filePath, append);
+
+                for (int j = 0; j < Size; j++)
+                    sw.Write("{0, 7}", vector[j]);
+                sw.WriteLine();
+                if (addEmptyString)
+                    sw.WriteLine();
+                //Close the file
+                sw.Close();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Exception: " + e.Message);
+            }
         }
     }
 }

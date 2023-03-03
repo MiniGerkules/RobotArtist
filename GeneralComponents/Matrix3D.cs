@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace GeneralComponents {
     public class Matrix3D {
@@ -46,6 +47,7 @@ namespace GeneralComponents {
 
         public Matrix3D(Matrix3D matrix)
         {
+            this.matrix = new Matrix2D[matrix.Layers];
             for (int i = 0; i < matrix.Layers; ++i)
                 this.matrix[i] = new Matrix2D(matrix.matrix[i]);
         }
@@ -103,5 +105,16 @@ namespace GeneralComponents {
             return answer;
         }
 
+        // ONLY FOR DEBUGGING BLOCK -- TO BE DELETED
+        public void printToFile(bool append = false, string filePath = "C:\\Users\\varka\\Documents\\RobotArtist extra\\matrix3d.txt")
+        {
+            if (!append)
+            {
+                StreamWriter sw = new StreamWriter(filePath);
+                sw.Close();
+            }
+            for (int i = 0; i < Layers; i++)
+                matrix[i].printToFile(true, filePath);
+        }
     }
 }
