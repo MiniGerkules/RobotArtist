@@ -11,19 +11,19 @@ namespace GeneralComponents {
         }
 
         public ImmutableList<ImmutableList<ImmutableList<double>>> GetHSV() {
-            List<List<List<double>>> hsv = Enumerable.Repeat(new List<List<double>>(), data.Count).ToList();
+            List<List<List<double>>> hsv = new(data.Count);
 
             for (int i = 0; i < data.Count; ++i)
-                hsv[i].AddRange(data[i].Select(elem => elem.GetRange(0, 3)));
+                hsv.Add(data[i].Select(elem => elem.GetRange(0, 3)).ToList()); // was wrong aka hsv[0] = hsv[1] = ... as one big sheet
 
             return hsv.ToImmutable();
         }
 
         public ImmutableList<ImmutableList<ImmutableList<double>>> GetProportions() {
-            List<List<List<double>>> props = Enumerable.Repeat(new List<List<double>>(), data.Count).ToList();
+            List<List<List<double>>> props = new(data.Count);
 
             for (int i = 0; i < data.Count; ++i)
-                props[i].AddRange(data[i].Select(elem => elem.GetRange(3, 3)));
+                props.Add(data[i].Select(elem => elem.GetRange(3, 3)).ToList()); // was wrong aka hsv[0] = hsv[1] = ... as one big sheet
 
             return props.ToImmutable();
         }
