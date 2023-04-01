@@ -6,11 +6,7 @@ using System.Collections.Generic;
 using GeneralComponents;
 using Matrix3D = GeneralComponents.Matrix3D;
 using Point = System.Windows.Point;
-using System.Data.Common;
-using System.Security.Policy;
-using System.Windows.Controls;
 using System.IO;
-using System.Windows.Media.Media3D;
 
 namespace Algorithm
 {
@@ -28,12 +24,35 @@ namespace Algorithm
         /// <returns> vector of integer numbers </returns>
         public static int[] Randperm(int limit, int vectorSize)
         {
+            if (vectorSize > limit)
+                throw new ArgumentException("vectorSize must be <= limit");
+
             int[] answer = new int[vectorSize];
             var rand = new Random();
             for (int i = 0; i < vectorSize; i++)
-                answer[i] = rand.Next(limit - 1) + 1;
+                answer[i] = (i + 1 <= limit) ? (i + 1) : rand.Next(limit - 1) + 1;
+            Shuffle<int>(rand, answer);
             return answer;
         }
+
+        /// <summary>
+        /// The method returns an shuffled array
+        /// </summary>
+        /// <param name="rng"> random object to generate random integer numbers </param>
+        /// <param name="array"> array to shuffle elements in </param>
+        /// <returns> shuffled vector of <T> elements </returns>
+        public static void Shuffle<T>(this Random rng, T[] array)
+        {
+            int n = array.Length;
+            while (n > 1)
+            {
+                int k = rng.Next(n--);
+                T temp = array[n];
+                array[n] = array[k];
+                array[k] = temp;
+            }
+        }
+
         public static Matrix2D drawPiece(Point startPoint, StrokeCandidate candidate, double bs2, double bsQuad, 
             ref Matrix3D canvas, ref Matrix3D canvas2, ref Matrix2D ColorClass, ref Matrix2D VolumeOfWhite, double[] meanColorPixel, double[] col2,
             Matrix2D imggray, int mSize, int nSize, ColorMixType mixTypes, double volumeOfWhite)
@@ -41,10 +60,10 @@ namespace Algorithm
             double N = Math.Max(Math.Abs(startPoint.X - candidate.x), Math.Abs(startPoint.Y - candidate.y));
             double bsQuad12 = ((double)(bs2) / 2) * ((double)(bs2) / 2);
 
-            Matrix3D canvasOut = canvas;
-            Matrix2D colorClass = ColorClass;
-            Matrix2D volOfWhite = VolumeOfWhite;
-            Matrix3D canvas2Out = canvas2;
+            Matrix3D canvasOut = canvas; // #canvas_out
+            Matrix2D colorClass = ColorClass; // #canvasgray_out 1 layer
+            Matrix2D volOfWhite = VolumeOfWhite; // #canvasgray_out 2 layer
+            Matrix3D canvas2Out = canvas2; // #canvas2_out
 
             for (double t = 0; t <= 1; t += (1 / N))
             {
@@ -86,7 +105,6 @@ namespace Algorithm
             return (canvasOut.mean() - imggray).Abs();
         }
 
-
         // startPoint .X and .Y are #pX and #pY
         // #testNewPiece
         public static bool testNewPieceAccepted(Point startPoint, Matrix3D img, byte canvasColor, 
@@ -97,23 +115,22 @@ namespace Algorithm
         { // it seems like there is no need in error
             
             bool accepted = false;
-            // StrokeCandidate candidate_out = candidate;
+            // if we are outside the frame, do nothing
             if ((candidate.x < 0 || candidate.y < 0 || candidate.x >= mSize || candidate.y >= nSize))
-                candidate.error = double.MaxValue; // changed!
+                candidate.error = double.MaxValue;
             else
             {
                 // if dot is with small error and doesn't match with canvas color on the data picture
                 int nX = (int)candidate.x;
                 int nY = (int)candidate.y;
                 double[] doublePix = new double[] { img[nX, nY, 0], img[nX, nY, 1], img[nX, nY, 2] }; // one pixel
-                List<double> averageModule = new List<double>();
+                List<double> errorPixel = new List<double>(); // #errPix
                 for (int i = 0; i < doublePix.Length; i++)
-                    averageModule.Add(Math.Abs(meanColorPixel[i] - doublePix[i]));
-                double errPix = averageModule.Average();
+                    errorPixel.Add(Math.Abs(meanColorPixel[i] - doublePix[i]));
+                double meanOfErrorPixel = errorPixel.Average(); // #meanerrPix
                 double avrcol = 0; // average color
-                double meanOfDoublePix = doublePix.ToList().Average();
-                if ((errPix <= pixTol) && (canvas2[nX, nY, 1] == 0) && 
-                    ((meanOfDoublePix > canvasColor + canvasEps) || (meanOfDoublePix < canvasColor - canvasEps)))
+                if ((meanOfErrorPixel <= pixTol) && (canvas2[nX, nY, 1] == 0) && 
+                    ((meanOfErrorPixel > canvasColor + canvasEps) || (meanOfErrorPixel < canvasColor - canvasEps)))
                 {
                     int ncol = 0;
                     double[] colSum = new double[3];
@@ -146,8 +163,14 @@ namespace Algorithm
                                             for (int i = 0; i < 3; i++)
                                                 colSum[i] += img[X1, Y1, i];
                                             ncol++;
-                                            if (canvas2[X1, Y1, 0] != 0)
-                                                currentOverlap++; // #overlap
+                                            for (int i = 0; i < canvas2.Layers; i++)
+                                            {
+                                                if (canvas2[X1, Y1, i] != 0)
+                                                {
+                                                    currentOverlap++; // #overlap
+                                                    break;
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -444,9 +467,9 @@ namespace Algorithm
             Matrix2D dst = new Matrix2D(N, 1); // distances - taken as maximum range
 
             for (int n = 0; n < N; n++)
-                dst[n] = EuclideanDistance(hsvColorCurrent, Tbl[n].ToArray());
+                dst[n] = EuclideanDistance(hsvColorCurrent, Tbl[n].ToArray()); // #ok
 
-            int[] I = dst.GetIndexesForSorted();
+            int[] I = dst.GetIndexesForSorted(); // #notOk
             //int[] clssIndexes = I.Take(Ks).ToArray();
             int[] clvec = new int[Ks];
 
@@ -481,7 +504,7 @@ namespace Algorithm
 
             int class2 = classes.ToList().IndexOf(classes.Max()); // ##ok
             bool flag = true;
-            ctr = 0; // index
+            ctr = 1; // counter
             double[] props0 = new double[3]; // initial proportions?
             double[] propscur = new double[3]; // current proportions
             double err0 = 0;
@@ -521,7 +544,7 @@ namespace Algorithm
                 Matrix2D hsvpossible = ds * (new Matrix2D(Y_IK)) / ds.GetSum();
                 double al = 0.7;
                 for (int i = 0; i < hsvNewColor.Length; i++)
-                    hsvNewColor[i] = hsvpossible[i] * (1 - al) + hsvColorCurrent[i] * al;
+                    hsvNewColor[i] = hsvpossible[i] * (1 - al) + hsvColorCurrent[i] * al; //#ok
 
                 hsvColorCurrent = hsvNewColor.Clone() as double[]; // ##ok
 
@@ -588,14 +611,15 @@ namespace Algorithm
 
                 double err = Math.Sqrt(EuclideanDistance(hsvdemanded, hsvinv2));
 
-                if (ctr < 1)
+                if (ctr < 2)
                 {
                     // if the values are calculated for the first time
                     if (err > tolerance)
                     {
                         ctr++;
                         mixTypes = (ColorMixType)class2;
-                        props0 = propscur;
+                        //props0 = propscur;
+                        propscur.CopyTo(props0, 0);
                         err0 = err;
                     }
                     else
@@ -606,7 +630,8 @@ namespace Algorithm
                     // if the values are calculated for the second time
                     if (err > err0) // if error is greater, return to first variant
                     {
-                        propscur = props0;
+                        //propscur = props0; // #notOk
+                        props0.CopyTo(propscur, 0);
                         mixTypes = (ColorMixType)clsvect;
                         //hsvinv = prop2hsv(propscur, mixTypes, Wcell, Ycell);
                     }
@@ -628,17 +653,20 @@ namespace Algorithm
             // take the corresponding sets
             if ((int)(mixTypes) < 2)
             {
-                Y = Ycell[0];
+                Y.AddRange(Ycell[0]);
                 Y.AddRange(Ycell[1]);
-                W = Wcell[0];
-                for (int j = 0; j < W.Count; j++)
-                    W[j][0]--; // for mixtype MY with H > 0.4 make H negative
+                for (int j = 0; j < Wcell[0].Count; j++)
+                {
+                    W.Add(new List<double>());
+                    W[j].AddRange(Wcell[0][j]);
+                    W[j][0] = (Wcell[0][j][0] - 1); // for mixtype MY with H > 0.4 make H negative
+                }
                 W.AddRange(Wcell[1]);
             }
             else
             {
-                Y = Ycell[(int)mixTypes]; // Y for proportions
-                W = Wcell[(int)mixTypes]; // W for HSV
+                Y.AddRange(Ycell[(int)mixTypes]); // Y for proportions
+                W.AddRange(Wcell[(int)mixTypes]); // W for HSV
             }
 
             int NY = Y.Count;
@@ -1490,6 +1518,332 @@ namespace Algorithm
                     answer[i, j] = Math.Exp(answer[i, j]);
             return answer;
         }
+
+        /// <summary>
+        /// The method returns a vector of indexes of the size = colArray.Count
+        /// every double[] in List<double[]> colArray is an rgb-pixel - color dot
+        /// every color dot goes to some of clustersAmount clusters
+        /// result vector's i-coordinate means that i color dot goes to vector[i] cluster (cluster number i)
+        /// </summary>
+        /// <param name="colArray"> list of rgb-pixels </param>
+        /// <param name="clustersAmount"> amount of clusters to split rgb-pixels into </param>
+        /// <returns> vector of integer numbers from 0 to (clustersAmount - 1) </returns>
+        internal static List<int> kmeans(List<double[]> colArray, uint clustersAmount)
+        {
+            List<int> result = new List<int>(colArray.Count);
+
+            // initial random choice of cluster's centroids by kmeans++ algorithm
+            List<double[]> centers = kmeans_plus(colArray, clustersAmount);
+
+            int iterationsLimit = 100;
+
+            int currentIteration = 0;
+            while (currentIteration < iterationsLimit)
+            {
+                currentIteration++;
+                // now create a matrix where i row is about pixel, j column is about cluster
+                // (cluster centroid). On i,j place will be an euclidean distance from pixel
+                // to cluster's centroid
+                Matrix2D distances = new Matrix2D(colArray.Count, (int)clustersAmount);
+
+                for (int j = 0; j < clustersAmount; j++)
+                {
+                    double minDistance = 0;
+                    double[] minPixel = centers[j]; // is a pixel nearest to it's cluster centroid
+                    for (int i = 0; i < colArray.Count; i++)
+                    {
+                        distances[i, j] = EuclideanDistance(colArray[i], centers[j]);
+                        if ((minDistance == 0) || (minDistance > distances[i, j]))
+                        {
+                            minDistance = distances[i, j];
+                            minPixel = colArray[i];
+                        }
+                    }
+                    centers[j] = middleArray(centers[j], minPixel); // renew the center
+                }
+                List<int> currentResult = distances.GetIndexesOfMinElementsInRows().ToList();
+                if (result.Count == 0)
+                    result.AddRange(currentResult);
+                else if (result.SequenceEqual(currentResult))
+                    break;
+            }
+
+            return result;
+        }
+
+        static double[] middleArray(double[] arr1, double[] arr2)
+        {
+            if (arr1.Length != arr2.Length)
+                throw new ArgumentException("dimensions should match!");
+            double[] answer = new double[arr1.Length];
+            for (int i = 0; i < arr1.Length; i++)
+                answer[i] = (arr1[i] + arr2[i]) / 2d;
+            return answer;
+        }
+
+        static List<double[]> kmeans_plus(List<double[]> colArray, uint clustersAmount)
+        {
+            List<double[]> centers = new List<double[]>((int)clustersAmount);
+            List<double[]> pixels = colArray.GetRange(0, colArray.Count);
+
+            var rnd = new Random();
+            int currentCenterIndex = rnd.Next(pixels.Count);
+
+            centers.Add(pixels[currentCenterIndex]);
+            pixels.RemoveAt(currentCenterIndex);
+
+            // pixels, probabilities and distances match on index
+
+            while (centers.Count < clustersAmount)
+            {
+                List<double> distances = euclideanDistances(centers[0], pixels);
+
+                List<double> probabilities = new List<double>(distances.Count);
+
+                double distancesSum = distances.Sum();
+
+                double currentSum = 0;
+
+                for (int i = 0; i < probabilities.Count; i++)
+                {
+                    currentSum += distances[i];
+                    probabilities.Add(currentSum / distancesSum);
+                }
+
+                double p = rnd.NextDouble();
+                for (int i = 0; i < probabilities.Count; i++)
+                {
+                    if (p < probabilities[i])
+                    {
+                        centers.Add(pixels[i]);
+                        pixels.RemoveAt(i);
+                        break;
+                    }
+                }
+            }
+
+            return centers;
+        }
+
+        static List<double> euclideanDistances(double[] center, List<double[]> pixels)
+        {
+            List<double> distances = new List<double>(pixels.Count);
+            for (int i = 0; i < pixels.Count; i++)
+                distances.Add(EuclideanDistance(center, pixels[i]));
+            return distances;
+        }
+
+        public static Matrix3D strokesToImage(int brushSize, Matrix3D canvas, List<Stroke> map, byte canvasColor)
+        {
+            int m = canvas[0].Rows;
+            int n = canvas[0].Columns;
+            Matrix3D img2 = new Matrix3D(m, n, 3, canvasColor);
+            double bsQuad = brushSize * brushSize / 4d;
+            for (int i = 0; i < map.Count; i++) // go through strokes
+            {
+                Stroke stroke = map[i];
+                double[] color = stroke.color;
+                List<Point> points = stroke.points;
+                double pX = points[0].X; // start of the stroke
+                double pY = points[0].Y;
+                for (int j = 1; j < points.Count; j++) // go through dots of the stroke
+                {
+                    Point candidate = points[j];
+                    double N = Math.Max(Math.Abs(pX - candidate.X), Math.Abs(pY - candidate.Y));
+                    for (double t = 0; t <= 1; t += (1d / N))
+                    {
+                        double xo = Math.Round(candidate.X + (pX - candidate.X) * t);
+                        double yo = Math.Round(candidate.Y + (pY - candidate.Y) * t);
+                        for (double Xl = Math.Round(xo - brushSize / 2); Xl <= Math.Round(xo + brushSize / 2); Xl++)
+                        {
+                            for (double Yl = Math.Round(yo - brushSize / 2); Yl <= Math.Round(yo + brushSize / 2); Yl++)
+                            {
+                                if (Xl >= 0 && Xl < m && Yl >= 0 && Yl < n)
+                                {
+                                    if ((Xl - xo) * (Xl - xo) + (Yl - yo) * (Yl - yo) < bsQuad)
+                                    {
+                                        img2[(int)Xl, (int)Yl, 0] = color[0];
+                                        img2[(int)Xl, (int)Yl, 1] = color[1];
+                                        img2[(int)Xl, (int)Yl, 2] = color[2];
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    pX = candidate.X; 
+                    pY = candidate.Y;
+                }
+            }
+            return img2;
+        }
+
+        public static void SavePLT_8paints(List<Stroke> strokes, double n, double m, double canvasW_mm, double canvasH_mm, double brushSize_mm, string filePath)
+        {
+            if (filePath == "")
+                return;
+            try
+            {
+                StreamWriter sw = new StreamWriter(filePath);
+                int scl = 40;
+                sw.Write("IN;");
+                double W = canvasW_mm * scl;
+                double H = canvasH_mm * scl;
+                double sfX = Math.Min(W / n, H / m); // #sfX = #sfY
+
+                int nStrokes = strokes.Count;
+                double[] col8paints = strokes[0].col8paints; // % color in 8 paints, in motor ticks
+
+                int commandCounter = 2; // #cmdctr
+                sw.Write("PP");
+                for (int k = 0; k < col8paints.Length - 1; k++)
+                {
+                    sw.Write(col8paints[k]);
+                    sw.Write(",");
+                }
+                sw.Write(col8paints[col8paints.Length - 1]);
+                sw.Write(";");
+                double bs = (brushSize_mm * scl); // % new brush size, scaled
+                for (int i = 0; i < nStrokes; i++)
+                {
+                    double xo = (strokes[i].points[0].Y + 1) * sfX;
+                    double yo = (m - strokes[i].points[0].X - 1) * sfX;
+                    double[] col2 = strokes[i].col8paints;
+                    if (!Enumerable.SequenceEqual(col2, col8paints))
+                    {
+                        for (int k = 0; k < col8paints.Length; k++)
+                            col8paints[k] = Math.Round(strokes[i].col8paints[k]);
+                        commandCounter++;
+                        sw.Write("PP");
+                        for (int k = 0; k < col8paints.Length - 1; k++)
+                        {
+                            sw.Write(col8paints[k]);
+                            sw.Write(",");
+                        }
+                        sw.Write(col8paints[col8paints.Length - 1]);
+                        sw.Write(";");
+                        commandCounter++;
+                        sw.Write("PU");
+                        sw.Write(Math.Round(xo));
+                        sw.Write(",");
+                        sw.Write(Math.Round(yo));
+                        sw.Write(";");
+                    }
+                    else
+                    {
+                        if (i > 0)
+                        {
+                            var yprev = (m - strokes[i - 1].points.Last().X - 1) * sfX;
+                            var xprev = (strokes[i - 1].points.Last().Y + 1) * sfX;
+
+                            if (EuclideanDistance(new double[] { xo, yo }, new double[] { xprev, yprev }) > bs * bs)
+                            {
+                                commandCounter++;
+                                sw.Write("PU");
+                                sw.Write(Math.Round(xo));
+                                sw.Write(",");
+                                sw.Write(Math.Round(yo));
+                                sw.Write(";");
+                                // % PU only if strokes are merged in one...
+                            }
+                        }
+                        else
+                        {
+                            commandCounter++;
+                            sw.Write("PU");
+                            sw.Write(Math.Round(xo));
+                            sw.Write(",");
+                            sw.Write(Math.Round(yo));
+                            sw.Write(";");
+                        }
+                    }
+
+                    for (int j = 0; j < strokes[i].points.Count; j++)
+                    {
+                        xo = (strokes[i].points[j].Y + 1) * sfX;
+                        yo = (m - strokes[i].points[j].X - 1) * sfX;
+                        commandCounter++;
+                        sw.Write("PD");
+                        sw.Write(Math.Round(xo));
+                        sw.Write(",");
+                        sw.Write(Math.Round(yo));
+                        sw.Write(";"); //% not entirely correct, we may use only first PD before next commands, but this is simpler
+                    }
+                }
+                sw.Close();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Exception: " + e.Message);
+            }
+        }
+
+        //internal static List<int> kmeans(List<double[]> colArray, int clustersAmount)
+        //{
+        //    // TODO: write the function!
+        //    //throw new NotImplementedException();
+        //    string emptyaction = "singleton";
+        //    string start = "sample"; // should be "plus"
+
+        //    List<int> result = new List<int>(colArray.Count);
+        //    //for (int i = 1; i < colArray.Count; i++)
+        //    //    result.Add(i < clustersAmount ? i : 0);
+        //    Matrix2D D = new Matrix2D(clustersAmount, colArray.Count, 0); // used to hold the distances from each sample to each class
+        //    double err = 1; // used for convergence of the centroids
+        //    double sumd = double.PositiveInfinity; // initial sum of distances
+        //    ImmutableList<double[]> centers;
+        //    switch (start)
+        //    {
+        //        case "sample":
+        //            int[] idx = Randperm(colArray.Count, clustersAmount);
+        //            centers = ListExtensions.GetByIndexes(colArray.ToImmutableList<double[]>(), idx);
+        //            break;
+        //        default:
+        //            centers = colArray.Take(clustersAmount).ToImmutableList<double[]>();
+        //            break;
+        //    }
+        //    while (err > 0.001)
+        //    {
+        //        for (int i = 0; i < clustersAmount; i++)
+        //        {
+        //            for (int j = 0; j < colArray.Count; j++)
+        //                D[i, j] = EuclideanDistance(colArray[j], centers[i]);
+        //        }
+        //        D.Transpose();
+        //        int[] classes = D.GetIndexesOfMinElementsInRows();
+
+        //        // calculate new centroids
+        //        for (int i = 0; i < clustersAmount; i++)
+        //        {
+        //            int[] isInCluster = new int[classes.Length];
+        //            for (int j = 0; j < classes.Length; j++)
+        //                isInCluster[j] = (classes[j] == i) ? 1 : 0;
+        //            if (isInCluster.Sum() == 0)
+        //            {
+        //                if (emptyaction == "singleton")
+        //                {
+        //                    idx = maxCostSampleIndex(data, centers(i,:));
+        //                    classes(idx) = i;
+        //                    membership(idx) = 1;
+        //                }
+        //            }
+
+        //        }
+        //    }
+        //    return result;
+        //}
+
+        //  int[] bla(List<double[]> data, ImmutableList<double[]> centers)
+        //  {
+        //      int cost = 0;
+        //      int[] idx = new int[data.Count];
+        //      for idx = 1:rows(data)
+        //            if cost < sumsq(data(idx,:) - centers)
+        //cost = sumsq(data(idx,:) - centers);
+        //      endif
+        //    endfor
+
+        //  }
+
 
         // ONLY FOR DEBUGGING BLOCK -- TO BE DELETED
         //public static void printToFile(Vector vector)
