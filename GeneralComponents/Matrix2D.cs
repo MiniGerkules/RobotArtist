@@ -507,6 +507,14 @@ namespace GeneralComponents {
             return list;
         }
 
+        public int[] GetIndexesOfMinElementsInRows()
+        {
+            int[] indexes = new int[Rows];
+            for (int i = 0; i < Rows; i++)
+                indexes[i] = this.GetRow(i).IndexOfMinElement();
+            return indexes;
+        }
+
         // ONLY FOR DEBUGGING BLOCK -- TO BE DELETED
         public void printToFile(bool append = true, string filePath = "C:\\Users\\varka\\Documents\\RobotArtist extra\\matrix2d.txt")
         {
