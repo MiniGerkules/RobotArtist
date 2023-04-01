@@ -51,6 +51,11 @@ namespace GeneralComponents {
             IsRow = !IsRow;
         }
 
+        public int IndexOfMinElement()
+        {
+            return Array.IndexOf(vector, vector.Min());
+        }
+
         // ONLY FOR DEBUGGING BLOCK -- TO BE DELETED
         public void printToFile(bool append = true, string filePath = "C:\\Users\\varka\\Documents\\RobotArtist extra\\matrix2d.txt", bool addEmptyString = false)
         {
