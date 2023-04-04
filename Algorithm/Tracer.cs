@@ -1,19 +1,19 @@
 ﻿using System;
-using GeneralComponents;
+using System.Linq;
+using System.Windows;
 using System.Collections.Generic;
 using System.Windows.Media.Imaging;
-using System.Windows;
-using System.Linq;
-using System.Reflection;
-using System.Windows.Controls;
-using System.Diagnostics.Metrics;
+
+using GeneralComponents;
+using GeneralComponents.PLT;
+using GeneralComponents.Colors;
 
 namespace Algorithm {
     public class Tracer {
         public StrokeBrush strokeBrush { get; private set; }
         public int MaxAmountOfIters { get; private set; }
         public BitmapImage Image { get; private set; }
-        public Settings settings { get; }
+        public Settings settings { get; private set; }
         public Matrix2D ColorClass { get; private set; } // #canvasgraymix first layer
         public Matrix2D VolumeOfWhite { get; private set; } // #canvasgraymix second layer
         public Matrix3D ColoredCanvas { get; private set; } // #canvas // array m x n x 3 of canvasColor
@@ -28,11 +28,47 @@ namespace Algorithm {
 
         Database database;
 
+        public Tracer(Database database) {
+            this.database = database;
+            CMYBWColor.Database = database;
+        }
+
+        public PLTDecoderRes Trace(BitmapImage img, Settings settings) {
+            this.settings = settings;
+
+            Image = img;
+
+            strokeBrush = new StrokeBrush(settings.guiTrace.brushWidthMM,
+               Math.Min(settings.guiTrace.canvasWidthMM / Image.PixelWidth, // #sfX Image.PixelWidth should be greater than settings.guiTrace.canvasWidthMM
+               settings.guiTrace.canvasHeightMM / Image.PixelHeight)); // #sfY
+            MaxAmountOfIters = strokeBrush.thickness; // the max amount of attempts to find a new line section
+            InitialImage = Functions.imageToMatrix3D(Image); // ##ok
+
+            Ycell = database.GetHSV().Copy(); // ##ok
+            Wcell = database.GetProportions().Copy(); // ##ok
+
+            ColorClass = new Matrix2D(Image.PixelHeight, Image.PixelWidth); // #canvasgraymix 1 ColorMixType only // ##ok
+            VolumeOfWhite = new Matrix2D(Image.PixelHeight, Image.PixelWidth); // #canvasgraymix 2 // ##ok
+            ColoredCanvas = new Matrix3D(Image.PixelHeight, Image.PixelWidth, layers: 3, initVal: settings.canvasColor); // #canvas // ##ok
+            Error = ColoredCanvas - InitialImage; // not doubled, for what? may be done later where it'll be needed in countings // ##ok
+
+            UnblurredImage = InitialImage;
+
+            if (settings.doBlur) {
+                Matrix2D H = Functions.fspecial((int)strokeBrush.smallThickness);
+                InitialImage = Functions.conv2(InitialImage, H, "replicate");
+            }
+
+            GrayInitialImage = InitialImage.rgb2gray(); // #imggray // ##ok
+
+            Gradients = new Gradient(GrayInitialImage, strokeBrush.thickness); // ##ok
+
+            // ale iterations
+            return doIterations();
+        }
+
         public Tracer(BitmapImage img, Settings settings, Database database) // settings shouldn't be null! 
         {
-            if (settings == null) // i would like to throw exception here or to make sure of parameters by default
-                settings = new Settings(new GUITrace());
-
             this.settings = settings;
 
             Image = img;
@@ -67,7 +103,7 @@ namespace Algorithm {
             doIterations();
         }
 
-        private void doIterations() {
+        private PLTDecoderRes doIterations() {
             int nStrokes = 0; // #nStrokes
             List<Stroke> strokes = new List<Stroke>(); // #strokes
             bool isNewPieceAccepted = false; // #accepted
@@ -559,7 +595,12 @@ namespace Algorithm {
             
             string filename = "C:\\Users\\varka\\Documents\\RobotArtist extra\\commands.txt";
             Functions.SavePLT_8paints(map, InitialImage[0].Columns, InitialImage[0].Rows, settings.guiTrace.canvasWidthMM, settings.guiTrace.canvasHeightMM, settings.guiTrace.brushWidthMM, filename);
-            // ##ok
+            
+            return Convert(map);
+        }
+
+        private PLTDecoderRes Convert(List<Stroke> map) {
+            throw new NotImplementedException();
         }
     }
 }
