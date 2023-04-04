@@ -18,7 +18,7 @@ namespace GUI.Pages.ViewPage {
 
         private readonly MenuItem linkedMenuItem;
 
-        private Algorithm.Tracer? tracer = null;
+        private Algorithm.Tracer tracer;
         private readonly PLTDecoder decoder;
         private readonly PLTImgBuilder builder;
 
@@ -29,13 +29,14 @@ namespace GUI.Pages.ViewPage {
         private string? pathToActiveFile = null;
 
         public ViewPage(MenuItem linkedMenuItem, PLTDecoder decoder,
-                        PLTImgBuilder builder) {
+                        PLTImgBuilder builder, Algorithm.Tracer tracer) {
             InitializeComponent();
             DataContext = viewVM;
 
             this.linkedMenuItem = linkedMenuItem;
             this.decoder = decoder;
             this.builder = builder;
+            this.tracer = tracer;
         }
 
         public bool Contains(string fileName) => files.ContainsKey(fileName);
@@ -86,7 +87,7 @@ namespace GUI.Pages.ViewPage {
 
         private void ImageFileHandler(string fileName) {
             BitmapImage image = new(new Uri(fileName));
-            tracer = new(image, new(new()), DatabaseLoader.Database);
+            var plt = tracer.Trace(image, new(new()));
         }
 
         private void RotateImage(object sender, RoutedEventArgs e) {

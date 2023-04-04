@@ -25,6 +25,7 @@ namespace GUI {
 
         private readonly PLTDecoder pltDecoder;
         private readonly PLTImgBuilder pltImgBuilder = new();
+        private readonly Algorithm.Tracer tracer;
 
         private readonly IImgFileContainer filesContainer;
         private readonly Dictionary<MenuItem, IPage> pages;
@@ -34,8 +35,10 @@ namespace GUI {
             InitializeComponent();
 
             pltDecoder = new(pltImgBuilder.Settings.DefaultBrushWidth);
+            tracer = new Algorithm.Tracer(DatabaseLoader.Database);
+
             footer.DataContext = new BuildingImgProcessVM(pltDecoder, pltImgBuilder);
-            filesContainer = new ViewPage(viewButton, pltDecoder, pltImgBuilder);
+            filesContainer = new ViewPage(viewButton, pltDecoder, pltImgBuilder, tracer);
             pages = new() {
                 { viewButton, (filesContainer as IPage)! },
                 { stroKesStructButton, new StrokesStructurePage(stroKesStructButton,
