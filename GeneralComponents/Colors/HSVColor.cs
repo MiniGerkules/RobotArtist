@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Windows.Media;
 
-namespace GUI.Colors {
-    internal class HSVColor : IColor {
+namespace GeneralComponents.Colors {
+    public class HSVColor : IColor {
         private readonly double hue;            // From 0 to 1
         private readonly double saturation;     // From 0 to 1
         private readonly double value;          // From 0 to 1
