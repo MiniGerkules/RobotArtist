@@ -1,6 +1,5 @@
-﻿using System.Windows.Media.Imaging;
-
-using GUI.Settings;
+﻿using GUI.Settings;
+using GeneralComponents.PLT;
 
 namespace GUI.PLT {
     public class PLTPicture {

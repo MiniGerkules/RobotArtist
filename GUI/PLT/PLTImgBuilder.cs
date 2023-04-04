@@ -2,8 +2,9 @@
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
-using GUI.Colors;
 using GUI.Settings;
+using GeneralComponents.PLT;
+using GeneralComponents.Colors;
 
 namespace GUI.PLT {
     public class PLTImgBuilder : NotifierOfPropertyChange {
