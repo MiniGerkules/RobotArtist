@@ -596,11 +596,19 @@ namespace Algorithm {
             string filename = @"C:\Users\varka\Documents\RobotArtist extra\commands.txt";
             Functions.SavePLT_8paints(map, InitialImage[0].Columns, InitialImage[0].Rows, settings.guiTrace.canvasWidthMM, settings.guiTrace.canvasHeightMM, settings.guiTrace.brushWidthMM, filename);
             
-            return Convert(map);
+            return ConvertAlgStrokesToPLTStrokes(map);
         }
 
-        private PLTDecoderRes Convert(List<Stroke> map) {
-            throw new NotImplementedException();
+        private PLTDecoderRes ConvertAlgStrokesToPLTStrokes(List<Stroke> map) {
+            List<GeneralComponents.PLT.Stroke> PLTlist = 
+                new List<GeneralComponents.PLT.Stroke>();
+            IColor icolor = new RGBColor(0, 0, 0);
+            if (settings.useColor8Paints)
+                icolor = new CMYBWColor(new string[] { "bla" });
+            foreach(var stroke in map)
+                PLTlist.AddRange(stroke.ConvertToPLTStroke(
+                    icolor, settings.guiTrace.brushWidthMM));
+            return new PLTDecoderRes(PLTlist);
         }
     }
 }
