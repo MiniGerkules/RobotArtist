@@ -1,7 +1,6 @@
-﻿using GUI.Colors;
-using GeneralComponents;
+﻿using GeneralComponents.Colors;
 
-namespace GUI.PLT {
+namespace GeneralComponents.PLT {
     public class Stroke {
         public Point2D Start { get; }
         public Point2D End { get; }

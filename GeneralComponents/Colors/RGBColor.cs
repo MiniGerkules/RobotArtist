@@ -2,8 +2,8 @@
 using System.Linq;
 using System.Windows.Media;
 
-namespace GUI.Colors {
-    internal class RGBColor : IColor {
+namespace GeneralComponents.Colors {
+    public class RGBColor : IColor {
         private byte red, green, blue;
 
         public RGBColor(string[] colors) {

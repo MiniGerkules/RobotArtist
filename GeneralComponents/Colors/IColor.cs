@@ -1,6 +1,6 @@
 ﻿using System.Windows.Media;
 
-namespace GUI.Colors {
+namespace GeneralComponents.Colors {
     public interface IColor {
         Color GetRealColor();
         Color GetArtificialColor();

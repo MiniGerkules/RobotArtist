@@ -5,7 +5,8 @@ using GeneralComponents;
 using System.Globalization;
 using System.Collections.Generic;
 
-using GUI.Colors;
+using GeneralComponents.PLT;
+using GeneralComponents.Colors;
 
 namespace GUI.PLT {
     /// <summary>

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Immutable;
 
-namespace GUI.PLT {
+namespace GeneralComponents.PLT {
     public class PLTDecoderRes {
         public ImmutableList<Stroke> Strokes { get; private set; }
         public double Width { get; } = 0;
