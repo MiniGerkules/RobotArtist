@@ -557,7 +557,7 @@ namespace Algorithm {
             //imshow(map2imgColorCanvas(brushSize, canvas, map, canvasColor));
             Matrix3D finalImage = Functions.strokesToImage(strokeBrush.thickness, ColoredCanvas, map, settings.canvasColor);
             
-            string filename = "C:\\Users\\varka\\Documents\\RobotArtist extra\\commands.txt";
+            string filename = @"C:\Users\varka\Documents\RobotArtist extra\commands.txt";
             Functions.SavePLT_8paints(map, InitialImage[0].Columns, InitialImage[0].Rows, settings.guiTrace.canvasWidthMM, settings.guiTrace.canvasHeightMM, settings.guiTrace.brushWidthMM, filename);
             // ##ok
         }
