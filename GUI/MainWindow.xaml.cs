@@ -35,6 +35,9 @@ namespace GUI {
             InitializeComponent();
 
             pltDecoder = new(pltImgBuilder.Settings.DefaultBrushWidth);
+
+            DatabaseLoader.LoadDatabase(pathToDatabase); // i was forced to write it, had another ideas, but didn't want to change the GUI code, otherwise have exception of database not loaded
+
             tracer = new Algorithm.Tracer(DatabaseLoader.Database);
 
             footer.DataContext = new BuildingImgProcessVM(pltDecoder, pltImgBuilder);
