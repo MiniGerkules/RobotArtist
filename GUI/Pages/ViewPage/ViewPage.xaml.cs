@@ -87,7 +87,27 @@ namespace GUI.Pages.ViewPage {
 
         private void ImageFileHandler(string fileName) {
             BitmapImage image = new(new Uri(fileName));
-            var plt = tracer.Trace(image, new(new()));
+            // all parameters below should be given by user!!! BEFORE Algorithm starts!
+            var plt = tracer.Trace(image, 
+                new Algorithm.Settings(
+                    new Algorithm.GUITrace(
+                        colorsAmount: 255, 
+                        brushWidthMM: 2, 
+                        canvasWidthMM: 10, // REQUIRED FROM USER!
+                        canvasHeightMM: 10), // REQUIRED FROM USER!
+                    amountOfTotalIters: 3,
+                    doBlur: false,
+                    goNormal: true,
+                    canvasColorFault: 2,
+                    itersAmountWithSmallOverlap: 1,
+                    minLenFactor: null, 
+                    maxLenFactor: 30,
+                    minInitOverlapRatio: 0.6,
+                    maxInitOverlapRatio: 0.8,
+                    pixTol: 9,
+                    pixTolAverage: 100,
+                    pixTolAccept: 4,
+                    useColor8Paints: false)); // REQUIRED FROM USER! // if true i don't understand how
         }
 
         private void RotateImage(object sender, RoutedEventArgs e) {
