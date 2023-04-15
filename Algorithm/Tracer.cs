@@ -33,7 +33,8 @@ namespace Algorithm {
             CMYBWColor.Database = database;
         }
 
-        public PLTDecoderRes Trace(BitmapImage img, Settings settings) {
+        public PLTDecoderRes Trace(string fileName, Settings settings) {
+            BitmapImage img = new(new Uri(fileName));
             this.settings = settings;
 
             Image = img;
