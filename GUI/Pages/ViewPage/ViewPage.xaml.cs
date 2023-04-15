@@ -43,17 +43,19 @@ namespace GUI.Pages.ViewPage {
 
         public async void Add(string fileName) {
             if (!Contains(fileName)) {
+                PLTPicture picture;
+
                 if (fileName.EndsWith(".plt")) {
-                    var picture = await PLTFileHandler(fileName);
-
-                    OpenedFile file = new(fileName, ChangeFile, CloseFile);
-                    viewVM.Items.Add(file);
-
-                    files[fileName] = picture;
-                    UpdateOutputImage(fileName);
+                    picture = await PLTFileHandler(fileName);
                 } else {
-                    ImageFileHandler(fileName);
-                }   
+                    picture = await ImageFileHandler(fileName);
+                }
+
+                OpenedFile file = new(fileName, ChangeFile, CloseFile);
+                viewVM.Items.Add(file);
+
+                files[fileName] = picture;
+                UpdateOutputImage(fileName);
             }
         }
 
@@ -85,36 +87,41 @@ namespace GUI.Pages.ViewPage {
             return picture;
         }
 
-        private void ImageFileHandler(string fileName) {
-            BitmapImage image = new(new Uri(fileName));
-            // all parameters below should be given by user!!! BEFORE Algorithm starts!
-            var plt = tracer.Trace(image, 
-                new Algorithm.Settings(
-                    new Algorithm.GUITrace(
-                        colorsAmount: 255, 
-                        brushWidthMM: 2, 
-                        canvasWidthMM: 10, // REQUIRED FROM USER!
-                        canvasHeightMM: 10), // REQUIRED FROM USER!
-                    amountOfTotalIters: 3,
-                    doBlur: false,
-                    goNormal: true,
-                    canvasColorFault: 2,
-                    itersAmountWithSmallOverlap: 1,
-                    minLenFactor: null, 
-                    maxLenFactor: 30,
-                    minInitOverlapRatio: 0.6,
-                    maxInitOverlapRatio: 0.8,
-                    pixTol: 9,
-                    pixTolAverage: 100,
-                    pixTolAccept: 4,
-                    useColor8Paints: false)); // REQUIRED FROM USER! // if true i don't understand how
+        private async Task<PLTPicture> ImageFileHandler(string fileName) {
+            var plt = await Task.Run(() =>
+                tracer.Trace(fileName,
+                    new Algorithm.Settings(
+                        new Algorithm.GUITrace(
+                            colorsAmount: 255,
+                            brushWidthMM: 2,
+                            canvasWidthMM: builder.Settings.DefaultWidthOfGenImg, // REQUIRED FROM USER!
+                            canvasHeightMM: builder.Settings.DefaultHeightOfGenImg // REQUIRED FROM USER!
+                        ),
+                        amountOfTotalIters: 3,
+                        doBlur: false,
+                        goNormal: true,
+                        canvasColorFault: 2,
+                        itersAmountWithSmallOverlap: 1,
+                        minLenFactor: null,
+                        maxLenFactor: 30,
+                        minInitOverlapRatio: 0.6,
+                        maxInitOverlapRatio: 0.8,
+                        pixTol: 9,
+                        pixTolAverage: 100,
+                        pixTolAccept: 4,
+                        useColor8Paints: false // REQUIRED FROM USER! // if true i don't understand how
+                    )
+                )
+            );
+
+            return await Task.Run(() => builder.Build(plt));
         }
 
         private void RotateImage(object sender, RoutedEventArgs e) {
             files[pathToActiveFile!].Rotate();
             UpdateActiveImage();
         }
-        
+
         private async void RepaintImage(object sender, RoutedEventArgs e) {
             files[pathToActiveFile!] = await Task.Run(
                 () => builder.Rebuild(files[pathToActiveFile!])
