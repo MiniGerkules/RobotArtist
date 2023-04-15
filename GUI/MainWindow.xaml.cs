@@ -34,14 +34,13 @@ namespace GUI {
         public MainWindow() {
             InitializeComponent();
 
+            tracer = new Algorithm.Tracer(DatabaseLoader.Database);
+            DatabaseLoader.LoadDatabase(pathToDatabase);
             pltDecoder = new(pltImgBuilder.Settings.DefaultBrushWidth);
 
-            DatabaseLoader.LoadDatabase(pathToDatabase); // i was forced to write it, had another ideas, but didn't want to change the GUI code, otherwise have exception of database not loaded
-
-            tracer = new Algorithm.Tracer(DatabaseLoader.Database);
-
-            footer.DataContext = new BuildingImgProcessVM(pltDecoder, pltImgBuilder);
             filesContainer = new ViewPage(viewButton, pltDecoder, pltImgBuilder, tracer);
+            footer.DataContext = new BuildingImgProcessVM(pltDecoder, pltImgBuilder);
+
             pages = new() {
                 { viewButton, (filesContainer as IPage)! },
                 { stroKesStructButton, new StrokesStructurePage(stroKesStructButton,
@@ -66,10 +65,9 @@ namespace GUI {
         }
 
         private void WindowLoaded(object sender, RoutedEventArgs e) {
-            DatabaseLoader.LoadDatabase(pathToDatabase);
             if (!DatabaseLoader.IsLoaded()) {
                 ErrorDisplayer("Can't to upload a file with color data. Check " +
-                                "the presence of the database file in the directory.");
+                               "the presence of the database file in the directory.");
                 Close();
             }
         }
