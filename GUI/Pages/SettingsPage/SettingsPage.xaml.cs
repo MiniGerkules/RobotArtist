@@ -48,7 +48,7 @@ namespace GUI.Pages.SettingsPage {
             settingsImage.Source = active.Rendered.MainImage;
         }
 
-        private async void ApplySettings(object sender, System.Windows.RoutedEventArgs e) {
+        private async void ApplySettings(object sender, RoutedEventArgs e) {
             var active = getActive();
             if (active == null) return;
 
