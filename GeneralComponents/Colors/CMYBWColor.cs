@@ -23,8 +23,11 @@ namespace GeneralComponents.Colors {
             return (cyan, magenta, yellow, blue, white);
         }
 
-        public CMYBWColor(string[] colors) {
-            (cyan, magenta, yellow, blue, white) = colors.Select(elem => uint.Parse(elem)).ToArray() switch {
+        public CMYBWColor(string[] colors) : this(colors.Select(elem => uint.Parse(elem)).ToArray()) {
+        }
+
+        public CMYBWColor(uint[] colors) {
+            (cyan, magenta, yellow, blue, white) = colors switch {
                 var arr when minColors == arr.Length || arr.Length == maxColors =>
                                                                     (arr[0], arr[1], arr[2], arr[3], arr[4]),
                 _ => throw new ArgumentException("There isn't correct number of the colors!")
