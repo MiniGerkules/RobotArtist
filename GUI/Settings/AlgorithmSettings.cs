@@ -37,6 +37,12 @@ namespace GUI.Settings {
 
         /// <summary> Number of neibors for HSV-color regression </summary>
         public uint NumOfNeibForHSVReg { get; private set; } = 14;
+
+        /// <summary> Default height for generation of image (for GUITrace) </summary>
+        public uint DefaultHeightOfGenImg { get; private set; } = 100;
+
+        /// <summary> Default width for generation of image (for GUITrace) </summary>
+        public uint DefaultWidthOfGenImg { get; private set; } = 100;
         #endregion
 
         /// <summary> The number of settings </summary>
@@ -53,6 +59,8 @@ namespace GUI.Settings {
             nameof(NumOfNeibForPropClass) => "Number of neibors for proportion classification",
             nameof(NumOfNeibForPropReg) => "Number of neibors for proportion regression",
             nameof(NumOfNeibForHSVReg) => "Number of neibors for HSV-color regression",
+            nameof(DefaultHeightOfGenImg) => "Default height for generation of image",
+            nameof(DefaultWidthOfGenImg) => "Default width for generation of image",
             _ => throw new FieldAccessException($"There aren't decription for a {property.Name} setting!")
         };
 
