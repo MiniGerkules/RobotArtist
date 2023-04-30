@@ -56,6 +56,12 @@ namespace GeneralComponents {
             return Array.IndexOf(vector, vector.Min());
         }
 
+        public void FillByZeros()
+        {
+            for (int i = 0; i < vector.Length; i++)
+                vector[i] = 0;
+        }
+
         // ONLY FOR DEBUGGING BLOCK -- TO BE DELETED
         public void printToFile(bool append = true, string filePath = "C:\\Users\\varka\\Documents\\RobotArtist extra\\matrix2d.txt", bool addEmptyString = false)
         {
@@ -63,9 +69,12 @@ namespace GeneralComponents {
             {
                 //Pass the filepath and filename to the StreamWriter Constructor and append the text
                 StreamWriter sw = new StreamWriter(filePath, append);
-
-                for (int j = 0; j < Size; j++)
-                    sw.Write("{0, 7}", vector[j]);
+                sw.Write(Math.Round(vector[0], 5));
+                for (int j = 1; j < Size; j++)
+                {
+                    sw.Write(' ');
+                    sw.Write(Math.Round(vector[j], 5));
+                }
                 sw.WriteLine();
                 if (addEmptyString)
                     sw.WriteLine();
