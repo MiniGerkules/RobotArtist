@@ -34,8 +34,8 @@ namespace GUI {
         public MainWindow() {
             InitializeComponent();
 
-            tracer = new Algorithm.Tracer(DatabaseLoader.Database);
             DatabaseLoader.LoadDatabase(pathToDatabase);
+            tracer = new Algorithm.Tracer(DatabaseLoader.Database);
             pltDecoder = new(pltImgBuilder.Settings.DefaultBrushWidth);
 
             filesContainer = new ViewPage(viewButton, pltDecoder, pltImgBuilder, tracer);
@@ -90,7 +90,7 @@ namespace GUI {
         }
 
         private void MenuButtonClick(object sender, RoutedEventArgs e) {
-            if (!IsAnyPageActive() || sender is not MenuItem ||
+            if (/*!IsAnyPageActive() ||*/ sender is not MenuItem ||
                     ReferenceEquals(sender, activePage))
                 return;
 
