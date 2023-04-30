@@ -13,6 +13,8 @@ namespace Algorithm
     public static class Functions
     {
         const double eps = 2.2204e-16;
+        const int ColorLength = 3;
+        const int ClustersAmount = 4;
         /*
          * returns a vector of vectorSize of random integer numbers in range 1:limit
          */
@@ -226,8 +228,8 @@ namespace Algorithm
 
             if (stroke.points.Count > 1) // %if not a single point, get previous direction
             {
-                double dX = startPoint.X - stroke.points[stroke.points.Count - 1].X;
-                double dY = startPoint.Y - stroke.points[stroke.points.Count - 1].Y;
+                double dX = startPoint.X - stroke.points[stroke.points.Count - 2].X;
+                double dY = startPoint.Y - stroke.points[stroke.points.Count - 2].Y;
 
                 // %get scalar product
                 double scalar = cosA * dX + sinA * dY;
@@ -272,7 +274,9 @@ namespace Algorithm
 
         public static Matrix3D imageToMatrix3D(BitmapImage image)
         {
-            FormatConvertedBitmap imageInRGB24 = new FormatConvertedBitmap(image, PixelFormats.Rgb24, BitmapPalettes.Halftone256, 0);
+            //FormatConvertedBitmap imageInRGB24 = new FormatConvertedBitmap(image, PixelFormats.Rgb24, BitmapPalettes.Halftone256, 0);
+            //FormatConvertedBitmap imageInRGB24 = new FormatConvertedBitmap(image, PixelFormats.Rgb24, BitmapPalettes.Halftone252, 0);
+            FormatConvertedBitmap imageInRGB24 = new FormatConvertedBitmap(image, PixelFormats.Rgb24, BitmapPalettes.WebPaletteTransparent, 0);
             int bpp = 24; // bits per pixel
             int layersAmount = 3;
             //bpp = Image.Format.BitsPerPixel; // omg pictures opens in bgr32
@@ -421,8 +425,227 @@ namespace Algorithm
             return val;
         }
 
-        internal static void PredictProportions(out double[] proportions, out ColorMixType mixTypes, 
-            out double[] hsvNewColor, double[] hsvColor, List<List<List<double>>> Ycell, 
+        //internal static void PredictProportions(out double[] proportions, out ColorMixType mixTypes,
+        //    out double[] hsvNewColor, double[] hsvColor, List<List<List<double>>> Ycell,
+        //    List<List<List<double>>> Wcell, int sheetsAmount = 4)
+        //{
+
+        //    int K = 25;
+        //    double tolerance = 0.2; // #tol - tolerance of color error in rgb
+
+        //    List<List<double>> Tbl = new List<List<double>>();
+        //    List<int> Clss = new List<int>(); // one big column of indicies
+
+        //    // Ycell and Wcell are guaranteed not null here
+
+        //    for (int i = 0; i < sheetsAmount; i++)
+        //    {
+        //        int Nset = Ycell[i].Count;
+
+        //        for (int j = 0; j < Nset; j++)
+        //            Tbl.Add(Ycell[i][j]);
+        //        //Tbl.AddRange(Ycell[i]);
+
+        //        Clss.AddRange(Enumerable.Repeat(i, Nset));
+        //    }
+
+        //    int N = Tbl.Count;
+        //    // #Nhsv is 1, so delete it
+
+        //    //now, create classification table and class list
+        //    hsvNewColor = new double[ColorLength]; // #hsvnew
+        //    double[] hsvColorCurrent = new double[ColorLength];
+        //    Array.Copy(hsvColor, hsvNewColor, ColorLength);
+        //    proportions = new double[ColorLength];
+        //    mixTypes = (ColorMixType)0; // #cls
+        //    double[] hsvArray = new double[ColorLength];
+
+        //    Matrix2D M = (new Matrix2D(new List<double> { 1d, 1d / 16, 1d })).MakeDiag();
+
+        //    // then, replace the current color with the accessible one
+        //    Array.Copy(hsvNewColor, hsvColorCurrent, ColorLength);
+        //    // make prediction from the closest point
+        //    int Ks = 10;
+        //    Matrix2D dst = new Matrix2D(N, 1); // distances - taken as maximum range
+
+        //    for (int n = 0; n < N; n++)
+        //        dst[n] = EuclideanDistance(hsvColorCurrent, Tbl[n].ToArray());
+
+        //    int[] I = dst.GetIndexesForSorted(); // #notOk
+
+        //    int[] classes = new int[ClustersAmount];
+
+        //    for (int i = 0; i < Ks; i++)
+        //        classes[Clss[I[i]]]++;
+
+        //    int clsvect = classes.ToList().IndexOf(classes.Max());
+        //    mixTypes = (ColorMixType)clsvect; // #cls(i) (i = 1)
+        //    // then, find second possible class
+        //    int ctr = 0; // index
+        //    int ctri = 0; // index
+        //    int[] class2vect = new int[K];
+        //    while (ctr < Clss.Count && ctri < K)
+        //    {
+        //        if ((ColorMixType)Clss[I[ctr]] != mixTypes)
+        //        {
+        //            class2vect[ctri] = Clss[I[ctr]];
+        //            ctri++;
+        //        }
+        //        ctr++;
+        //    }
+
+        //    for (int i = 0; i < ClustersAmount; i++)
+        //        classes[i] = 0;
+
+        //    for (int i = 0; i < ctri; i++)
+        //        classes[class2vect[i]]++;
+
+        //    int class2 = classes.ToList().IndexOf(classes.Max());
+        //    bool flag = true;
+        //    ctr = 1; // counter
+        //    double[] props0 = new double[3]; // initial proportions
+        //    double[] propscur = new double[3]; // current proportions
+        //    double err0 = 0;
+
+        //    double[] hsvinv = { 0, 0, 0 };
+
+        //    List<List<double>> T = new List<List<double>> {
+        //                    new List<double> { 0, 0, 0 },
+        //                    new List<double> { 1, 0, 0 },
+        //                    new List<double> { 0, 1, 0 },
+        //                    new List<double> { 0, 0, 1 }
+        //                }; // monomial orders
+
+        //    List<List<double>> Y = Ycell[(int)mixTypes];
+        //    List<List<double>> W = Wcell[(int)mixTypes];
+
+        //    int NY = Y.Count; // amount of rows in Y
+        //                      //List<Matrix2D> dist = new List<Matrix2D> (); // distances - taken as maximum range
+        //    Matrix2D dist = new Matrix2D(NY, 1);
+        //    Matrix2D d = new Matrix2D(1, K);
+        //    Matrix2D ds = new Matrix2D(1, K); // transposed
+        //    List<List<double>> Y_IK = new List<List<double>>();
+        //    double dsSum = ds.GetSum();
+        //    Matrix2D E = new Matrix2D(K, ClustersAmount); // evaluated polynomial
+        //    Matrix2D eye = Matrix2D.Eye(ClustersAmount);
+        //    Matrix2D Wj = new Matrix2D(K, 1);
+
+        //    while (flag)
+        //    {
+        //        dist.FillByZeros();
+        //        Matrix2D hsvColorCurrentMatrix = new Matrix2D(hsvColorCurrent.ToList());
+        //        for (int n = 0; n < NY; n++)
+        //        {
+        //            Matrix2D Yn = new Matrix2D(Y[n]);
+        //            Matrix2D temp = (hsvColorCurrentMatrix - Yn);
+        //            dist[n, 0] = (double)(temp * M * temp.Transpose());
+        //        }
+        //        int[] indexes = dist.GetIndexesForSorted();
+
+        //        d.FillByZeros();
+        //        ds.FillByZeros();
+
+        //        for (int p = 0; p < K; p++)
+        //        {
+        //            d[0, p] = 1d / dist[indexes[p]];
+        //            ds[0, p] = Math.Sqrt(d[p]);
+        //        }
+
+        //        Matrix2D D = d.MakeDiag();
+
+        //        Y_IK.Clear();
+        //        for (int i = 0; i < K; i++)
+        //            Y_IK.Add(Y[indexes[i]]);
+        //        Matrix2D hsvpossible = ds * (new Matrix2D(Y_IK)) / dsSum;
+        //        double al = 0.7;
+        //        for (int i = 0; i < hsvNewColor.Length; i++)
+        //            hsvNewColor[i] = hsvpossible[i] * (1 - al) + hsvColorCurrent[i] * al;
+
+        //        hsvNewColor.CopyTo(hsvColorCurrent, 0);
+
+        //        // %take first K points, make linear regression
+
+        //        for (int j = 0; j < 3; j++)
+        //        {
+        //            Matrix2D X = new Matrix2D(Y_IK);
+
+        //            E.FillByZeros();
+
+        //            for (int k = 0; k < 4; k++)
+        //            {
+        //                double[] product = prod2(matrixToMatrixDegrees(X, (new Matrix2D(T[k])).RepeatRows(K)));
+        //                for (int r = 0; r < K; r++)
+        //                {
+        //                    for (int c = 0; c < E.Columns; c++)
+        //                        E[r, c] += product[r] * eye[k, c];                        
+        //                }
+        //            }
+
+        //            Wj.FillByZeros();
+
+        //            for (int k = 0; k < K; k++)
+        //                Wj[k] = W[indexes[k]][j];
+
+        //            Matrix2D Etransposed = E.Transpose();
+
+        //            Matrix2D answers = Etransposed * D * Wj;
+
+        //            Matrix2D coefs = Etransposed * D * E + (eye) * 1e-14;  // 1e-14 for Tikhonov regularization
+
+        //            Matrix2D h = GausMethod.Solve(coefs, answers);
+
+        //            // predict proportion
+
+        //            double p = 0;
+
+        //            for (int k = 0; k < 4; k++)
+        //                p += h[k] * prod2(matrixToMatrixDegrees(hsvColorCurrent, T[k].ToArray()));
+        //            propscur[j] = p;
+        //        }
+
+        //        // get into ranges [0,1]
+        //        propscur = saturation(propscur); // ##ok
+        //        // test inversion
+        //        hsvinv = prop2hsv(propscur, mixTypes, Wcell, Ycell); // ##ok
+        //        // here a section about h_alt, remake
+        //        double[] hsvinv2 = new double[ColorLength];
+        //        hsvinv.CopyTo(hsvinv2, 0);
+        //        hsvinv2[0] = (Math.Abs(hsvinv[0] - hsvColorCurrent[0]) < Math.Abs(hsvinv[0] - 1 - hsvColorCurrent[0])) ? hsvinv[0] : (hsvinv[0] - 1);
+
+        //        double[] hsvdemanded = new double[ColorLength];
+        //        hsvColor.CopyTo(hsvdemanded, 0);
+
+        //        double err = Math.Sqrt(EuclideanDistance(hsvdemanded, hsvinv2));
+
+        //        if (ctr < 2)
+        //        {
+        //            // if the values are calculated for the first time
+        //            if (err > tolerance)
+        //            {
+        //                ctr++;
+        //                mixTypes = (ColorMixType)class2;
+        //                propscur.CopyTo(props0, 0);
+        //                err0 = err;
+        //            }
+        //            else
+        //                flag = false; // go out of the loop
+        //        }
+        //        else
+        //        {
+        //            // if the values are calculated for the second time
+        //            if (err > err0) // if error is greater, return to first variant
+        //            {
+        //                props0.CopyTo(propscur, 0);
+        //                mixTypes = (ColorMixType)clsvect;
+        //            }
+        //            flag = false; // anyway, go out of the loop
+        //        }
+        //    }
+        //    proportions = propscur;
+        //}
+
+        internal static void PredictProportions(out List<double[]> proportions, out List<ColorMixType> mixTypes,
+            out List<double[]> hsvNewColor, List<double[]> hsvColor, List<List<List<double>>> Ycell,
             List<List<List<double>>> Wcell, int sheetsAmount = 4)
         {
 
@@ -450,196 +673,211 @@ namespace Algorithm
             }
 
             int N = Tbl.Count;
-            // #Nhsv is 1, so delete it
+            int Nhsv = hsvColor.Count; // #Nhsv
 
             //now, create classification table and class list
-            hsvNewColor = hsvColor.Clone() as double[]; // #hsvnew
-            proportions = new double[3];
-            mixTypes = (ColorMixType)0; // #cls
-            double[] hsvArray = new double[3];
+            hsvNewColor = new List<double[]>(); // #hsvnew
+            hsvNewColor.AddRange(hsvColor); 
+            proportions = new List<double[]>(Nhsv);
+            mixTypes = new List<ColorMixType>(Nhsv); // #cls
+            List<double[]> hsvArray = new List<double[]>(Nhsv);
+
+            for (int i = 0; i < Nhsv; i++)
+            {
+                proportions.Add(new double[3]);
+                mixTypes.Add((ColorMixType)0);
+                hsvArray.Add(new double[3]);
+            }
 
             Matrix2D M = (new Matrix2D(new List<double> { 1d, 1d / 16, 1d })).MakeDiag();
 
-            // then, replace the current color with the accessible one
-            double[] hsvColorCurrent = hsvNewColor.Clone() as double[];
-            // make prediction from the closest point
-            int Ks = 10;
-            Matrix2D dst = new Matrix2D(N, 1); // distances - taken as maximum range
-
-            for (int n = 0; n < N; n++)
-                dst[n] = EuclideanDistance(hsvColorCurrent, Tbl[n].ToArray()); // #ok
-
-            int[] I = dst.GetIndexesForSorted(); // #notOk
-            //int[] clssIndexes = I.Take(Ks).ToArray();
-            int[] clvec = new int[Ks];
-
-            for (int i = 0; i < Ks; i++)
-                clvec[i] = Clss[I[i]];
-
-            int[] classes = new int[4];
-
-            for (int i = 0; i < Ks; i++)
-                classes[clvec[i]]++;
-
-            int clsvect = classes.ToList().IndexOf(classes.Max()); // ##ok
-            mixTypes = (ColorMixType)clsvect; // #cls(i) (i = 1)
-            // then, find second possible class
-            int ctr = 0; // index
-            int ctri = 0; // index
-            Matrix2D class2vect = new Matrix2D(K, 1);
-            while (ctr < Clss.Count && ctri < K)
+            for (int i = 0; i < Nhsv; i++)
             {
-                if ((ColorMixType)Clss[I[ctr]] != mixTypes)
+                hsvNewColor[i] = hsvColor[i].Clone() as double[];
+                // then, replace the current color with the accessible one
+                double[] hsvColorCurrent = hsvColor[i].Clone() as double[];
+                // make prediction from the closest point
+                int Ks = 10;
+                Matrix2D dst = new Matrix2D(N, 1); // distances - taken as maximum range
+
+                for (int n = 0; n < N; n++)
+                    dst[n] = EuclideanDistance(hsvColorCurrent, Tbl[n].ToArray()); // #ok
+
+                int[] I = dst.GetIndexesForSorted(); // #notOk
+                                                     //int[] clssIndexes = I.Take(Ks).ToArray();
+                int[] clvec = new int[Ks];
+
+                for (int k = 0; k < Ks; k++)
+                    clvec[k] = Clss[I[k]];
+
+                int[] classes = new int[4];
+
+                for (int k = 0; k < Ks; k++)
+                    classes[clvec[k]]++;
+
+                int clsvect = classes.ToList().IndexOf(classes.Max()); // ##ok
+                mixTypes[i] = (ColorMixType)clsvect; // #cls(i) (i = 1)
+                                                  // then, find second possible class
+                int ctr = 0; // index
+                int ctri = 0; // index
+                Matrix2D class2vect = new Matrix2D(K, 1);
+                while (ctr < Clss.Count && ctri < K)
                 {
-                    class2vect[ctri] = Clss[I[ctr]];
-                    ctri++;
-                }
-                ctr++;
-            }
-
-            classes = new int[4];
-
-            for (int i = 0; i < ctri; i++)
-                classes[(int)class2vect[i]]++;
-
-            int class2 = classes.ToList().IndexOf(classes.Max()); // ##ok
-            bool flag = true;
-            ctr = 1; // counter
-            double[] props0 = new double[3]; // initial proportions?
-            double[] propscur = new double[3]; // current proportions
-            double err0 = 0;
-
-            double[] hsvinv = { 0, 0, 0 };
-
-            while (flag)
-            {
-                List<List<double>> Y = Ycell[(int)mixTypes];
-                List<List<double>> W = Wcell[(int)mixTypes];
-                int NY = Y.Count; // amount of rows in Y
-                                  //List<Matrix2D> dist = new List<Matrix2D> (); // distances - taken as maximum range
-                Matrix2D dist = new Matrix2D(NY, 1);
-                for (int n = 0; n < NY; n++)
-                {
-                    Matrix2D hsvColorCurrentMatrix = new Matrix2D(hsvColorCurrent.ToList());
-                    Matrix2D Yn = new Matrix2D(Y[n]);
-                    Matrix2D temp = (hsvColorCurrentMatrix - Yn);
-                    dist[n, 0] = (double)(temp * M * temp.Transpose());
-                }
-                int[] indexes = dist.GetIndexesForSorted();
-
-                Matrix2D d = new Matrix2D(1, K);
-                Matrix2D ds = new Matrix2D(1, K); // transposed
-
-                for (int p = 0; p < K; p++)
-                {
-                    d[0, p] = 1d / dist[indexes[p]];
-                    ds[0, p] = Math.Sqrt(d[p]);
+                    if ((ColorMixType)Clss[I[ctr]] != mixTypes[i])
+                    {
+                        class2vect[ctri] = Clss[I[ctr]];
+                        ctri++;
+                    }
+                    ctr++;
                 }
 
-                Matrix2D D = d.MakeDiag(); // ##ok
-                // hsvpossible = ds'*Y(I(1:K),:)/sum(ds); 
-                List<List<double>> Y_IK = new List<List<double>>();
-                for (int i = 0; i < K; i++)
-                    Y_IK.Add(Y[indexes[i]]);
-                Matrix2D hsvpossible = ds * (new Matrix2D(Y_IK)) / ds.GetSum();
-                double al = 0.7;
-                for (int i = 0; i < hsvNewColor.Length; i++)
-                    hsvNewColor[i] = hsvpossible[i] * (1 - al) + hsvColorCurrent[i] * al; //#ok
+                classes = new int[4];
 
-                hsvColorCurrent = hsvNewColor.Clone() as double[]; // ##ok
+                for (int k = 0; k < ctri; k++)
+                    classes[(int)class2vect[k]]++;
 
-                // %take first K points, make linear regression
-                for (int j = 0; j < 3; j++)
+                int class2 = classes.ToList().IndexOf(classes.Max()); // ##ok
+                bool flag = true;
+                ctr = 1; // counter
+                double[] props0 = new double[3]; // initial proportions?
+                double[] propscur = new double[3]; // current proportions
+                double err0 = 0;
+
+                double[] hsvinv = { 0, 0, 0 };
+
+                while (flag)
                 {
-                    Matrix2D X = new Matrix2D(Y_IK);
+                    List<List<double>> Y = Ycell[(int)mixTypes[i]];
+                    List<List<double>> W = Wcell[(int)mixTypes[i]];
+                    int NY = Y.Count; // amount of rows in Y
+                                      //List<Matrix2D> dist = new List<Matrix2D> (); // distances - taken as maximum range
+                    Matrix2D dist = new Matrix2D(NY, 1);
+                    for (int n = 0; n < NY; n++)
+                    {
+                        Matrix2D hsvColorCurrentMatrix = new Matrix2D(hsvColorCurrent.ToList());
+                        Matrix2D Yn = new Matrix2D(Y[n]);
+                        Matrix2D temp = (hsvColorCurrentMatrix - Yn);
+                        dist[n, 0] = (double)(temp * M * temp.Transpose());
+                    }
+                    int[] indexes = dist.GetIndexesForSorted();
 
-                    Matrix2D E = new Matrix2D(K, 4); // evaluated polynomial
-                    List<List<double>> T = new List<List<double>> {
+                    Matrix2D d = new Matrix2D(1, K);
+                    Matrix2D ds = new Matrix2D(1, K); // transposed
+
+                    for (int p = 0; p < K; p++)
+                    {
+                        d[0, p] = 1d / dist[indexes[p]];
+                        ds[0, p] = Math.Sqrt(d[p]);
+                    }
+
+                    Matrix2D D = d.MakeDiag(); // ##ok
+                                               // hsvpossible = ds'*Y(I(1:K),:)/sum(ds); 
+                    List<List<double>> Y_IK = new List<List<double>>();
+                    for (int k = 0; k < K; k++)
+                        Y_IK.Add(Y[indexes[k]]);
+                    Matrix2D hsvpossible = ds * (new Matrix2D(Y_IK)) / ds.GetSum();
+                    double al = 0.7;
+                    for (int k = 0; k < hsvNewColor[i].Length; k++)
+                        hsvNewColor[i][k] = hsvpossible[k] * (1 - al) + hsvColorCurrent[k] * al; //#ok
+
+                    hsvColorCurrent = hsvNewColor[i].Clone() as double[]; // ##ok
+
+                    // %take first K points, make linear regression
+                    for (int j = 0; j < 3; j++)
+                    {
+                        Matrix2D X = new Matrix2D(Y_IK);
+
+                        Matrix2D E = new Matrix2D(K, 4); // evaluated polynomial
+                        List<List<double>> T = new List<List<double>> {
                             new List<double> { 0, 0, 0 },
                             new List<double> { 1, 0, 0 },
                             new List<double> { 0, 1, 0 },
                             new List<double> { 0, 0, 1 }
                         }; // monomial orders
-                    Matrix2D h = Matrix2D.Eye(4);
+                        Matrix2D h = Matrix2D.Eye(4);
 
-                    for (int k = 0; k < 4; k++)
-                    {
-                        double[] product = prod2(matrixToMatrixDegrees(X, (new Matrix2D(T[k])).RepeatRows(K)));
-                        for (int r = 0; r < K; r++)
+                        for (int k = 0; k < 4; k++)
                         {
-                            for (int c = 0; c < E.Columns; c++)
+                            double[] product = prod2(matrixToMatrixDegrees(X, (new Matrix2D(T[k])).RepeatRows(K)));
+                            for (int r = 0; r < K; r++)
                             {
-                                E[r, c] += product[r] * h[k, c];
+                                for (int c = 0; c < E.Columns; c++)
+                                {
+                                    E[r, c] += product[r] * h[k, c];
+                                }
                             }
                         }
+
+                        double delt = 1e-14; // %for Tikhonov regularization
+
+                        Matrix2D Wj = new Matrix2D(K, 1);
+
+                        for (int k = 0; k < K; k++)
+                            Wj[k] = W[indexes[k]][j];
+
+                        // h = (E'*D*E)\(E'*D*W(I(1:K),j)); %WLS
+                        Matrix2D Etransposed = E.Transpose();
+
+                        Matrix2D answers = Etransposed * D * Wj;
+
+                        Matrix2D coefs = Etransposed * D * E + (Matrix2D.Eye(4)) * delt;
+
+                        h = GausMethod.Solve(coefs, answers); // answers don't match, but they pretty close
+
+                        // predict proportion
+
+                        double p = 0;
+
+                        for (int k = 0; k < 4; k++)
+                            p += h[k] * prod2(matrixToMatrixDegrees(hsvColorCurrent, T[k].ToArray()));
+                        propscur[j] = p;
                     }
 
-                    double delt = 1e-14; // %for Tikhonov regularization
+                    // get into ranges [0,1]
+                    propscur = saturation(propscur); // ##ok
+                                                     // test inversion
+                    hsvinv = prop2hsv(propscur, mixTypes[0], Wcell, Ycell); // ##ok // always mixTypes[0] (because in prop2hsv Npts always 1 so i is always i in matlab)
+                                                                            // here a section about h_alt, remake
+                    double[] hsvinv2 = hsvinv.Clone() as double[];
+                    hsvinv2[0] = (Math.Abs(hsvinv[0] - hsvColorCurrent[0]) < Math.Abs(hsvinv[0] - 1 - hsvColorCurrent[0])) ? hsvinv[0] : (hsvinv[0] - 1);
 
-                    Matrix2D Wj = new Matrix2D(K, 1);
+                    double[] hsvdemanded = hsvColor[i].Clone() as double[];
 
-                    for (int k = 0; k < K; k++)
-                        Wj[k] = W[indexes[k]][j];
+                    double err = Math.Sqrt(EuclideanDistance(hsvdemanded, hsvinv2));
 
-                    // h = (E'*D*E)\(E'*D*W(I(1:K),j)); %WLS
-                    Matrix2D Etransposed = E.Transpose();
-
-                    Matrix2D answers = Etransposed * D * Wj;
-
-                    Matrix2D coefs = Etransposed * D * E + (Matrix2D.Eye(4)) * delt;
-
-                    h = GausMethod.Solve(coefs, answers); // answers don't match, but they pretty close
-
-                    // predict proportion
-
-                    double p = 0;
-
-                    for (int k = 0; k < 4; k++)
-                        p += h[k] * prod2(matrixToMatrixDegrees(hsvColorCurrent, T[k].ToArray()));
-                    propscur[j] = p;
-                }
-
-                // get into ranges [0,1]
-                propscur = saturation(propscur); // ##ok
-                // test inversion
-                hsvinv = prop2hsv(propscur, mixTypes, Wcell, Ycell); // ##ok
-                // here a section about h_alt, remake
-                double[] hsvinv2 = hsvinv.Clone() as double[];
-                hsvinv2[0] = (Math.Abs(hsvinv[0] - hsvColorCurrent[0]) < Math.Abs(hsvinv[0] - 1 - hsvColorCurrent[0])) ? hsvinv[0] : (hsvinv[0] - 1);
-
-                double[] hsvdemanded = hsvColor.Clone() as double[];
-
-                double err = Math.Sqrt(EuclideanDistance(hsvdemanded, hsvinv2));
-
-                if (ctr < 2)
-                {
-                    // if the values are calculated for the first time
-                    if (err > tolerance)
+                    if (ctr < 2)
                     {
-                        ctr++;
-                        mixTypes = (ColorMixType)class2;
-                        //props0 = propscur;
-                        propscur.CopyTo(props0, 0);
-                        err0 = err;
+                        // if the values are calculated for the first time
+                        if (err > tolerance)
+                        {
+                            ctr++;
+                            mixTypes[i] = (ColorMixType)class2;
+                            //props0 = propscur;
+                            propscur.CopyTo(props0, 0);
+                            err0 = err;
+                        }
+                        else
+                            flag = false; // go out of the loop
                     }
                     else
-                        flag = false; // go out of the loop
-                }
-                else
-                {
-                    // if the values are calculated for the second time
-                    if (err > err0) // if error is greater, return to first variant
                     {
-                        //propscur = props0; // #notOk
-                        props0.CopyTo(propscur, 0);
-                        mixTypes = (ColorMixType)clsvect;
-                        //hsvinv = prop2hsv(propscur, mixTypes, Wcell, Ycell);
+                        // if the values are calculated for the second time
+                        if (err > err0) // if error is greater, return to first variant
+                        {
+                            //propscur = props0; // #notOk
+                            props0.CopyTo(propscur, 0);
+                            mixTypes[i] = (ColorMixType)clsvect;
+                            //hsvinv = prop2hsv(propscur, mixTypes, Wcell, Ycell);
+                        }
+                        flag = false; // anyway, go out of the loop
                     }
-                    flag = false; // anyway, go out of the loop
                 }
+                proportions[i] = propscur;
+                hsvArray[i] = hsvNewColor[i].Clone() as double[];
             }
-            proportions = propscur;
+            hsvNewColor = hsvArray;
         }
+
         internal static double[] prop2hsv(double[] proportions, ColorMixType mixTypes, List<List<List<double>>> Ycell, List<List<List<double>>> Wcell, int sheetsAmount = 4)
         {
             int K = 14;
@@ -750,6 +988,120 @@ namespace Algorithm
 
             return hsvcol;
         }
+        internal static List<double[]> prop2hsv(List<double[]> proportions, List<ColorMixType> mixTypes, List<List<List<double>>> Ycell, List<List<List<double>>> Wcell, int sheetsAmount = 4)
+        {
+            int K = 14;
+
+            int Npts = proportions.Count;
+            List<double[]> hsvcol = new List<double[]>(Npts);
+
+            for (int i = 0; i < Npts; i++)
+            {
+                // Ycell and Wcell are granted not null
+
+                List<List<double>> Y = new List<List<double>>();
+                List<List<double>> W = new List<List<double>>();
+                // take the corresponding sets
+                if ((int)(mixTypes[i]) < 2)
+                {
+                    Y.AddRange(Ycell[0]);
+                    Y.AddRange(Ycell[1]);
+                    for (int j = 0; j < Wcell[0].Count; j++)
+                    {
+                        W.Add(new List<double>());
+                        W[j].AddRange(Wcell[0][j]);
+                        W[j][0] = (Wcell[0][j][0] - 1); // for mixtype MY with H > 0.4 make H negative
+                    }
+                    W.AddRange(Wcell[1]);
+                }
+                else
+                {
+                    Y.AddRange(Ycell[(int)mixTypes[i]]); // Y for proportions
+                    W.AddRange(Wcell[(int)mixTypes[i]]); // W for HSV
+                }
+
+                int NY = Y.Count;
+                Matrix2D dst = new Matrix2D(NY, 1);
+                for (int k = 0; k < NY; k++)
+                    dst[k] = EuclideanDistance(proportions[i], Y[k].ToArray()); // ##ok
+
+                int[] indexes = dst.GetIndexesForSorted();
+
+                double[] d = new double[K];
+
+                for (int c = 0; c < K; c++)
+                    d[c] = 1d / (dst[indexes[c]] + 1e-4);
+
+                Matrix2D D = (new Matrix2D(d.ToList())).MakeDiag();
+
+                double[] hsvcolcur = new double[3];
+
+                int N = 4;
+
+                List<List<double>> T = new List<List<double>> {
+                            new List<double> { 0, 0, 0 },
+                            new List<double> { 1, 0, 0 },
+                            new List<double> { 0, 1, 0 },
+                            new List<double> { 0, 0, 1 }
+                        }; // deglexord(0,1,3);
+                           // take first K points
+                K = Math.Min(NY, K); // decrease K if needed
+
+                Matrix2D X = new Matrix2D(K, Y[0].Count);
+
+                for (int p = 0; p < K; p++)
+                    for (int q = 0; q < Y[p].Count; q++)
+                        X[p, q] = Y[indexes[p]][q];
+
+                Matrix2D E = new Matrix2D(K, N, 0); // evaluated polynomial
+                double[][] h = Eye(N);
+                for (int k = 0; k < N; k++)
+                {
+                    double[] product = prod2(matrixToMatrixDegrees(X, (new Matrix2D(T[k])).RepeatRows(K)));
+                    for (int r = 0; r < K; r++)
+                    {
+                        for (int c = 0; c < E.Columns; c++)
+                        {
+                            E[r, c] += product[r] * h[k][c];
+                        }
+                    }
+                }
+
+                for (int j = 0; j < 3; j++)
+                {
+                    Matrix2D Wj = new Matrix2D(K, 1);
+
+                    for (int k = 0; k < K; k++)
+                        Wj[k] = W[indexes[k]][j];
+
+                    // h = (E'*E)\(E'*V); %OLS
+                    Matrix2D Etransposed = E.Transpose();
+
+                    GeneralComponents.Matrix2D h2 = GeneralComponents.GausMethod.Solve(
+                        ((Etransposed * D * E) + (Matrix2D.Eye(N) * 1e-4)), (Etransposed * D * Wj));
+
+                    // predict proportion
+
+                    hsvcolcur[j] = 0;
+                    double[] x = proportions[i];
+
+                    for (int k = 0; k < N; k++)
+                    {
+                        double product = prod2(matrixToMatrixDegrees(x, T[k].ToArray()));
+
+                        for (int c = 0; c < h2.Columns; c++)
+                            hsvcolcur[j] += product * h2[k, c];
+                    }
+                }
+
+                if (hsvcolcur[0] < 0)
+                    hsvcolcur[0]++; // use this because models predict with shift
+                                    // get into ranges [0,1]
+                hsvcol.Add(saturation(hsvcolcur));
+            }
+            return hsvcol;
+        }
+
         public static double[] prod2(Matrix2D matrix) // prod(matrix, 2) 
         {
             int length = matrix.Rows;
@@ -917,6 +1269,14 @@ namespace Algorithm
                     + (hueIsNotLess(hueForRgb[i], 1 / 2d) & hueIsLess(hueForRgb[i], 2 / 3d)) * (4d - 6d * hueForRgb[i]));
             }
             return rgbPixel;
+        }
+
+        public static List<double[]> hsv2rgb(List<double[]> hsvPixels)
+        {
+            List<double[]> rgbPixels = new List<double[]>(hsvPixels.Count);
+            for (int i = 0; i < hsvPixels.Count; i++)
+                rgbPixels.Add(hsv2rgb(hsvPixels[i]));
+            return rgbPixels;
         }
 
         public static double mod(double dividend, double divisor)
@@ -1604,7 +1964,7 @@ namespace Algorithm
 
                 double currentSum = 0;
 
-                for (int i = 0; i < probabilities.Count; i++)
+                for (int i = 0; i < distances.Count; i++)
                 {
                     currentSum += distances[i];
                     probabilities.Add(currentSum / distancesSum);
@@ -1775,6 +2135,14 @@ namespace Algorithm
             {
                 Console.WriteLine("Exception: " + e.Message);
             }
+        }
+
+        public static int sumColorMixTypes(List<ColorMixType> colorMixTypes) 
+        {
+            int sum = 0;
+            foreach (var mixtype in colorMixTypes)
+                sum += ((int)mixtype + 1);
+            return sum;
         }
 
         //internal static List<int> kmeans(List<double[]> colArray, int clustersAmount)
