@@ -119,16 +119,29 @@ namespace GeneralComponents {
                 this.matrix[i] = new(matrix.matrix[i]);
         }
 
-        public Matrix2D(double[,] matrix)
+        public Matrix2D(double[,] matrix2)
         {
-            Rows = matrix.GetLength(0);
-            Columns = matrix.GetLength(1);
+            Rows = matrix2.GetLength(0);
+            Columns = matrix2.GetLength(1);
             this.matrix = new Vector[Rows];
             for (int i = 0; i < Rows; ++i)
             {
                 this.matrix[i] = new Vector(Columns);
                 for (int j = 0; j < Columns; j++)
-                    this.matrix[i][j] = matrix[i, j];
+                    this.matrix[i][j] = matrix2[i, j];
+            }
+        }
+
+        public Matrix2D(int[,] matrix2)
+        {
+            Rows = matrix2.GetLength(0);
+            Columns = matrix2.GetLength(1);
+            this.matrix = new Vector[Rows];
+            for (int i = 0; i < Rows; ++i)
+            {
+                this.matrix[i] = new Vector(Columns);
+                for (int j = 0; j < Columns; j++)
+                    this.matrix[i][j] = matrix2[i, j];
             }
         }
 
@@ -200,17 +213,39 @@ namespace GeneralComponents {
         }
 
         public int[] GetIndexesForSorted() {
-            double[] firstColumn = new double[Rows];
-            int[] indexes = new int[Rows];
+            //double[] firstColumn = new double[Rows];
+            //int[] indexes = new int[Rows];
+            List<KeyValuePair<int, double>> bla = new();
 
-            for (int i = 0; i < Rows; ++i) {
-                firstColumn[i] = this[i, 0];
-                indexes[i] = i;
+            int ComparePair(KeyValuePair<int, double> first, KeyValuePair<int, double> second)
+            {
+                if (first.Value > second.Value)
+                    return 1;
+                if (first.Value < second.Value)
+                    return -1;
+                if (first.Value == second.Value)
+                {
+                    if (first.Key < second.Key)
+                        return -1;
+                    if (first.Key > second.Key)
+                        return 1;
+                    if (first.Key == second.Key)
+                        return 0;
+                }
+                return 0;
             }
 
-            Array.Sort(firstColumn, indexes);
+            for (int i = 0; i < Rows; ++i) {
+                bla.Add(new KeyValuePair<int, double>(i, this[i, 0]));
+                //firstColumn[i] = this[i, 0];
+                //indexes[i] = i;
+            }
+            bla.Sort(ComparePair);
+            
+            return bla.Select(pair => pair.Key).ToArray();
+            //Array.Sort(firstColumn, indexes);
 
-            return indexes;
+            //return indexes;
         }
 
         public void MakeUnit(int startRow) {
@@ -295,6 +330,12 @@ namespace GeneralComponents {
             } else {
                 throw new ArgumentException("The matrix dimensions isn't same!");
             }
+        }
+
+        public void FillByZeros()
+        {
+            for (int i = 0; i < Rows; i++)
+                matrix[i].FillByZeros();
         }
 
         public static explicit operator double(Matrix2D matrix) {
