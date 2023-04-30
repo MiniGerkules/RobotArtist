@@ -27,7 +27,7 @@ namespace GUI.Settings {
         /// <summary>
         /// The default width of the brush (use when there isn't PW command in PLT)
         /// </summary>
-        public uint DefaultBrushWidth { get; private set; } = 4;
+        public uint DefaultBrushWidth { get; private set; } = 2;
 
         /// <summary> Number of neibors for proportion classification </summary>
         public uint NumOfNeibForPropClass { get; private set; } = 10;
