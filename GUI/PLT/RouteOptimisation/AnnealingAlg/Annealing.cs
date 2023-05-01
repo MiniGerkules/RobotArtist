@@ -73,6 +73,10 @@ public class Annealing
     public void Anneal()
     {
         int iteration = -1;
+        foreach(Stroke stroke in this.strokes)
+        {
+            currentOrder.Add(stroke);
+        }
         double distance = GetTotalDistance(currentOrder);
         int crunch = 0;
 
@@ -116,9 +120,9 @@ public class Annealing
     public double CountDistance(Point2D start, Point2D end)
     {
         return Math.Sqrt(
-            (start.X - end.X) * (start.X - end.X)
+            Math.Pow((start.X - end.X), 2)
             +
-            (start.Y - end.Y) * (start.Y - end.Y));
+            Math.Pow((start.Y - end.Y), 2));
     }
 
     public void Reset()
