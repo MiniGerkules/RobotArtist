@@ -1,8 +1,6 @@
-﻿using Algorithm;
-using GUI.PLT.RouteOptimisation.ACO.Ants;
+﻿using GUI.PLT.RouteOptimisation.ACO.Ants;
 using GUI.PLT.RouteOptimisation.ACO.Graphs;
 using GUI.PLT.RouteOptimisation.AnnealingAlg;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -20,38 +18,55 @@ internal class RouteCreator
     public List<Stroke> AnnealingOrdering()
     {
         var groups = _strokes.GroupBy(x=>x.StroceColor).ToList();
+        var orderedGroups = new List<List<Stroke>>();
+        var orderedList = new List<Stroke>();
 
-        var anneal = new Annealing(_strokes);
-        anneal.Anneal();
+        foreach (var group in groups)
+        {
+            var anneal = new Annealing(group.ToList());
+            anneal.Anneal();
+            orderedGroups.Add(anneal.GetResult());
+        }
+        foreach (var group in orderedGroups)
+        {
+            orderedList.Concat(group);
+        }
 
-        return anneal.GetResult();
+        return orderedList;
     }
 
     public List <Stroke> ACOOrdering() 
     {
-        var dimension = _strokes.Count * 2 - 1;
-
-        var @params = new Params();
-
-        var read = new Reader(_strokes);
-
-        var graph = new Graph(dimension, read.edges);
-
-        var traveller = new Traveller(@params, graph);
-        traveller.RunACS();
-
-        var res = traveller.BestRoute;
-        var true_res = new List<Edge>();
-
-        for (int i = 0; i < dimension - 1; i++)
+        var groups = _strokes.GroupBy(x => x.StroceColor).ToList();
+        var orderedGroups = new List<List<Stroke>>();
+        var orderedList = new List<Stroke>();
+        foreach(var group in groups)
         {
-            true_res.Add(res[i]);
+            var strokes = group.ToList();
+            var dimension = strokes.Count * 2 - 1;
+            var @params = new Params();
+            var read = new Reader(strokes);
+            var graph = new Graph(dimension, read.edges);
+
+            var traveller = new Traveller(@params, graph);
+            traveller.RunACS();
+
+            var res = traveller.BestRoute;
+            var true_res = new List<Edge>();
+
+            for (int i = 0; i < dimension - 1; i++)
+            {
+                true_res.Add(res[i]);
+            }
+
+            var converter = new StrokesCompiler(true_res, strokes);
+            orderedGroups.Add(converter.ConvertToStrokes());
+        }
+        foreach(var group in orderedGroups)
+        {
+            orderedList.Concat(group);
         }
 
-        // каждое нечётное ребро пути - мазок
-        // преобразуем обратно рёбра в мазки
-
-        var converter = new StrokesCompiler(true_res, _strokes);
-        return converter.ConvertToStrokes();
+        return orderedList;
     }
 }
