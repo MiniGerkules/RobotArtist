@@ -16,7 +16,7 @@ namespace GUI.PLT {
             if (StrokesStructure.CanFreeze) StrokesStructure.Freeze();
         }
 
-        public void Rotate(uint angle) {
+        public void Rotate(uint angle = 90) {
             MainImage = SetAngle(MainImage, angle);
             StrokesStructure = SetAngle(StrokesStructure, angle);
             Freeze();
