@@ -26,7 +26,7 @@ namespace GUI.PLT {
 
         public void Rotate() {
             angleOfRotation = (angleOfRotation + 90) % 360;
-            Rendered.Rotate(angleOfRotation);
+            Rendered.Rotate();
         }
     }
 }
