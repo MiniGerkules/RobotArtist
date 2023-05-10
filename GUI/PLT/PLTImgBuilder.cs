@@ -147,9 +147,9 @@ namespace GUI.PLT {
                 CurPercent = i*maxPercentForBuilding / picture.Strokes.Count;
                 var stroke = picture.Strokes[i];
 
-                if (builded.NeedUpdate(stroke.StroceColor, stroke.BrushWidth)) {
+                if (builded.NeedUpdate(stroke.StroceColor, settings.DefaultBrushWidth)) { // stroke.BrushWidth
                     builded.SaveGeometry();
-                    builded.UpdatePen(stroke.StroceColor, stroke.BrushWidth);
+                    builded.UpdatePen(stroke.StroceColor, settings.DefaultBrushWidth); // stroke.BrushWidth
                 }
 
                 builded.AddToGeometry(stroke);
