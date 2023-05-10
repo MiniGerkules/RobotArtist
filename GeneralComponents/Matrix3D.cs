@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Windows.Media.Imaging;
+using System.Windows.Media;
 using System.Windows.Media.Media3D;
 
 namespace GeneralComponents {
@@ -17,14 +19,34 @@ namespace GeneralComponents {
             }
         }
 
-        public Matrix3D Transpose()
+        public Matrix3D(BitmapImage image)
         {
-            Matrix3D result = new(this);
+            FormatConvertedBitmap imageInRGB24 = new FormatConvertedBitmap(image, PixelFormats.Rgb24, BitmapPalettes.Halftone252, 0);
+            int bpp = 24; // bits per pixel
+            int layersAmount = 3;
+            //bpp = Image.Format.BitsPerPixel; // pictures opens in bgr32
+            int width = imageInRGB24.PixelWidth; // amount of columns
+            int height = imageInRGB24.PixelHeight; // amount of rows
+            int depth = ((bpp + 7) / 8); // layers amount (will be 3)
+            int stride = width * depth;
+            int size = height * stride; // rows in bytes
+            byte[] pixels = new byte[size];
+            imageInRGB24.CopyPixels(pixels, stride, 0);
 
-            for (int i = 0; i < Layers; i++)
-                matrix[i] = matrix[i].Transpose();
+            matrix = new Matrix2D[layersAmount];
+            for (int i = 0; i < layersAmount; i++)
+                matrix[i] = new Matrix2D(height, width);
 
-            return result;
+            for (int j = 0; j < height; j++)
+            {
+                for (int i = 0; i < width; i++)
+                {
+                    int index = j * stride + ((bpp + 7) / 8) * i;
+                    this[j, i, 0] = pixels[index]; // Layer R
+                    this[j, i, 1] = pixels[index + 1]; // Layer G
+                    this[j, i, 2] = pixels[index + 2]; // Layer B
+                }
+            }
         }
 
         public Matrix2D this[int layer] {
@@ -45,17 +67,6 @@ namespace GeneralComponents {
                         this[i, j, k] = initVal;
         }
 
-        public Matrix3D(List<List<List<double>>> matrix3D) // layers, columns, rows
-        {
-            if (matrix3D.Count == 0 || matrix3D[0].Count == 0 || matrix3D[0][0].Count == 0)
-                throw new ArgumentException("Pass a empty list to construct " +
-                    "a new matrix!");
-            matrix = new Matrix2D[matrix3D.Count];
-            for (int i = 0; i < matrix3D.Count; i++) {
-                matrix[i] = new Matrix2D(matrix3D[i]);
-            }
-        }
-
         public Matrix3D(Matrix3D matrix)
         {
             this.matrix = new Matrix2D[matrix.Layers];
@@ -67,6 +78,13 @@ namespace GeneralComponents {
         {
             for (int i = 0; i < Layers; i++)
                 matrix[i].FillByZeros();
+        }
+
+        public static void Copy(Matrix3D first, Matrix3D second)
+        {
+            int amountOfLayers = Math.Min(first.Layers, second.Layers);
+            for (int i = 0; i < amountOfLayers; i++)
+                Matrix2D.Copy(first.matrix[i], second.matrix[i]);
         }
 
         public static Matrix3D operator -(Matrix3D first, Matrix3D second) => ByElem(first, second, MathFunctions.Minus);
@@ -120,57 +138,6 @@ namespace GeneralComponents {
             else
                 answer = matrix[0];
             return answer;
-        }
-
-        // ONLY FOR DEBUGGING BLOCK -- TO BE DELETED
-        public void printToFile(bool append = false, string filePath = "C:\\Users\\varka\\Documents\\RobotArtist extra\\matrix3d.txt")
-        {
-            if (!append)
-            {
-                StreamWriter sw = new StreamWriter(filePath);
-                sw.Close();
-            }
-            for (int i = 0; i < Layers; i++)
-                matrix[i].printToFile(true, filePath);
-        }
-        public Matrix3D(int canvasHeight, int layers = 3, string fname = @"C:\Users\varka\Documents\RobotArtist extra\Mfile2.txt")
-        {
-            List<List<List<double>>> initPic = new List<List<List<double>>>();
-            matrix = new Matrix2D[layers];
-            try
-            {
-                String input = File.ReadAllText(fname);
-                initPic.Add(new List<List<double>>());
-                int k = 0, i = 0;
-                List<List<double>> result = new List<List<double>>();
-                foreach (var row in input.Split('\n'))
-                {
-                    if (i == canvasHeight)
-                    {
-                        initPic[k].AddRange(result);
-                        result = new List<List<double>>();
-                        i = 0;
-
-                        matrix[k] = new Matrix2D(initPic[k]);
-                        if (k < 2)
-                        {
-                            initPic.Add(new List<List<double>>());
-                            k++;
-                            continue;
-                        }
-                        else
-                            break;
-                    }
-                    result.Add(new());
-                    foreach (var col in row.Trim().Split(' '))
-                        result[i].Add(int.Parse(col.Trim()));
-                    i++;
-                }
-            }
-            catch (Exception e)
-            {
-
-            }
         }
     }
 }
