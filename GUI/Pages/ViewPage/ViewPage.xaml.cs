@@ -88,28 +88,29 @@ namespace GUI.Pages.ViewPage {
         }
 
         private async Task<PLTPicture> ImageFileHandler(string fileName) {
+            var settings = builder.Settings;
             var plt = await Task.Run(() =>
                 tracer.Trace(fileName,
                     new Algorithm.Settings(
                         new Algorithm.GUITrace(
-                            colorsAmount: 255,
-                            brushWidthMM: 2,
-                            canvasWidthMM: builder.Settings.DefaultWidthOfGenImg, // REQUIRED FROM USER!
-                            canvasHeightMM: builder.Settings.DefaultHeightOfGenImg // REQUIRED FROM USER!
+                            colorsAmount: settings.ColorsAmount,
+                            brushWidthMM: settings.DefaultBrushWidth,
+                            canvasWidthMM: settings.DefaultWidthOfGenImg,
+                            canvasHeightMM: settings.DefaultHeightOfGenImg
                         ),
-                        amountOfTotalIters: 3,
-                        doBlur: false,
-                        goNormal: true,
-                        canvasColorFault: 2,
-                        itersAmountWithSmallOverlap: 1,
-                        minLenFactor: null,
-                        maxLenFactor: 30,
-                        minInitOverlapRatio: 0.6,
-                        maxInitOverlapRatio: 0.8,
-                        pixTol: 9,
-                        pixTolAverage: 100,
-                        pixTolAccept: 4,
-                        useColor8Paints: false // REQUIRED FROM USER! // if true i don't understand how
+                        amountOfTotalIters: settings.AmountOfTotalIters,
+                        doBlur: settings.DoBlur,
+                        goNormal: settings.GoNormal,
+                        canvasColorFault: settings.CanvasColorFault,
+                        itersAmountWithSmallOverlap: settings.ItersMinOverlap,
+                        minLenFactor: settings.MinLenFactor,
+                        maxLenFactor: (int)settings.MaxLenFactor,
+                        minInitOverlapRatio: settings.MinOverlap,
+                        maxInitOverlapRatio: settings.MaxOverlap,
+                        pixTol: settings.PixTol,
+                        pixTolAverage: settings.PixTol2,
+                        pixTolAccept: settings.PixTolBest,
+                        useColor8Paints: settings.UseColor8Paints
                     )
                 )
             );
