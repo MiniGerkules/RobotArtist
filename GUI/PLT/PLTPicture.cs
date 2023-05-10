@@ -17,6 +17,7 @@ namespace GUI.PLT {
             Settings = settings;
             PLTDecoded = pltDecoded;
             Rendered = rendered;
+            Rendered.Rotate(270);
         }
 
         public void RestoreRotationAngle(PLTPicture picture) {
