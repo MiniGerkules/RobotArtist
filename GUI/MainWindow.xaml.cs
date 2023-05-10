@@ -66,7 +66,7 @@ namespace GUI {
 
         private void WindowLoaded(object sender, RoutedEventArgs e) {
             if (!DatabaseLoader.IsLoaded()) {
-                ErrorDisplayer("Can't to upload a file with color data. Check " +
+                ErrorDisplayer("Can't to upload a file with Color data. Check " +
                                "the presence of the database file in the directory.");
                 Close();
             }
@@ -90,7 +90,7 @@ namespace GUI {
         }
 
         private void MenuButtonClick(object sender, RoutedEventArgs e) {
-            if (/*!IsAnyPageActive() ||*/ sender is not MenuItem ||
+            if (!IsAnyPageActive() || sender is not MenuItem ||
                     ReferenceEquals(sender, activePage))
                 return;
 
