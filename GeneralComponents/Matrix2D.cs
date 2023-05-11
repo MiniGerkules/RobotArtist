@@ -393,7 +393,7 @@ namespace GeneralComponents {
             for (int i = 0; i < Rows; i++)
             {
                 for (int j = 0; j < Columns; j++)
-                    result[i, j] = (matrix[i][j] <= 1) ? 1 : 0;
+                    result[i, j] = (matrix[i][j] <= scalar) ? 1 : 0;
             }
             return result;
         }
