@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.IO;
+using System.Linq;
 
 namespace GeneralComponents {
     public class Matrix2D {
@@ -41,15 +43,6 @@ namespace GeneralComponents {
                 else
                     throw new IndexOutOfRangeException("Index out of range!");
             }
-        }
-
-        public static Matrix2D Eye(int dimension) {
-            Matrix2D eye = new Matrix2D(dimension, dimension);
-            
-            for (int i = 0; i < dimension; i++)
-                eye[i, i] = 1;
-
-            return eye;
         }
 
         public Matrix2D(int rows, int columns) {
@@ -117,6 +110,49 @@ namespace GeneralComponents {
                 this.matrix[i] = new(matrix.matrix[i]);
         }
 
+        public Matrix2D(double[,] matrix2)
+        {
+            Rows = matrix2.GetLength(0);
+            Columns = matrix2.GetLength(1);
+            this.matrix = new Vector[Rows];
+            for (int i = 0; i < Rows; ++i)
+            {
+                this.matrix[i] = new Vector(Columns);
+                for (int j = 0; j < Columns; j++)
+                    this.matrix[i][j] = matrix2[i, j];
+            }
+        }
+
+        public Matrix2D(int[,] matrix2)
+        {
+            Rows = matrix2.GetLength(0);
+            Columns = matrix2.GetLength(1);
+            this.matrix = new Vector[Rows];
+            for (int i = 0; i < Rows; ++i)
+            {
+                this.matrix[i] = new Vector(Columns);
+                for (int j = 0; j < Columns; j++)
+                    this.matrix[i][j] = matrix2[i, j];
+            }
+        }
+
+        public static void Copy(Matrix2D first, Matrix2D second)
+        {
+            int amountOfRows = Math.Min(first.Rows, second.Rows);
+            for (int i = 0; i < amountOfRows; i++)
+                Vector.Copy(first.matrix[i], second.matrix[i]);
+        }
+
+        public static Matrix2D Eye(int dimension)
+        {
+            Matrix2D eye = new Matrix2D(dimension, dimension);
+
+            for (int i = 0; i < dimension; i++)
+                eye[i, i] = 1;
+
+            return eye;
+        }
+
         public Vector GetRow(int rowIndex) {
             double[] vector = new double[Columns];
             for (int i = 0; i < Columns; ++i)
@@ -173,18 +209,44 @@ namespace GeneralComponents {
             return result;
         }
 
-        public int[] GetIndexesForSorted() {
-            double[] firstColumn = new double[Rows];
-            int[] indexes = new int[Rows];
+        public double GetMaxValue()
+        {
+            List<List<double>> listMatrix = this.ToList();
+            double max = this.matrix[0][0];
+            for (int i = 0; i < Rows; i++)
+            {
+                max = (listMatrix[i].Max() > max) ? listMatrix[i].Max() : max;
+            }
+            return max;
+        }
 
-            for (int i = 0; i < Rows; ++i) {
-                firstColumn[i] = this[i, 0];
-                indexes[i] = i;
+        public int[] GetIndexesForSorted() {
+            List<KeyValuePair<int, double>> bla = new();
+
+            int ComparePair(KeyValuePair<int, double> first, KeyValuePair<int, double> second)
+            {
+                if (first.Value > second.Value)
+                    return 1;
+                if (first.Value < second.Value)
+                    return -1;
+                if (first.Value == second.Value)
+                {
+                    if (first.Key < second.Key)
+                        return -1;
+                    if (first.Key > second.Key)
+                        return 1;
+                    if (first.Key == second.Key)
+                        return 0;
+                }
+                return 0;
             }
 
-            Array.Sort(firstColumn, indexes);
-
-            return indexes;
+            for (int i = 0; i < Rows; ++i) {
+                bla.Add(new KeyValuePair<int, double>(i, this[i, 0]));
+            }
+            bla.Sort(ComparePair);
+            
+            return bla.Select(pair => pair.Key).ToArray();
         }
 
         public void MakeUnit(int startRow) {
@@ -233,10 +295,8 @@ namespace GeneralComponents {
         public double GetSum() {
             double result = 0;
 
-            for (int i = 0; i < Rows; ++i) {
-                for (int j = 0; j < Columns; ++j)
-                    result += matrix[i][j];
-            }
+            for (int i = 0; i < Rows; ++i) 
+                result += matrix[i].Sum();
             
             return result;
         }
@@ -250,6 +310,11 @@ namespace GeneralComponents {
                 matrix = matrix.RepeatColumns(Columns);
 
             return ByElem(this, matrix, Math.Pow);
+        }
+
+        public Matrix2D Abs()
+        {
+            return ByElem(this, Math.Abs);
         }
 
         public Matrix2D Pow(Matrix2D powers) {
@@ -266,6 +331,12 @@ namespace GeneralComponents {
             }
         }
 
+        public void FillByZeros()
+        {
+            for (int i = 0; i < Rows; i++)
+                matrix[i].FillByZeros();
+        }
+
         public static explicit operator double(Matrix2D matrix) {
             if (matrix.Rows != 1 || matrix.Columns != 1)
                 throw new ArgumentException("Matrix dimension is not 1x1!");
@@ -274,6 +345,7 @@ namespace GeneralComponents {
 
         public Matrix2D Square() => DoAction(MathFunctions.Square);
         public Matrix2D Sqrt() => DoAction(MathFunctions.Sqrt);
+        public Matrix2D Exp() => DoAction(MathFunctions.Exp);
 
         public Matrix2D DoAction(Func<double, double> action) {
             Matrix2D result = new(Rows, Columns);
@@ -285,6 +357,77 @@ namespace GeneralComponents {
             return result;
         }
 
+        ///<summary>
+        /// MESHGRID   Cartesian rectangular grid in 2-D or 3-D
+        /// [X, Y] = MESHGRID(x, y) returns 2-D grid coordinates based on the
+        /// coordinates contained in vectors x and y. X is a matrix where each row
+        /// is a copy of x, and Y is a matrix where each column is a copy of y. The
+        /// grid represented by the coordinates X and Y has length(y) rows and
+        /// length(x) columns.
+        ///</summary>
+        public static (Matrix2D x, Matrix2D y) Meshgrid(Vector x, Vector y)
+        {
+            Matrix2D xx = new Matrix2D(y.Size, x.Size);
+            Matrix2D yy = new Matrix2D(y.Size, x.Size);
+
+            if (x.Size != 0 && y.Size != 0)
+            {
+                if (!x.IsRow) x.Transpose();
+                if (y.IsRow) y.Transpose();
+                xx = x.Repeat(y.Size);
+                yy = y.Repeat(x.Size);
+            }
+            return (xx, yy);
+        }
+
+        /// <summary>
+        /// The method defines the matrix filled by 1 and 0
+        /// 1 is placed on the element's position that is less or equal to scalar
+        /// 0 is placed on the element's position that is greater than the scalar
+        /// </summary>
+        /// <param name="scalar"> the scalar to compare with </param>
+        /// <returns> Matrix2D filled by 1 and 0 of the size of data matrix </returns>
+        public Matrix2D IsLessThanScalar(double scalar)
+        {
+            Matrix2D result = new Matrix2D(Rows, Columns);
+            for (int i = 0; i < Rows; i++)
+            {
+                for (int j = 0; j < Columns; j++)
+                    result[i, j] = (matrix[i][j] <= scalar) ? 1 : 0;
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// The method defines the matrix filled by 1 and 0
+        /// 1 is placed on the element's position that equals zero
+        /// 0 is placed on the element's position that doesn't equal zero
+        /// </summary>
+        /// <returns> Matrix2D filled by 1 and 0 of the size of data matrix </returns>
+        public Matrix2D IsEqualsZero()
+        {
+            Matrix2D matrixcp = new Matrix2D(Rows, Columns);
+            for (int i = 0; i < Rows; i++)
+            {
+                for (int j = 0; j < Columns; j++)
+                {
+                    if (this[i, j] == 0)
+                        matrixcp[i, j] = 1;
+                    else
+                        matrixcp[i, j] = 0;
+                }
+            }
+            return matrixcp;
+        }
+
+        /// <summary>
+        /// The method defines the unary minus operation
+        /// </summary>
+        /// <param name="first"> First matrix </param>
+        /// <returns> The result of unary minus operation </returns>
+        public static Matrix2D operator -(Matrix2D first) => ByElem(first, MathFunctions.UnaryMinus);
+
+
         /// <summary>
         /// The method defines the minus operation
         /// </summary>
@@ -294,12 +437,39 @@ namespace GeneralComponents {
         public static Matrix2D operator -(Matrix2D first, Matrix2D second) => ByElem(first, second, MathFunctions.Minus);
 
         /// <summary>
+        /// The method defines the minus operation of number - matrix
+        /// where number is an initial value for first matrix
+        /// </summary>
+        /// <param name="first"> A number that fills first matrix </param>
+        /// <param name="second"> Second matrix </param>
+        /// <returns> The result of minus operation </returns>
+        public static Matrix2D operator -(double first, Matrix2D second)
+        {
+            Matrix2D result = new Matrix2D(second.Rows, second.Columns, first);
+            return (result - second);
+        }
+
+        /// <summary>
         /// The method defines the plus operation
         /// </summary>
         /// <param name="first"> First matrix </param>
         /// <param name="second"> Second matrix </param>
         /// <returns> The result of plus operation </returns>
         public static Matrix2D operator +(Matrix2D first, Matrix2D second) => ByElem(first, second, MathFunctions.Plus);
+
+        /// <summary>
+        /// The method defines the plus operation for matrix (first matrix)
+        /// and number where number is a value that fills second matrix
+        /// </summary>
+        /// <param name="matrix"> matrix </param>
+        /// <param name="number"> number </param>
+        /// <returns> The result of plus operation </returns>
+        public static Matrix2D operator +(Matrix2D matrix, double number)
+        {
+            Matrix2D result = new(matrix.Rows, matrix.Columns, number);
+            result += matrix;
+            return result;
+        }
 
         /// <summary>
         /// The method defines the element by element multiply operation
@@ -432,10 +602,21 @@ namespace GeneralComponents {
             return product;
         }
 
+        private static Matrix2D ByElem(Matrix2D first,
+           Func<double, double> action)
+        {
+            Matrix2D result = new(first.Rows, first.Columns);
+            for (int i = 0; i < first.Rows; ++i)
+                for (int j = 0; j < first.Columns; ++j)
+                    result[i, j] = action(first[i, j]);
+
+            return result;
+        }
+
         private static Matrix2D ByElem(Matrix2D first, Matrix2D second,
             Func<double, double, double> action) {
             if (first.Rows != second.Rows || first.Columns != second.Columns)
-                throw new ArgumentException("Dimensions of matrixes is different!");
+                throw new ArgumentException("Dimensions of matrixes are different!");
 
             Matrix2D result = new(first.Rows, first.Columns);
             for (int i = 0; i < first.Rows; ++i)
@@ -455,6 +636,14 @@ namespace GeneralComponents {
             }
 
             return list;
+        }
+
+        public int[] GetIndexesOfMinElementsInRows()
+        {
+            int[] indexes = new int[Rows];
+            for (int i = 0; i < Rows; i++)
+                indexes[i] = this.GetRow(i).IndexOfMinElement();
+            return indexes;
         }
     }
 }

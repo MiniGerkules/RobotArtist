@@ -3,15 +3,14 @@ using System.Linq;
 using System.Windows.Media;
 using System.Collections.Generic;
 
-using GeneralComponents;
-
-namespace GUI.Colors {
+namespace GeneralComponents.Colors {
     /// <summary>
     /// The class describes a color based on cyan, magenta, yellow, blue and white.
     /// </summary>
-    internal class CMYBWColor : IColor {
+    public class CMYBWColor : IColor {
         /// <summary> Number of neibors for HSV-color regression </summary>
         public static uint NumOfNeibForRegression { get; set; } = 20;
+        public static Database? Database { get; set; }
 
         private readonly static uint minColors = 5; // White/black pictures
         private readonly static uint maxColors = 8; // Color pictures
@@ -24,8 +23,11 @@ namespace GUI.Colors {
             return (cyan, magenta, yellow, blue, white);
         }
 
-        public CMYBWColor(string[] colors) {
-            (cyan, magenta, yellow, blue, white) = colors.Select(elem => uint.Parse(elem)).ToArray() switch {
+        public CMYBWColor(string[] colors) : this(colors.Select(elem => uint.Parse(elem)).ToArray()) {
+        }
+
+        public CMYBWColor(uint[] colors) {
+            (cyan, magenta, yellow, blue, white) = colors switch {
                 var arr when minColors == arr.Length || arr.Length == maxColors =>
                                                                     (arr[0], arr[1], arr[2], arr[3], arr[4]),
                 _ => throw new ArgumentException("There isn't correct number of the colors!")
@@ -110,8 +112,10 @@ namespace GUI.Colors {
         }
 
         public HSVColor ToHSVColor() {
-            var hsv = DatabaseLoader.Database.GetHSV(mixType);
-            var proportions = DatabaseLoader.Database.GetProportions(mixType);
+            if (Database == null) throw new NullReferenceException("Database is null!");
+
+            var hsv = Database.GetHSV(mixType);
+            var proportions = Database.GetProportions(mixType);
 
             Matrix2D distances = new(hsv.Count, 1);
             for (int i = 0; i < hsv.Count; ++i) {

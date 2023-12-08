@@ -9,7 +9,7 @@ namespace GUI.Settings {
     internal class SettingsReader : SettingsManipulator {
         public static AlgorithmSettings ReadSettings() {
             OpenFileDialog fileDialog = new() {
-                Filter = "Algorithm settings|*.json",
+                Filter = "Algorithm Settings|*.json",
                 InitialDirectory = GetPathToConfigsDir(),
             };
             
@@ -37,7 +37,7 @@ namespace GUI.Settings {
             );
 
             if (json == null || constructor == null)
-                throw new Exception("Can't read algorithm settings!");
+                throw new Exception("Can't read algorithm Settings!");
 
             var props = settingsType.GetProperties();
             Dictionary<PropertyInfo, object> values = new();

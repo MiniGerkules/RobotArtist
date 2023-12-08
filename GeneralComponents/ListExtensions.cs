@@ -29,5 +29,16 @@ namespace GeneralComponents {
 
             return list.ToImmutable();
         }
+
+        public static ImmutableList<double[]> GetByIndexes(this ImmutableList<double[]> getFrom,
+                                                      int[] indexes)
+        {
+            List<double[]> list = new(indexes.Length);
+
+            foreach (int index in indexes)
+                list.Add(getFrom[index]);
+
+            return list.ToImmutableList<double[]>();
+        }
     }
 }

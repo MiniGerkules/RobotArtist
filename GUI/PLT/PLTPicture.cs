@@ -1,6 +1,5 @@
-﻿using System.Windows.Media.Imaging;
-
-using GUI.Settings;
+﻿using GUI.Settings;
+using GeneralComponents.PLT;
 
 namespace GUI.PLT {
     public class PLTPicture {
@@ -18,6 +17,7 @@ namespace GUI.PLT {
             Settings = settings;
             PLTDecoded = pltDecoded;
             Rendered = rendered;
+            Rendered.Rotate(270);
         }
 
         public void RestoreRotationAngle(PLTPicture picture) {
@@ -27,7 +27,7 @@ namespace GUI.PLT {
 
         public void Rotate() {
             angleOfRotation = (angleOfRotation + 90) % 360;
-            Rendered.Rotate(angleOfRotation);
+            Rendered.Rotate();
         }
     }
 }

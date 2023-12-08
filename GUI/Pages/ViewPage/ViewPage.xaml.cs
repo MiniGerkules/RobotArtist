@@ -18,7 +18,7 @@ namespace GUI.Pages.ViewPage {
 
         private readonly MenuItem linkedMenuItem;
 
-        private Algorithm.Tracer? tracer = null;
+        private Algorithm.Tracer tracer;
         private readonly PLTDecoder decoder;
         private readonly PLTImgBuilder builder;
 
@@ -29,30 +29,33 @@ namespace GUI.Pages.ViewPage {
         private string? pathToActiveFile = null;
 
         public ViewPage(MenuItem linkedMenuItem, PLTDecoder decoder,
-                        PLTImgBuilder builder) {
+                        PLTImgBuilder builder, Algorithm.Tracer tracer) {
             InitializeComponent();
             DataContext = viewVM;
 
             this.linkedMenuItem = linkedMenuItem;
             this.decoder = decoder;
             this.builder = builder;
+            this.tracer = tracer;
         }
 
         public bool Contains(string fileName) => files.ContainsKey(fileName);
 
         public async void Add(string fileName) {
             if (!Contains(fileName)) {
+                PLTPicture picture;
+
                 if (fileName.EndsWith(".plt")) {
-                    var picture = await PLTFileHandler(fileName);
-
-                    OpenedFile file = new(fileName, ChangeFile, CloseFile);
-                    viewVM.Items.Add(file);
-
-                    files[fileName] = picture;
-                    UpdateOutputImage(fileName);
+                    picture = await PLTFileHandler(fileName);
                 } else {
-                    ImageFileHandler(fileName);
-                }   
+                    picture = await ImageFileHandler(fileName);
+                }
+
+                OpenedFile file = new(fileName, ChangeFile, CloseFile);
+                viewVM.Items.Add(file);
+
+                files[fileName] = picture;
+                UpdateOutputImage(fileName);
             }
         }
 
@@ -84,16 +87,42 @@ namespace GUI.Pages.ViewPage {
             return picture;
         }
 
-        private void ImageFileHandler(string fileName) {
-            BitmapImage image = new(new Uri(fileName));
-            tracer = new(image, new(new()), DatabaseLoader.Database);
+        private async Task<PLTPicture> ImageFileHandler(string fileName) {
+            var settings = builder.Settings;
+            var plt = await Task.Run(() =>
+                tracer.Trace(fileName,
+                    new Algorithm.Settings(
+                        new Algorithm.GUITrace(
+                            colorsAmount: settings.ColorsAmount,
+                            brushWidthMM: settings.DefaultBrushWidth,
+                            canvasWidthMM: settings.DefaultWidthOfGenImg,
+                            canvasHeightMM: settings.DefaultHeightOfGenImg
+                        ),
+                        amountOfTotalIters: settings.AmountOfTotalIters,
+                        doBlur: settings.DoBlur,
+                        goNormal: settings.GoNormal,
+                        canvasColorFault: settings.CanvasColorFault,
+                        itersAmountWithSmallOverlap: settings.ItersMinOverlap,
+                        minLenFactor: settings.MinLenFactor,
+                        maxLenFactor: (int)settings.MaxLenFactor,
+                        minInitOverlapRatio: settings.MinOverlap,
+                        maxInitOverlapRatio: settings.MaxOverlap,
+                        pixTol: settings.PixTol,
+                        pixTolAverage: settings.PixTol2,
+                        pixTolAccept: settings.PixTolBest,
+                        useColor8Paints: settings.UseColor8Paints
+                    )
+                )
+            );
+
+            return await Task.Run(() => builder.Build(plt));
         }
 
         private void RotateImage(object sender, RoutedEventArgs e) {
             files[pathToActiveFile!].Rotate();
             UpdateActiveImage();
         }
-        
+
         private async void RepaintImage(object sender, RoutedEventArgs e) {
             files[pathToActiveFile!] = await Task.Run(
                 () => builder.Rebuild(files[pathToActiveFile!])

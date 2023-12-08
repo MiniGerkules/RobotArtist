@@ -18,13 +18,14 @@ using GUI.Pages.SettingsPage;
 
 namespace GUI {
     public partial class MainWindow : Window {
-        private static readonly string pathToDatabase = @"resources/ModelTable600_initial.xls";
-
+        //private static readonly string pathToDatabase = @"resources/ModelTable600_initial.xls";
+        private static readonly string pathToDatabase = @"resources/ModelTable600.xls";
         /// <summary> Key -- path to plt file, value -- path to saved image </summary>
         private readonly Dictionary<string, string> savedFiles = new();
 
         private readonly PLTDecoder pltDecoder;
         private readonly PLTImgBuilder pltImgBuilder = new();
+        private readonly Algorithm.Tracer tracer;
 
         private readonly IImgFileContainer filesContainer;
         private readonly Dictionary<MenuItem, IPage> pages;
@@ -33,9 +34,13 @@ namespace GUI {
         public MainWindow() {
             InitializeComponent();
 
+            DatabaseLoader.LoadDatabase(pathToDatabase);
+            tracer = new Algorithm.Tracer(DatabaseLoader.Database);
             pltDecoder = new(pltImgBuilder.Settings.DefaultBrushWidth);
+
+            filesContainer = new ViewPage(viewButton, pltDecoder, pltImgBuilder, tracer);
             footer.DataContext = new BuildingImgProcessVM(pltDecoder, pltImgBuilder);
-            filesContainer = new ViewPage(viewButton, pltDecoder, pltImgBuilder);
+
             pages = new() {
                 { viewButton, (filesContainer as IPage)! },
                 { stroKesStructButton, new StrokesStructurePage(stroKesStructButton,
@@ -60,10 +65,9 @@ namespace GUI {
         }
 
         private void WindowLoaded(object sender, RoutedEventArgs e) {
-            DatabaseLoader.LoadDatabase(pathToDatabase);
             if (!DatabaseLoader.IsLoaded()) {
-                ErrorDisplayer("Can't to upload a file with color data. Check " +
-                                "the presence of the database file in the directory.");
+                ErrorDisplayer("Can't to upload a file with Color data. Check " +
+                               "the presence of the database file in the directory.");
                 Close();
             }
         }

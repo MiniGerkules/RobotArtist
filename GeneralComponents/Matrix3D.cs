@@ -1,5 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Windows.Media.Imaging;
+using System.Windows.Media;
+using System.Windows.Media.Media3D;
 
 namespace GeneralComponents {
     public class Matrix3D {
@@ -12,6 +16,36 @@ namespace GeneralComponents {
             }
             set {
                 matrix[layer][row, column] = value;
+            }
+        }
+
+        public Matrix3D(BitmapImage image)
+        {
+            FormatConvertedBitmap imageInRGB24 = new FormatConvertedBitmap(image, PixelFormats.Rgb24, BitmapPalettes.Halftone252, 0);
+            int bpp = 24; // bits per pixel
+            int layersAmount = 3;
+            //bpp = Image.Format.BitsPerPixel; // pictures opens in bgr32
+            int width = imageInRGB24.PixelWidth; // amount of columns
+            int height = imageInRGB24.PixelHeight; // amount of rows
+            int depth = ((bpp + 7) / 8); // layers amount (will be 3)
+            int stride = width * depth;
+            int size = height * stride; // rows in bytes
+            byte[] pixels = new byte[size];
+            imageInRGB24.CopyPixels(pixels, stride, 0);
+
+            matrix = new Matrix2D[layersAmount];
+            for (int i = 0; i < layersAmount; i++)
+                matrix[i] = new Matrix2D(height, width);
+
+            for (int j = 0; j < height; j++)
+            {
+                for (int i = 0; i < width; i++)
+                {
+                    int index = j * stride + ((bpp + 7) / 8) * i;
+                    this[j, i, 0] = pixels[index]; // Layer R
+                    this[j, i, 1] = pixels[index + 1]; // Layer G
+                    this[j, i, 2] = pixels[index + 2]; // Layer B
+                }
             }
         }
 
@@ -33,15 +67,24 @@ namespace GeneralComponents {
                         this[i, j, k] = initVal;
         }
 
-        public Matrix3D(List<List<List<double>>> matrix3D) // layers, columns, rows
+        public Matrix3D(Matrix3D matrix)
         {
-            if (matrix3D.Count == 0 || matrix3D[0].Count == 0 || matrix3D[0][0].Count == 0)
-                throw new ArgumentException("Pass a empty list to construct " +
-                    "a new matrix!");
-            matrix = new Matrix2D[matrix3D.Count];
-            for (int i = 0; i < matrix3D.Count; i++) {
-                matrix[i] = new Matrix2D(matrix3D[i]);
-            }
+            this.matrix = new Matrix2D[matrix.Layers];
+            for (int i = 0; i < matrix.Layers; ++i)
+                this.matrix[i] = new Matrix2D(matrix.matrix[i]);
+        }
+
+        public void FillByZeros()
+        {
+            for (int i = 0; i < Layers; i++)
+                matrix[i].FillByZeros();
+        }
+
+        public static void Copy(Matrix3D first, Matrix3D second)
+        {
+            int amountOfLayers = Math.Min(first.Layers, second.Layers);
+            for (int i = 0; i < amountOfLayers; i++)
+                Matrix2D.Copy(first.matrix[i], second.matrix[i]);
         }
 
         public static Matrix3D operator -(Matrix3D first, Matrix3D second) => ByElem(first, second, MathFunctions.Minus);
@@ -52,7 +95,7 @@ namespace GeneralComponents {
                 || first[0].Columns != second[0].Columns)
                 throw new ArgumentException("Dimensions of matrixes is different!");
 
-            Matrix3D result = new(first[0].Rows, first[0].Columns);
+            Matrix3D result = new(rows: first[0].Rows, columns: first[0].Columns);
             for (int k = 0; k < first.Layers; ++k)
                 for (int i = 0; i < first[0].Rows; ++i)
                     for (int j = 0; j < first[0].Columns; ++j)
@@ -77,5 +120,24 @@ namespace GeneralComponents {
             return result;
         }
 
+        public Matrix2D mean()
+        {
+            Matrix2D answer = new Matrix2D(matrix[0].Rows, matrix[0].Columns);
+            if (this.Layers > 1)
+            {
+                for (int i = 0; i < matrix[0].Rows; i++)
+                {
+                    for (int j = 0; j < matrix[0].Columns; j++)
+                    {
+                        for (int k = 0; k < Layers; k++)
+                            answer[i, j] += matrix[k][i, j];
+                        answer[i, j] /= 3d;
+                    }
+                }
+            }
+            else
+                answer = matrix[0];
+            return answer;
+        }
     }
 }

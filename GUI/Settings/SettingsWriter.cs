@@ -10,7 +10,7 @@ namespace GUI.Settings {
             SaveFileDialog saveDialog = new() {
                 FileName = $"{DateTime.Now:dd/mm/yyyy hh_mm}",
                 DefaultExt = ".json",
-                Filter = "Algorithm settings|*.json",
+                Filter = "Algorithm Settings|*.json",
                 InitialDirectory = GetPathToConfigsDir(),
             };
 
